@@ -1,0 +1,188 @@
+---
+title: Rondo Developer Docs
+description: Developer documentation for the Rondo platform — architecture, REST API, and integration guides.
+template: splash
+hero:
+  title: Rondo Developer Docs
+---
+
+import { Card } from '@astrojs/starlight/components';
+
+<div class="architecture-diagram">
+  <svg viewBox="40 10 720 480" role="img" aria-label="System architecture: Sportlink and Nikki feed into Rondo Sync, which syncs to Rondo Club, Laposta, and FreeScout">
+    <defs>
+      <linearGradient id="node-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#0891B2" />
+        <stop offset="100%" stop-color="#2563EB" />
+      </linearGradient>
+    </defs>
+    {/* External sources */}
+    <rect x="80" y="30" width="160" height="80" rx="12" class="diagram-node" />
+    <text x="160" y="75" class="diagram-text">Sportlink Club</text>
+    <rect x="560" y="30" width="160" height="80" rx="12" class="diagram-node" />
+    <text x="640" y="75" class="diagram-text">Nikki</text>
+    {/* Primary nodes */}
+    <rect x="80" y="210" width="160" height="80" rx="12" class="diagram-node-primary" />
+    <text x="160" y="255" class="diagram-text-primary">Rondo Sync</text>
+    <rect x="560" y="210" width="160" height="80" rx="12" class="diagram-node-primary" />
+    <text x="640" y="255" class="diagram-text-primary">Rondo Club</text>
+    {/* Outputs */}
+    <rect x="80" y="390" width="160" height="80" rx="12" class="diagram-node" />
+    <text x="160" y="435" class="diagram-text">Laposta</text>
+    <rect x="560" y="390" width="160" height="80" rx="12" class="diagram-node" />
+    <text x="640" y="435" class="diagram-text">FreeScout</text>
+    {/* Arrows */}
+    <path d="M 160 110 L 160 210" class="diagram-arrow" />
+    <path d="M 560 90 L 240 235" class="diagram-arrow" />
+    <path d="M 240 250 L 560 250" class="diagram-arrow" />
+    <path d="M 160 290 L 160 390" class="diagram-arrow" />
+    <path d="M 240 270 L 560 420" class="diagram-arrow" />
+    {/* Labels */}
+    <text x="170" y="165" class="diagram-label">member data</text>
+    <text x="405" y="155" class="diagram-label">contributions</text>
+    <text x="350" y="240" class="diagram-label">REST API</text>
+    <text x="170" y="345" class="diagram-label">mailing lists</text>
+    <text x="310" y="365" class="diagram-label">customers</text>
+  </svg>
+</div>
+
+<div class="card-grid">
+  <h2 class="col-header">Rondo Sync</h2>
+  <h2 class="col-header">Rondo Club</h2>
+  <p class="col-subtitle">Node.js CLI &middot; Playwright + SQLite</p>
+  <p class="col-subtitle">WordPress theme &middot; PHP + React/Vite</p>
+
+  <Card title="Sync Architecture" icon="rocket">
+    System overview, schedules, API load management, and data flow.
+
+    [Architecture &rarr;](/sync/architecture/)
+  </Card>
+  <Card title="REST API" icon="open-book">
+    People, teams, committees, custom fields, and more.
+
+    [API reference &rarr;](/api/rest-api/)
+  </Card>
+
+  <Card title="Pipelines" icon="right-arrow">
+    People, teams, functions, Nikki, FreeScout, and discipline sync.
+
+    [Pipeline docs &rarr;](/sync/pipeline-people/)
+  </Card>
+  <Card title="Architecture" icon="setting">
+    Backend classes, React frontend, data model, and the relationship system.
+
+    [Architecture docs &rarr;](/architecture/)
+  </Card>
+
+  <Card title="Database Schema" icon="document">
+    4 SQLite databases, 21 tables, and the photo state machine.
+
+    [Schema docs &rarr;](/sync/database-schema/)
+  </Card>
+  <Card title="Features" icon="list-format">
+    Access control, multi-user workspaces, membership fees, reminders.
+
+    [Feature docs &rarr;](/features/access-control/)
+  </Card>
+
+  <Card title="Reverse Sync" icon="left-arrow">
+    Rondo Club &rarr; Sportlink push-back (currently disabled).
+
+    [Reverse sync &rarr;](/sync/reverse-sync/)
+  </Card>
+  <Card title="Integrations" icon="external">
+    CardDAV sync, iCal feeds, contact import.
+
+    [Integration docs &rarr;](/integrations/carddav/)
+  </Card>
+</div>
+
+<style>{`
+  /* Compact hero */
+  .hero {
+    padding-block: 1rem !important;
+    border-bottom: none !important;
+  }
+  .hero > .sl-flex {
+    gap: 0.5rem !important;
+  }
+  [data-page-title] {
+    font-size: 2rem !important;
+  }
+  .hero .tagline {
+    font-size: 1.1rem !important;
+  }
+
+  /* Architecture diagram */
+  .architecture-diagram {
+    margin: 0 auto 2rem;
+    max-width: 48rem;
+  }
+  .diagram-node {
+    fill: var(--sl-color-gray-6);
+    stroke: var(--sl-color-gray-5);
+    stroke-width: 1.5;
+  }
+  .diagram-node-primary {
+    fill: rgba(8, 145, 178, 0.08);
+    stroke: url(#node-gradient);
+    stroke-width: 2;
+  }
+  .diagram-text {
+    fill: var(--sl-color-gray-3);
+    font-size: 16px;
+    font-weight: 700;
+    text-anchor: middle;
+    dominant-baseline: middle;
+  }
+  .diagram-text-primary {
+    fill: var(--sl-color-text);
+    font-size: 16px;
+    font-weight: 700;
+    text-anchor: middle;
+    dominant-baseline: middle;
+  }
+  .diagram-arrow {
+    stroke: var(--sl-color-accent);
+    stroke-width: 2;
+    fill: none;
+    opacity: 0.5;
+  }
+  .diagram-label {
+    fill: var(--sl-color-accent);
+    font-size: 12px;
+    text-anchor: start;
+    opacity: 0.8;
+  }
+
+  /* Two-column card grid — flat grid so rows align */
+  .card-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem 2rem;
+    align-items: start;
+  }
+  .col-header {
+    font-family: 'Montserrat', system-ui, sans-serif;
+    font-size: 1.75rem;
+    font-weight: 700;
+    margin: 0;
+  }
+  .col-subtitle {
+    color: var(--sl-color-gray-3);
+    font-size: 0.9rem;
+    margin: 0 0 0.5rem;
+  }
+
+  @media (max-width: 768px) {
+    .card-grid {
+      grid-template-columns: 1fr;
+    }
+    .diagram-text, .diagram-text-primary {
+      font-size: 14px;
+    }
+    .architecture-diagram {
+      padding: 1rem 0.5rem;
+    }
+  }
+`}</style>

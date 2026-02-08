@@ -1,0 +1,66 @@
+@import "tailwindcss";
+
+@theme {
+  --color-electric-cyan: #0891B2;
+  --color-electric-cyan-light: #22D3EE;
+  --color-bright-cobalt: #2563EB;
+  --color-deep-midnight: #1E3A8A;
+  --color-obsidian: #0F172A;
+}
+
+/* Rondo brand colors mapped to Starlight CSS variables */
+:root {
+  --sl-color-accent-low: #083344;
+  --sl-color-accent: #0891B2;
+  --sl-color-accent-high: #a5f3fc;
+  --sl-font: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --sl-font-system-mono: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
+}
+
+:root[data-theme='light'] {
+  --sl-color-accent-low: #cffafe;
+  --sl-color-accent: #0891B2;
+  --sl-color-accent-high: #164e63;
+  --sl-color-bg-nav: #f8fafc;
+  --sl-color-bg-sidebar: #f8fafc;
+  --sl-color-hairline-light: #e2e8f0;
+  --sl-color-hairline: #cbd5e1;
+}
+
+/* Headings: Montserrat */
+:is(h1, h2, h3, h4, h5, h6),
+.sl-markdown-content :is(h1, h2, h3, h4, h5, h6) {
+  font-family: 'Montserrat', system-ui, sans-serif;
+}
+
+/* Logo sizing */
+.site-title img {
+  height: 2rem;
+}
+
+/* Link accent */
+.sl-markdown-content a:not([class]) {
+  color: var(--sl-color-accent);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.sl-markdown-content a:not([class]):hover {
+  color: #2563EB;
+}
+
+/* Code block styling */
+.sl-markdown-content pre {
+  border: 1px solid var(--sl-color-hairline-light);
+  border-radius: 0.5rem;
+}
+
+/* Respect reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
