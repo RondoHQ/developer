@@ -55,52 +55,46 @@ Each season option stored a simple array of fee types:
 ```php
 [
   'senior' => [
-    'label'      => 'Senior',
-    'amount'     => 255,
-    'age_min'    => 18,
-    'age_max'    => 99,
-    'is_youth'   => false,
-    'sort_order' => 40,
+    'label'        => 'Senior',
+    'amount'       => 255,
+    'age_classes'  => [],  // Empty = catch-all for any age class
+    'is_youth'     => false,
+    'sort_order'   => 40,
   ],
   'junior' => [
-    'label'      => 'Junior (Onder 18)',
-    'amount'     => 230,
-    'age_min'    => 12,
-    'age_max'    => 17,
-    'is_youth'   => true,
-    'sort_order' => 30,
+    'label'        => 'Junior (Onder 18)',
+    'amount'       => 230,
+    'age_classes'  => ['Onder 18'],
+    'is_youth'     => true,
+    'sort_order'   => 30,
   ],
   'pupil' => [
-    'label'      => 'Pupil (Onder 12)',
-    'amount'     => 180,
-    'age_min'    => 8,
-    'age_max'    => 11,
-    'is_youth'   => true,
-    'sort_order' => 20,
+    'label'        => 'Pupil (Onder 12)',
+    'amount'       => 180,
+    'age_classes'  => ['Onder 9', 'Onder 10', 'Onder 11', 'Onder 12'],
+    'is_youth'     => true,
+    'sort_order'   => 20,
   ],
   'mini' => [
-    'label'      => 'Mini (Onder 8)',
-    'amount'     => 130,
-    'age_min'    => 4,
-    'age_max'    => 7,
-    'is_youth'   => true,
-    'sort_order' => 10,
+    'label'        => 'Mini (Onder 8)',
+    'amount'       => 130,
+    'age_classes'  => ['Onder 5', 'Onder 6', 'Onder 7', 'Onder 8'],
+    'is_youth'     => true,
+    'sort_order'   => 10,
   ],
   'recreant' => [
-    'label'      => 'Recreant',
-    'amount'     => 65,
-    'age_min'    => 18,
-    'age_max'    => 99,
-    'is_youth'   => false,
-    'sort_order' => 50,
+    'label'        => 'Recreant',
+    'amount'       => 65,
+    'age_classes'  => [],  // Empty = catch-all
+    'is_youth'     => false,
+    'sort_order'   => 50,
   ],
   'donateur' => [
-    'label'      => 'Donateur',
-    'amount'     => 55,
-    'age_min'    => 0,
-    'age_max'    => 99,
-    'is_youth'   => false,
-    'sort_order' => 60,
+    'label'        => 'Donateur',
+    'amount'       => 55,
+    'age_classes'  => [],  // Empty = catch-all
+    'is_youth'     => false,
+    'sort_order'   => 60,
   ],
 ]
 ```
@@ -108,10 +102,20 @@ Each season option stored a simple array of fee types:
 **Category Object Fields:**
 - `label` (string): Display name for UI
 - `amount` (int): Fee amount in euros
-- `age_min` (int): Minimum age for this category
-- `age_max` (int): Maximum age for this category
+- `age_classes` (array): Sportlink AgeClassDescription strings (e.g., `["Onder 9", "Onder 10"]`). Empty array acts as catch-all for any age class not matched by other categories.
 - `is_youth` (bool): Whether category is eligible for family discount
 - `sort_order` (int): Display order in UI (lower = earlier)
+
+**Age Class Matching (Phase 156+):**
+
+Age class matching uses exact string comparison against Sportlink's `leeftijdsgroep` field (e.g., "Onder 9", "Onder 18"):
+
+1. System reads person's `leeftijdsgroep` ACF field (synced from Sportlink)
+2. Compares against each category's `age_classes` array
+3. If multiple categories match, the one with lowest `sort_order` wins
+4. If no category matches, uses first category with empty `age_classes` array (catch-all)
+
+This enables flexible age-based fee tiers that align exactly with Sportlink's age classification system.
 
 ## Migration Behavior
 
@@ -287,20 +291,18 @@ get_option( 'rondo_membership_fees_2025-2026' )
 // Returns:
 [
   'senior' => [
-    'label'      => 'Senior',
-    'amount'     => 255,
-    'age_min'    => 18,
-    'age_max'    => 99,
-    'is_youth'   => false,
-    'sort_order' => 40,
+    'label'        => 'Senior',
+    'amount'       => 255,
+    'age_classes'  => [],  // Empty = catch-all
+    'is_youth'     => false,
+    'sort_order'   => 40,
   ],
   'junior' => [
-    'label'      => 'Junior (Onder 18)',
-    'amount'     => 230,
-    'age_min'    => 12,
-    'age_max'    => 17,
-    'is_youth'   => true,
-    'sort_order' => 30,
+    'label'        => 'Junior (Onder 18)',
+    'amount'       => 230,
+    'age_classes'  => ['Onder 18'],
+    'is_youth'     => true,
+    'sort_order'   => 30,
   ],
   // ... more categories
 ]
@@ -328,6 +330,32 @@ This copy-forward ensures:
 - Category labels, age ranges, youth flags, and sort order carry forward consistently
 
 ### Helper Methods
+
+#### Category Lookup (Phase 156+)
+
+```php
+$membership_fees = new \Rondo\Fees\MembershipFees();
+
+// Get category by Sportlink age class (e.g., "Onder 9", "Onder 18")
+$category_slug = $membership_fees->get_category_by_age_class( 'Onder 9', '2025-2026' );
+// Returns: 'mini' (or null if no match)
+
+// Get all valid category slugs for a season
+$slugs = $membership_fees->get_valid_category_slugs( '2025-2026' );
+// Returns: ['mini', 'pupil', 'junior', 'senior', 'recreant', 'donateur']
+
+// Get youth category slugs for a season
+$youth_slugs = $membership_fees->get_youth_category_slugs( '2025-2026' );
+// Returns: ['mini', 'pupil', 'junior'] (categories with is_youth=true)
+
+// Get category sort order map for a season
+$sort_order = $membership_fees->get_category_sort_order( '2025-2026' );
+// Returns: ['mini' => 10, 'pupil' => 20, 'junior' => 30, 'senior' => 40, ...]
+```
+
+**Season parameter:** All helper methods accept an optional `$season` parameter. If omitted, defaults to current season. Pass next season key to support forecast mode.
+
+#### Category Management
 
 ```php
 $membership_fees = new \Rondo\Fees\MembershipFees();
@@ -460,7 +488,46 @@ $membership_fees->calculate_fee( $person_id ); // Uses current season
 
 No code changes required for existing functionality.
 
+## Removed / Deprecated
+
+The following constants, methods, and patterns were removed in v21.0 (Phase 156):
+
+### Constants
+
+- **`MembershipFees::VALID_TYPES`** — Hardcoded array of valid fee category slugs
+  - **Replacement:** Use `get_valid_category_slugs( $season )` to read valid slugs from category configuration
+  - **Reason:** Category list is now per-season and configurable
+
+- **`MembershipFees::DEFAULTS`** — Hardcoded default fee amounts
+  - **Replacement:** Category configuration defines amounts per season
+  - **Reason:** Amounts are now fully configurable per category per season
+
+### Methods
+
+- **`parse_age_group( $leeftijdsgroep )`** — Converted Sportlink age class to category via regex/range logic
+  - **Replacement:** Use `get_category_by_age_class( $leeftijdsgroep, $season )` for exact string matching
+  - **Reason:** Age class matching now uses exact string comparison against `age_classes` arrays, not regex
+
+### Hardcoded Arrays
+
+- **`$category_order` arrays** in REST API and Google Sheets export
+  - **Replacement:** Use `get_category_sort_order( $season )` to read sort order from category configuration
+  - **Reason:** Sort order is now configurable per season via `sort_order` field
+
+- **`$youth_categories` arrays** in fee calculation code
+  - **Replacement:** Use `get_youth_category_slugs( $season )` to read youth categories from configuration
+  - **Reason:** Youth flag is now configurable per category via `is_youth` field
+
+### Data Model Changes
+
+- **`age_min` / `age_max` fields** in category configuration
+  - **Replacement:** `age_classes` array storing Sportlink AgeClassDescription strings
+  - **Migration:** Automatic migration converts old ranges to empty arrays (catch-all)
+  - **Reason:** Age class matching must align exactly with Sportlink's classification system
+
 ## Version History
 
+- **v21.0** (2026-02-08, Phase 156): Config-driven fee calculation with `age_classes` arrays and dynamic helper methods
+- **v21.0** (2026-02-08, Phase 155): Per-season fee category configuration with copy-forward
 - **v18.1.0** (2026-02-05): Per-season fee storage with automatic migration
 - Previous: Global fee settings (single option for all seasons)
