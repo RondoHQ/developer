@@ -33,7 +33,9 @@ Fee settings are stored in WordPress options with season-specific keys:
 
 ### Fee Structure
 
-Each season option stores an array of fee types:
+#### Legacy Format (pre-v21.0)
+
+Each season option stored a simple array of fee types:
 
 ```php
 [
@@ -45,6 +47,71 @@ Each season option stores an array of fee types:
   'donateur' => 55,   // Donors
 ]
 ```
+
+#### v21.0+ Format: Fee Category Configuration
+
+**As of v21.0 (Phase 155+)**, season options store slug-keyed category objects with full metadata:
+
+```php
+[
+  'senior' => [
+    'label'      => 'Senior',
+    'amount'     => 255,
+    'age_min'    => 18,
+    'age_max'    => 99,
+    'is_youth'   => false,
+    'sort_order' => 40,
+  ],
+  'junior' => [
+    'label'      => 'Junior (Onder 18)',
+    'amount'     => 230,
+    'age_min'    => 12,
+    'age_max'    => 17,
+    'is_youth'   => true,
+    'sort_order' => 30,
+  ],
+  'pupil' => [
+    'label'      => 'Pupil (Onder 12)',
+    'amount'     => 180,
+    'age_min'    => 8,
+    'age_max'    => 11,
+    'is_youth'   => true,
+    'sort_order' => 20,
+  ],
+  'mini' => [
+    'label'      => 'Mini (Onder 8)',
+    'amount'     => 130,
+    'age_min'    => 4,
+    'age_max'    => 7,
+    'is_youth'   => true,
+    'sort_order' => 10,
+  ],
+  'recreant' => [
+    'label'      => 'Recreant',
+    'amount'     => 65,
+    'age_min'    => 18,
+    'age_max'    => 99,
+    'is_youth'   => false,
+    'sort_order' => 50,
+  ],
+  'donateur' => [
+    'label'      => 'Donateur',
+    'amount'     => 55,
+    'age_min'    => 0,
+    'age_max'    => 99,
+    'is_youth'   => false,
+    'sort_order' => 60,
+  ],
+]
+```
+
+**Category Object Fields:**
+- `label` (string): Display name for UI
+- `amount` (int): Fee amount in euros
+- `age_min` (int): Minimum age for this category
+- `age_max` (int): Maximum age for this category
+- `is_youth` (bool): Whether category is eligible for family discount
+- `sort_order` (int): Display order in UI (lower = earlier)
 
 ## Migration Behavior
 
@@ -131,10 +198,43 @@ Same structure as GET endpoint (returns both seasons after update)
 
 ### `MembershipFees` Class
 
+#### Season Key Helpers
+
 ```php
 // Get option key for a season
 public function get_option_key_for_season( string $season ): string
 
+// Get the previous season key (e.g., "2025-2026" → "2024-2025")
+public function get_previous_season_key( string $season ): ?string
+```
+
+#### Category Configuration (v21.0+)
+
+```php
+// Get all categories for a season (with copy-forward from previous season)
+public function get_categories_for_season( string $season ): array
+
+// Save categories for a season
+public function save_categories_for_season( array $categories, string $season ): bool
+
+// Get a single category by slug
+public function get_category( string $slug, ?string $season = null ): ?array
+```
+
+**Copy-Forward Behavior:**
+
+When `get_categories_for_season()` is called for a season with no existing data:
+1. Fetches categories from the previous season (via `get_previous_season_key()`)
+2. If previous season has data, copies the full category configuration to the new season
+3. Saves the copied data to the new season option for future reads
+4. Returns the copied categories
+5. If no previous season data exists, returns empty array `[]`
+
+This ensures new seasons automatically inherit the previous season's category configuration (labels, amounts, age ranges, youth flags, sort order), which administrators can then adjust as needed.
+
+#### Legacy Fee Settings (pre-v21.0)
+
+```php
 // Get settings for a specific season (with auto-migration)
 public function get_settings_for_season( string $season ): array
 
@@ -154,6 +254,8 @@ public function get_fee( string $type ): int
 public function calculate_fee( int $person_id ): ?array
 ```
 
+**Note:** Phase 156 will update `get_fee()`, `calculate_fee()`, and related methods to read from the new category configuration instead of the legacy flat amount array.
+
 ## Season Transition
 
 On **July 1 of each year**, the season automatically transitions:
@@ -171,6 +273,90 @@ On **July 1 of each year**, the season automatically transitions:
 2. July 1, 2026: System automatically uses `2026-2027` as current season
 3. All fee calculations use new season rates
 4. Admin can now configure `2027-2028` as next season
+
+## Fee Category Configuration (v21.0+)
+
+**Introduced:** Phase 155 (v21.0)
+
+### Data Model
+
+Fee categories are stored per season in the `rondo_membership_fees_{season}` WordPress option. The option value is a slug-keyed PHP array where each value is a category object:
+
+```php
+get_option( 'rondo_membership_fees_2025-2026' )
+// Returns:
+[
+  'senior' => [
+    'label'      => 'Senior',
+    'amount'     => 255,
+    'age_min'    => 18,
+    'age_max'    => 99,
+    'is_youth'   => false,
+    'sort_order' => 40,
+  ],
+  'junior' => [
+    'label'      => 'Junior (Onder 18)',
+    'amount'     => 230,
+    'age_min'    => 12,
+    'age_max'    => 17,
+    'is_youth'   => true,
+    'sort_order' => 30,
+  ],
+  // ... more categories
+]
+```
+
+### Copy-Forward Mechanism
+
+When reading categories for a season that doesn't exist yet, the system automatically copies the entire category configuration from the previous season:
+
+**Example:**
+1. Current season is `2025-2026` (has categories configured)
+2. Admin navigates to settings for next season `2026-2027`
+3. System calls `get_categories_for_season( '2026-2027' )`
+4. Option `rondo_membership_fees_2026-2027` doesn't exist
+5. System calls `get_previous_season_key( '2026-2027' )` → returns `'2025-2026'`
+6. Reads option `rondo_membership_fees_2025-2026` (exists)
+7. Saves that data to `rondo_membership_fees_2026-2027`
+8. Returns the copied categories
+
+**Fallback:** If neither the requested season nor the previous season have data, returns empty array `[]`.
+
+This copy-forward ensures:
+- New seasons start with the same category structure as the previous season
+- Administrators can adjust amounts for inflation or policy changes
+- Category labels, age ranges, youth flags, and sort order carry forward consistently
+
+### Helper Methods
+
+```php
+$membership_fees = new \Rondo\Fees\MembershipFees();
+
+// Get all categories for a season (with copy-forward)
+$categories = $membership_fees->get_categories_for_season( '2025-2026' );
+// Returns: [ 'senior' => [...], 'junior' => [...], ... ]
+
+// Get a single category by slug
+$senior = $membership_fees->get_category( 'senior', '2025-2026' );
+// Returns: [ 'label' => 'Senior', 'amount' => 255, ... ] or null
+
+// Save categories for a season
+$updated = [
+  'senior' => [ 'label' => 'Senior', 'amount' => 275, ... ],
+  // ... other categories
+];
+$membership_fees->save_categories_for_season( $updated, '2025-2026' );
+
+// Calculate previous season key
+$prev = $membership_fees->get_previous_season_key( '2025-2026' );
+// Returns: '2024-2025'
+```
+
+### Migration
+
+**No automatic migration** from the legacy flat amount format to the new category object format. This is a single-club application, and the data will be manually populated when v21.0 is deployed.
+
+Existing code that reads fee amounts directly (e.g., `get_fee()`, `calculate_fee()`) will be updated in Phase 156 to read from the new category configuration.
 
 ## Fee Calculation
 
