@@ -197,6 +197,144 @@ const filters = {
 
 If "Toon oud-leden" is enabled when exporting, former members will be included in the export.
 
+## Contributie Logic
+
+Former members are handled specially in the membership fee (contributie) system. The key principle: **former members only appear in the fee list if they were active during the season** (lid-sinds before season end).
+
+### Season Eligibility
+
+The `is_former_member_in_season()` method determines if a former member should be included in a season's fee list:
+
+```php
+public function is_former_member_in_season( int $person_id, ?string $season = null ): bool {
+    $is_former = ( get_field( 'former_member', $person_id ) == true );
+    if ( ! $is_former ) {
+        return false;
+    }
+
+    $lid_sinds = get_field( 'lid-sinds', $person_id );
+    if ( empty( $lid_sinds ) ) {
+        return false; // Cannot determine without membership date
+    }
+
+    // Season ends on July 1 of the end year (e.g., 2026-07-01 for 2025-2026)
+    $season_end_year = (int) substr( $season, 5, 4 );
+    $season_end_date = strtotime( $season_end_year . '-07-01' );
+    $lid_sinds_ts = strtotime( $lid_sinds );
+
+    return ( $lid_sinds_ts < $season_end_date );
+}
+```
+
+**Eligibility criteria:**
+- **Included:** Former members whose `lid-sinds` is BEFORE the season end date (July 1)
+- **Excluded:** Former members whose `lid-sinds` is AFTER the season end date, or who have no `lid-sinds`
+
+**Examples (for season 2025-2026):**
+- Member joined 2025-09-01, left 2026-01-15 → **Included** (joined before 2026-07-01)
+- Member joined 2026-08-01, left 2026-12-15 → **Excluded** (joined after 2026-07-01)
+
+### Pro-Rata Calculation
+
+Former members use the **same pro-rata calculation as active members**. Their fee is based on when they **joined** (lid-sinds), not when they left:
+
+- Member who joined before season start (e.g., 2024-05-01) → 100% of base fee
+- Member who joined mid-season (e.g., 2025-12-01) → Pro-rata from December onward
+
+**Leaving the club does NOT create a second pro-rata calculation.** If a member joined in September and left in January, they still pay the September-onward fee.
+
+### Forecast Exclusion
+
+Former members are **always excluded** from fee forecasts (next season calculations):
+
+```php
+// In get_fee_list() and fetch_fee_data()
+if ( $forecast && $is_former ) {
+    continue; // Former members won't be members next season
+}
+```
+
+This prevents former members from appearing in budget projections for future seasons.
+
+### Family Discount Handling
+
+The family discount calculation (`build_family_groups()`) excludes ineligible former members:
+
+```php
+// In build_family_groups()
+$is_former = ( get_field( 'former_member', $person_id ) == true );
+if ( $is_former && ! $this->is_former_member_in_season( $person_id, $season ) ) {
+    continue; // Skip former members not in this season
+}
+```
+
+This ensures that:
+- Former members who left before the season don't incorrectly reduce family discounts
+- Only eligible former members (lid-sinds before season end) participate in family grouping
+
+### Cache Invalidation
+
+The fee cache is automatically cleared when the `former_member` field changes:
+
+```php
+// In includes/class-fee-cache-invalidator.php
+add_filter( 'acf/update_value/name=former_member', [ $this, 'invalidate_person_cache' ], 10, 3 );
+```
+
+This ensures that when rondo-sync marks a member as former, their fee is immediately recalculated with the new eligibility logic.
+
+### API Response Fields
+
+Fee API endpoints include the `is_former_member` flag in responses:
+
+**Fee list endpoint** (`/rondo/v1/fees`):
+```json
+{
+  "season": "2025-2026",
+  "members": [
+    {
+      "id": 123,
+      "first_name": "Jan",
+      "last_name": "Jansen",
+      "is_former_member": true,
+      "category": "senior",
+      "final_fee": 180.00,
+      ...
+    }
+  ]
+}
+```
+
+**Single person fee endpoint** (`/rondo/v1/fees/person/{id}`):
+```json
+{
+  "person_id": 123,
+  "season": "2025-2026",
+  "calculable": false,
+  "is_former_member": true,
+  "message": "Oud-lid valt niet binnen dit seizoen."
+}
+```
+
+**Calculation status** (`get_calculation_status()`):
+```php
+[
+    'is_former_member' => true,
+    'former_member_in_season' => false,
+    'calculable' => false,
+    'reason' => 'former_member_not_in_season',
+    ...
+]
+```
+
+### Google Sheets Export
+
+The Google Sheets export (`/rondo/v1/google-sheets/sync`) applies the same former member rules:
+
+- Eligible former members (lid-sinds before season end) are included
+- Ineligible former members are excluded
+- Forecast exports exclude all former members
+
 ## NULL-Safe Filtering Pattern
 
 The exclusion query uses a NULL-safe pattern to handle cases where the `former_member` meta field doesn't exist:
