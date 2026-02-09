@@ -2,7 +2,6 @@
 title: "Sync Architecture"
 ---
 
-
 Sportlink Club is the member administration system used by Dutch sports clubs, mandated by the KNVB (Royal Dutch Football Association). It is the single source of truth for member data, but it lacks APIs and has a limited, dated web interface. This tool extracts member data from Sportlink and syncs it to the systems where it's actually needed: Laposta for email marketing, Rondo Club (a WordPress site) for club management, and FreeScout for helpdesk support. It also pulls contribution data from Nikki, a separate financial system. The goal is to keep all downstream systems in sync with Sportlink automatically, so club volunteers never have to enter the same data twice.
 
 This document describes what data flows from where to where, which fields are synced, on what schedule, and how change detection works.
@@ -93,7 +92,7 @@ All pipelines use **hash-based change detection**. Each record gets a SHA-256 ha
 - Expensive work (API calls to Laposta/Rondo Club/FreeScout) only runs for actual changes
 - On a typical run with no changes, zero API calls are made
 
-The Functions pipeline takes this further: the daily run only downloads data for members updated in Sportlink within the last 2 days (plus VOG-filtered volunteers), avoiding the need to scrape all ~1000+ members every day.
+The Functions pipeline takes this further: the daily run only scrapes data for members updated in Sportlink within the last 2 days (plus VOG-filtered volunteers), avoiding the need to scrape all ~1000+ members every day.
 
 ### Rate Limiting and Delays
 
@@ -105,7 +104,7 @@ When API calls are needed, all pipelines insert delays between requests to avoid
 | Rondo Club WordPress API | Exponential backoff on errors | 1s, 2s, 4s on retries |
 | Rondo Club photo uploads | 2s between uploads | Both upload and delete operations |
 | Nikki to Rondo Club | 500ms between updates | |
-| Photo downloads | 200ms between downloads | 1s exponential backoff on errors |
+| Photo downloads (Sportlink) | 500ms-1.5s between members | Playwright-based, random jitter |
 | FreeScout API | Exponential backoff on errors | 1s, 2s, 4s on 5xx errors |
 | Sportlink browser scraping | 500ms-1.5s between members | Random jitter to avoid patterns |
 | Reverse sync (Sportlink) | 1-2s between members | Random jitter, exponential backoff on errors |
@@ -250,10 +249,11 @@ Source: `DateOfBirth`. Destination: `wp/v2/people` (person ACF field).
 
 ### Photo Sync
 
-Photos flow in two steps:
+Photos flow in three steps across two pipelines:
 
-1. **Download**: `photo_url` from Sportlink `MemberHeader` internal request -> saved to `photos/{knvb_id}.{ext}`
-2. **Upload**: `POST /wp-json/rondo/v1/people/{stadion_id}/photo` (multipart form-data)
+1. **Detection** (People Step 1): Bulk download detects `PersonImageDate` changes, sets `photo_state = 'pending_download'`
+2. **Download** (People Step 5): Playwright visits `/other` tab per member, captures `MemberHeader` for signed photo URL, downloads photo to `photos/{knvb_id}.{ext}`, sets `photo_state = 'downloaded'`
+3. **Upload** (People Step 6): `POST /wp-json/rondo/v1/people/{stadion_id}/photo` (multipart form-data), sets `photo_state = 'synced'`
 
 Photo states tracked in `stadion_members.photo_state`: `pending_download` -> `downloaded` -> `synced`. Removed photos go through `pending_delete` -> `no_photo`.
 
@@ -349,7 +349,7 @@ When a member is removed from a team, the entry is kept with `is_current: false`
 
 ## Pipeline 4: Functions (Commissies)
 
-Runs 4x daily (recent updates, 30 min before each people sync) and weekly (full). Scrapes committee/function memberships and free fields from Sportlink via browser automation. Running before the people sync ensures fresh free fields (FreeScout ID, VOG, financial block, photo URLs) are available.
+Runs 4x daily (recent updates, 30 min before each people sync) and weekly (full). Scrapes committee/function memberships and free fields from Sportlink via browser automation. Running before the people sync ensures fresh free fields (FreeScout ID, VOG, financial block) are available.
 
 ```mermaid
 graph TD
@@ -370,7 +370,7 @@ graph TD
 
 | Mode | Flag | Members Processed | Table Handling |
 |---|---|---|---|
-| Daily (recent) | *(default)* | Members with `LastUpdate` in last 2 days + VOG-filtered volunteers | Upsert only (preserves existing data) |
+| Daily (recent) | *(default)* | Members with `LastUpdate` in last 2 days + VOG-filtered volunteers | Upsert only (preserves existing) |
 | Weekly (full) | `--all` | All tracked members (~1069) | Clear + replace atomically |
 
 ### Sportlink to Rondo Club Commissies: Field Mapping
@@ -405,8 +405,8 @@ Scraped from the member's `/other` page via two internal Sportlink requests:
 | `MemberFreeFields` | `Remarks3.Value` | `freescout_id` | People pipeline -> Rondo Club `freescout-id` |
 | `MemberFreeFields` | `Remarks8.Value` | `vog_datum` | People pipeline -> Rondo Club `datum-vog` |
 | `MemberHeader` | `HasFinancialTransferBlockOwnClub` | `has_financial_block` | People pipeline -> Rondo Club `financiele-blokkade` |
-| `MemberHeader` | `Photo.Url` | `photo_url` | People pipeline -> photo download |
-| `MemberHeader` | `Photo.PhotoDate` | `photo_date` | People pipeline -> photo metadata |
+| `MemberHeader` | `Photo.Url` | `photo_url` | Stored but not used by Functions (photo download is in People Step 5) |
+| `MemberHeader` | `Photo.PhotoDate` | `photo_date` | Stored but not used by Functions (photo detection is in People Step 1) |
 
 ---
 

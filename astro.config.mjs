@@ -65,6 +65,7 @@ export default defineConfig({
 				{
 					label: 'Rondo Sync',
 					items: [
+						{ label: 'Installation', slug: 'sync/installation' },
 						{ label: 'Sync Architecture', slug: 'sync/architecture' },
 						{ label: 'Database Schema', slug: 'sync/database-schema' },
 						{ label: 'People Pipeline', slug: 'sync/pipeline-people' },
@@ -74,6 +75,9 @@ export default defineConfig({
 						{ label: 'FreeScout Pipeline', slug: 'sync/pipeline-freescout' },
 						{ label: 'Discipline Pipeline', slug: 'sync/pipeline-discipline' },
 						{ label: 'Reverse Sync', slug: 'sync/reverse-sync' },
+						{ label: 'Operations', slug: 'sync/operations' },
+						{ label: 'Troubleshooting', slug: 'sync/troubleshooting' },
+						{ label: 'Utility Scripts', slug: 'sync/utility-scripts' },
 					],
 				},
 			],

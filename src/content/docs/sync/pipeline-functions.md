@@ -2,7 +2,6 @@
 title: "Functions Pipeline"
 ---
 
-
 Scrapes committee and club-level function memberships from Sportlink, creates commissie posts in Rondo Club WordPress, and links members to commissies via work history. Also scrapes free fields (FreeScout ID, VOG date, financial block) used by the People pipeline.
 
 ## Schedule
@@ -11,7 +10,7 @@ Runs on **two schedules**:
 
 | Mode | Schedule | Command | Members Processed |
 |------|----------|---------|-------------------|
-| Recent | 4x daily (7:30, 10:30, 13:30, 16:30) | `scripts/sync.sh functions` | Only members with `LastUpdate` in last 2 days + VOG-filtered volunteers |
+| Recent | 4x daily (7:30, 10:30, 13:30, 16:30) | `scripts/sync.sh functions` | Members with `LastUpdate` in last 2 days + VOG-filtered volunteers |
 | Full | Weekly Sunday 1:00 AM | `scripts/sync.sh functions --all` | All tracked members (~1000+) |
 
 The recent sync runs 30 minutes before each People sync to ensure fresh free fields are available.
@@ -44,7 +43,7 @@ pipelines/sync-functions.js
 1. Launches headless Chromium via Playwright
 2. Logs into Sportlink Club
 3. Determines which members to process:
-   - **Recent mode** (`recentOnly: true`, default): Only members with `LastUpdate` within the last N days (default 2), plus VOG-filtered volunteers from Rondo Club API
+   - **Recent mode** (`recentOnly: true`, default): Members with `LastUpdate` within the last N days (default 2), plus VOG-filtered volunteers from Rondo Club API
    - **Full mode** (`recentOnly: false`, `--all` flag): All tracked members from `stadion_members`
 4. For each member, scrapes two pages:
    - **`/functions` tab**: Extracts committee memberships and club-level functions
@@ -128,8 +127,8 @@ These are scraped during the functions pipeline but consumed by the People pipel
 | `MemberFreeFields` | `Remarks3.Value` | `freescout_id` | `freescout-id` |
 | `MemberFreeFields` | `Remarks8.Value` | `vog_datum` | `datum-vog` |
 | `MemberHeader` | `HasFinancialTransferBlockOwnClub` | `has_financial_block` | `financiele-blokkade` |
-| `MemberHeader` | `Photo.Url` | `photo_url` | *(used by photo download)* |
-| `MemberHeader` | `Photo.PhotoDate` | `photo_date` | *(used by photo change detection)* |
+
+Note: `MemberHeader` also returns `Photo.Url` and `Photo.PhotoDate`, which are stored in `sportlink_member_free_fields` but photo downloading is handled by the People pipeline (Step 5), not the Functions pipeline.
 
 ## Database Tables Used
 
