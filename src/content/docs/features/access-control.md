@@ -7,29 +7,12 @@ This document describes the access control system in Rondo Club.
 
 ## Overview
 
-Rondo Club uses a simple **shared access model**: all approved users can see and edit all data. This makes it ideal for teams that collaborate on the same contact database.
+Rondo Club uses a simple **shared access model**: all authenticated users can see and edit all data. This makes it ideal for teams that collaborate on the same contact database.
 
 **Key principles:**
 
-1. **Unapproved users see nothing** - New users must be approved by an administrator before they can access any data
-2. **Approved users see everything** - Once approved, users can view and edit all people, teams, dates, and todos
-3. **Trashed posts are hidden** - Posts in the trash are not accessible via the frontend
-
-## User Approval
-
-New users who register or are created in WordPress start as unapproved. An administrator must approve them before they can access Rondo Club data.
-
-**Checking approval status:**
-
-```php
-// Check if a user is approved
-$is_approved = Rondo\Core\UserRoles::is_user_approved( $user_id );
-
-// Approve a user
-Rondo\Core\UserRoles::approve_user( $user_id );
-```
-
-Administrators (users with `manage_options` capability) are always considered approved.
+1. **Authenticated users see everything** - Once logged in, users can view and edit all people, teams, dates, and todos
+2. **Trashed posts are hidden** - Posts in the trash are not accessible via the frontend
 
 ## Implementation
 
@@ -51,31 +34,25 @@ The class intercepts data access at multiple levels:
 
 | Hook | Purpose |
 |------|---------|
-| `pre_get_posts` | Blocks unapproved users from seeing any posts |
-| `rest_{post_type}_query` | Blocks unapproved users from REST API list queries |
-| `rest_prepare_{post_type}` | Verifies approval for single item REST access |
+| `pre_get_posts` | Blocks unauthenticated users from seeing any posts |
+| `rest_{post_type}_query` | Blocks unauthenticated users from REST API list queries |
+| `rest_prepare_{post_type}` | Verifies authentication for single item REST access |
 
 ### Access Check Methods
-
-**Check if user is approved:**
-
-```php
-$access_control = new Rondo\Core\AccessControl();
-$can_access = $access_control->is_user_approved( $user_id );
-```
 
 **Check if user can access a specific post:**
 
 ```php
+$access_control = new Rondo\Core\AccessControl();
 $can_access = $access_control->user_can_access_post( $post_id, $user_id );
-// Returns false if: user not approved, post trashed, or post doesn't exist
+// Returns false if: user not logged in, post trashed, or post doesn't exist
 ```
 
 **Get permission level:**
 
 ```php
 $permission = $access_control->get_user_permission( $post_id, $user_id );
-// Returns: 'owner' (if user created the post), 'editor' (if approved but not author), or false
+// Returns: 'owner' (if user created the post), 'editor' (if logged in but not author), or false
 ```
 
 ## Bypassing Access Control
@@ -114,11 +91,10 @@ The role is removed on theme deactivation (users are reassigned to Subscriber).
 ## Security Considerations
 
 1. **All access control is enforced server-side** - Never trust client-side checks
-2. **REST API is protected** - Unapproved users receive 403 errors
-3. **User approval is required** - New users cannot access any data until approved
+2. **REST API is protected** - Unauthenticated users receive 403 errors
 
 ## Related Documentation
 
-- [Multi-User System](./multi-user.md) - User management and approval
+- [Multi-User System](./multi-user.md) - User management
 - [Data Model](./data-model.md) - Post types and field definitions
 - [REST API](./rest-api.md) - API endpoints

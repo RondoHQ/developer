@@ -139,13 +139,6 @@ Addresses are stored as a repeater field:
 }
 ```
 
-### Story (How We Met)
-
-| Field | Type | Description | Format |
-|-------|------|-------------|--------|
-| `acf.how_we_met` | string | How you met this person | Free text |
-| `acf.met_date` | string | When you met | `Y-m-d` (e.g., "2024-06-15") |
-
 ### Team History
 
 Link people to teams with their role history:
@@ -356,8 +349,6 @@ X-WP-Nonce: {nonce}
     "pronouns": "",
     "birthdate": "",
     "photo_gallery": [],
-    "how_we_met": "",
-    "met_date": "",
     "contact_info": [...],
     "addresses": [...],
     "work_history": [],
@@ -624,7 +615,7 @@ if ($person_id && !is_wp_error($person_id)) {
 }
 
 // Update a person
-update_field('how_we_met', 'Ontmoet op een conferentie', $person_id);
+update_field('nickname', 'Jan-Jan', $person_id);
 ```
 
 ### cURL (with Application Password)
@@ -649,8 +640,7 @@ curl -X PUT "https://your-site.com/wp-json/wp/v2/people/456" \
   -H "Content-Type: application/json" \
   -d '{
     "acf": {
-      "first_name": "Johannes",
-      "how_we_met": "Ontmoet op een conferentie"
+      "first_name": "Johannes"
     }
   }'
 

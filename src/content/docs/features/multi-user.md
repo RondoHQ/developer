@@ -7,38 +7,14 @@ This document describes Rondo Club's multi-user setup and user management.
 
 ## Overview
 
-Rondo Club uses a **shared access model**: all approved users can see and edit all data. This makes it ideal for teams collaborating on a shared contact database.
+Rondo Club uses a **shared access model**: all authenticated users can see and edit all data. This makes it ideal for teams collaborating on a shared contact database.
 
 **Key features:**
 
 - Multiple users can access the same Rondo Club installation
-- All approved users see all contacts, teams, dates, and todos
-- New users require administrator approval before accessing data
+- All logged-in users see all contacts, teams, dates, and todos
+- Users are created by administrators (no self-registration)
 - User activity is tracked via post author and note author fields
-
-## User Approval
-
-New users cannot access any data until an administrator approves them.
-
-### Approving Users
-
-1. Go to **Settings > User Approval** in Rondo Club
-2. Review pending users
-3. Click **Approve** to grant access
-
-Alternatively, use WP-CLI:
-
-```bash
-wp rondo approve-user <user_id>
-```
-
-### Approval Status
-
-| Status | Can Access Data |
-|--------|-----------------|
-| Approved | Yes - full access to all data |
-| Pending | No - sees empty lists |
-| Administrators | Always approved automatically |
 
 ## User Roles
 
@@ -62,15 +38,14 @@ Rondo Club creates a custom WordPress role called **"Rondo User"** (`rondo_user`
 
 WordPress administrators (`manage_options` capability):
 
-- Always approved automatically
 - Full access in both frontend and WordPress admin
-- Can approve/reject other users
+- Can manage other users
 
 ## Collaborative Features
 
 ### Shared Data
 
-All approved users share:
+All users share:
 
 - **People** - All contact records
 - **Teams** - All team/company records

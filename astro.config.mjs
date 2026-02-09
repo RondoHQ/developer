@@ -52,7 +52,6 @@ export default defineConfig({
 					items: [
 						{ label: 'CardDAV Sync', slug: 'integrations/carddav' },
 						{ label: 'iCal Feed', slug: 'integrations/ical-feed' },
-						{ label: 'Contact Import', slug: 'integrations/import' },
 					],
 				},
 				{

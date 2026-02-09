@@ -229,7 +229,7 @@ Get all people who work or worked at a team.
 
 Returns available filter options for the People list with counts. Options are derived dynamically from database values.
 
-**Authentication:** Required (approved user)
+**Authentication:** Required (authenticated user)
 
 **Response:**
 ```json
@@ -942,6 +942,5 @@ When no option is set, hardcoded defaults from `VolunteerStatus` class are used.
 
 - [Access Control](./access-control.md) - How permissions work
 - [Data Model](./data-model.md) - Post types and fields
-- [Import](./import.md) - Contact import endpoints
 - [VOG Filtered People](./api-vog-filtered-people.md) - VOG tab endpoint with KNVB IDs and volunteer filters
 

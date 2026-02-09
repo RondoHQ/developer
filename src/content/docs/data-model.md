@@ -31,8 +31,6 @@ Represents individual contacts in the CRM.
 | Gender | `gender` | select | Options: male, female, non_binary, other, prefer_not_to_say |
 | Photo Gallery | `photo_gallery` | gallery | Up to 50 photos, first is profile photo |
 | Favorite | `is_favorite` | true_false | Mark as favorite contact |
-| How We Met | `how_we_met` | textarea | Story of how you met |
-| When We Met | `met_date` | date_picker | Date you first met (Y-m-d) |
 | Contact Info | `contact_info` | repeater | Contact methods (see below) |
 | Addresses | `addresses` | repeater | Physical addresses (see below) |
 | Work History | `work_history` | repeater | Employment history (see below) |

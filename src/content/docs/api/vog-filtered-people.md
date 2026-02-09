@@ -9,7 +9,7 @@ This document describes how to retrieve the list of volunteers who need a new or
 
 **GET** `/rondo/v1/people/filtered`
 
-**Permission:** Approved users only (`check_user_approved`)
+**Permission:** Authenticated users only
 
 ## VOG Tab Parameters
 
