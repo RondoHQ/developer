@@ -105,6 +105,8 @@ Each season option stored a simple array of fee types:
 - `age_classes` (array): Sportlink AgeClassDescription strings (e.g., `["Onder 9", "Onder 10"]`). Empty array acts as catch-all for any age class not matched by other categories.
 - `is_youth` (bool): Whether category is eligible for family discount
 - `sort_order` (int): Display order in UI (lower = earlier)
+- `matching_teams` (array, optional): Team post IDs (integers) that trigger this category. Empty/absent = not team-based.
+- `matching_werkfuncties` (array, optional): Werkfunctie strings (e.g., `["Donateur"]`) that trigger this category. Empty/absent = not werkfunctie-based.
 
 **Age Class Matching (Phase 156+):**
 
@@ -116,6 +118,45 @@ Age class matching uses exact string comparison against Sportlink's `leeftijdsgr
 4. If no category matches, uses first category with empty `age_classes` array (catch-all)
 
 This enables flexible age-based fee tiers that align exactly with Sportlink's age classification system.
+
+**Team and Werkfunctie Matching (Phase 161+):**
+
+Team and werkfunctie matching allows categories to be assigned based on organizational role rather than age:
+
+- **Team matching (`matching_teams`)**: Array of team post IDs. Person matches if ANY of their teams appears in this array (not ALL).
+- **Werkfunctie matching (`matching_werkfuncties`)**: Array of werkfunctie strings. Person matches if ANY werkfunctie matches (case-insensitive comparison).
+
+**Priority order:**
+1. Youth categories (age class-based)
+2. Team matching (if person's teams match category's `matching_teams`)
+3. Werkfunctie matching (if person's werkfunctie matches category's `matching_werkfuncties`)
+4. Age class fallback (catch-all categories)
+
+**Example:**
+```php
+'recreant' => [
+  'label'        => 'Recreant',
+  'amount'       => 65,
+  'age_classes'  => [],  // Empty = not age-based
+  'matching_teams' => [123, 456, 789],  // Team post IDs for recreational teams
+  'is_youth'     => false,
+  'sort_order'   => 50,
+],
+'donateur' => [
+  'label'        => 'Donateur',
+  'amount'       => 55,
+  'age_classes'  => [],
+  'matching_werkfuncties' => ['Donateur'],  // Werkfunctie string from ACF
+  'is_youth'     => false,
+  'sort_order'   => 60,
+],
+```
+
+**Migration behavior:**
+On first load after upgrade to v21.1:
+- Existing 'recreant' categories automatically populated with recreational team IDs from database
+- Existing 'donateur' categories automatically populated with `['Donateur']` werkfunctie
+- Other categories get empty arrays (no team/werkfunctie matching)
 
 ## Migration Behavior
 
@@ -216,6 +257,8 @@ Returns category configuration for both current and next season.
 - `age_classes` (array): Sportlink age class strings (e.g., `["Onder 9"]`). Empty array = catch-all.
 - `is_youth` (bool): Whether category is eligible for family discount
 - `sort_order` (int): Display order (lower = earlier)
+- `matching_teams` (array, optional): Team post IDs that trigger this category
+- `matching_werkfuncties` (array, optional): Werkfunctie strings that trigger this category
 
 ### POST `/rondo/v1/membership-fees/settings`
 
@@ -263,6 +306,10 @@ Updates category configuration for a specific season using full replacement patt
 - `age_classes` (array): Array of age class strings (can be empty)
 - `is_youth` (bool): Family discount eligibility
 - `sort_order` (int): Display order
+
+**Category Object Optional Fields:**
+- `matching_teams` (array): Team post IDs (integers). Defaults to empty array.
+- `matching_werkfuncties` (array): Werkfunctie strings. Defaults to empty array.
 
 **Full Replacement Pattern:**
 The `categories` parameter completely replaces the existing configuration for the season. To preserve existing categories, include them in the request. To delete a category, omit it. To reset all categories, send an empty object `{}`.
@@ -347,6 +394,26 @@ Validation distinguishes between **errors** (block save) and **warnings** (infor
 ```
 
 **Note:** Warnings are included in the success response for transparency but do not block the save.
+
+### GET `/rondo/v1/werkfuncties/available`
+
+Returns distinct werkfunctie values from all people in the database for use in admin UI.
+
+**Permission:** Admin users only
+
+**Response:**
+```json
+[
+  "Donateur",
+  "Trainer",
+  "Scheidsrechter",
+  "Bestuurslid"
+]
+```
+
+**Implementation:** Queries all people with `werkfuncties` ACF meta, unserializes the data (ACF repeater stored as serialized array), extracts unique non-empty values, and returns sorted alphabetically.
+
+**Use case:** Provides available options for werkfunctie multi-select in fee category settings UI (Phase 161+).
 
 ### GET `/rondo/v1/fees`
 
@@ -610,11 +677,23 @@ Existing code that reads fee amounts directly (e.g., `get_fee()`, `calculate_fee
 
 ### Base Fee Determination
 
-Priority order:
-1. **Youth categories** (mini/pupil/junior): Based on `leeftijdsgroep` ACF field
-2. **Senior**: Regular senior fee (default)
-3. **Recreant**: Senior with only recreational teams
-4. **Donateur**: Only if no valid age group and no teams
+**Priority order (Phase 161+):**
+1. **Youth categories**: Based on `leeftijdsgroep` ACF field (age class matching via `age_classes` arrays)
+2. **Team matching**: If person's teams match any category's `matching_teams` array
+3. **Werkfunctie matching**: If person's werkfunctie matches any category's `matching_werkfuncties` array
+4. **Age class fallback**: First category with empty `age_classes` array (catch-all)
+
+**Pre-v21.1 behavior (hardcoded):**
+1. Youth categories (mini/pupil/junior): Based on `leeftijdsgroep` ACF field
+2. Senior: Regular senior fee (default)
+3. Recreant: Senior with only recreational teams (hardcoded team check)
+4. Donateur: Only if no valid age group and no teams (hardcoded werkfunctie check)
+
+**Deprecated methods:**
+- `is_recreational_team()` — Replaced by config-driven `matching_teams`
+- `is_donateur()` — Replaced by config-driven `matching_werkfuncties`
+
+Both methods are kept for migration purposes only and marked `@deprecated`.
 
 ### Family Discounts
 
@@ -809,6 +888,7 @@ The following constants, methods, and patterns were removed in v21.0 (Phase 156)
 
 ## Version History
 
+- **v21.1** (2026-02-09, Phase 161): Configurable team and werkfunctie matching rules with admin UI, migration helpers, and werkfuncties/available endpoint
 - **v21.1** (2026-02-09, Phase 160): Configurable family discount percentages per season with copy-forward pattern and REST API integration
 - **v21.0** (2026-02-09, Phase 157): REST API updates with full category CRUD, structured validation (errors vs warnings), and category metadata in fee list endpoint
 - **v21.0** (2026-02-08, Phase 156): Config-driven fee calculation with `age_classes` arrays and dynamic helper methods
