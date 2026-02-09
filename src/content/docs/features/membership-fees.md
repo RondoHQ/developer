@@ -190,6 +190,10 @@ Returns category configuration for both current and next season.
         "is_youth": false,
         "sort_order": 60
       }
+    },
+    "family_discount": {
+      "second_child_percent": 25,
+      "third_child_percent": 50
     }
   },
   "next_season": {
@@ -197,6 +201,10 @@ Returns category configuration for both current and next season.
     "categories": {
       "senior": { /* ... same structure ... */ },
       "junior": { /* ... */ }
+    },
+    "family_discount": {
+      "second_child_percent": 25,
+      "third_child_percent": 50
     }
   }
 }
@@ -234,13 +242,20 @@ Updates category configuration for a specific season using full replacement patt
       "is_youth": true,
       "sort_order": 30
     }
+  },
+  "family_discount": {
+    "second_child_percent": 30,
+    "third_child_percent": 60
   }
 }
 ```
 
 **Required Fields:**
 - `season` (string): Must be current season or next season key
-- `categories` (object): Complete category configuration for the season
+
+**Optional Fields:**
+- `categories` (object): Complete category configuration for the season. If provided, replaces all categories for the season. If omitted or null, categories are not modified.
+- `family_discount` (object): Family discount percentages. If provided, replaces discount config for the season. If omitted or null, discount config is not modified.
 
 **Category Object Required Fields:**
 - `label` (string): Non-empty display name
@@ -258,20 +273,22 @@ Validation distinguishes between **errors** (block save) and **warnings** (infor
 
 **Errors (block save):**
 - Season not current or next season
-- `categories` is not an object
+- `categories` is not an object (if provided)
 - Duplicate category slugs within same season
 - Category missing `label`, `amount`, or required fields
 - Invalid `amount` (non-numeric or negative)
 - Invalid slug format (contains spaces, special characters). Error message suggests normalized alternative via `sanitize_title()`.
+- `family_discount` percentages not in 0-100 range (if provided)
 
 **Warnings (allow save):**
 - Duplicate age class assignments (same age class in multiple categories). Warning indicates which categories conflict. Admin may intentionally create graduated fee structures.
+- `second_child_percent >= third_child_percent` (illogical but allowed for flexibility)
 
 **Validation Response (on error):**
 ```json
 {
-  "code": "invalid_categories",
-  "message": "Category configuration validation failed",
+  "code": "invalid_settings",
+  "message": "Settings validation failed",
   "data": {
     "errors": [
       {
@@ -281,6 +298,10 @@ Validation distinguishes between **errors** (block save) and **warnings** (infor
       {
         "field": "categories.my slug",
         "message": "Invalid slug format. Suggestion: 'my-slug'"
+      },
+      {
+        "field": "family_discount.second_child_percent",
+        "message": "Second child discount must be between 0 and 100"
       }
     ],
     "warnings": [
@@ -288,6 +309,10 @@ Validation distinguishes between **errors** (block save) and **warnings** (infor
         "field": "categories",
         "message": "Age class 'Onder 9' is assigned to multiple categories",
         "categories": ["mini", "pupil"]
+      },
+      {
+        "field": "family_discount",
+        "message": "Second child discount (30%) is greater than or equal to third child discount (25%)"
       }
     ]
   }
@@ -299,17 +324,23 @@ Validation distinguishes between **errors** (block save) and **warnings** (infor
 {
   "current_season": {
     "key": "2025-2026",
-    "categories": { /* updated categories */ }
+    "categories": { /* updated categories */ },
+    "family_discount": { /* updated discount config */ }
   },
   "next_season": {
     "key": "2026-2027",
-    "categories": { /* categories */ }
+    "categories": { /* categories */ },
+    "family_discount": { /* discount config */ }
   },
   "warnings": [
     {
       "field": "categories",
       "message": "Age class 'Onder 9' is assigned to multiple categories",
       "categories": ["mini", "pupil"]
+    },
+    {
+      "field": "family_discount",
+      "message": "Second child discount (30%) is greater than or equal to third child discount (25%)"
     }
   ]
 }
@@ -587,12 +618,74 @@ Priority order:
 
 ### Family Discounts
 
-Applied to youth members only:
+Applied to youth members only (categories with `is_youth: true`):
 - 1st child: 100% (full fee)
-- 2nd child: 75% (25% discount)
-- 3rd+ child: 50% (50% discount)
+- 2nd child: Configurable (default 25% discount = 75% of base)
+- 3rd+ child: Configurable (default 50% discount = 50% of base)
 
 Family grouping: Postal code + house number from addresses field
+
+#### Configurable Discount Percentages (v21.1+)
+
+**Introduced:** Phase 160 (v21.1.0)
+
+Discount percentages are stored per season in separate WordPress options to avoid conflicts with category saves:
+
+**Option Key Format:** `rondo_family_discount_{season}` (e.g., `rondo_family_discount_2025-2026`)
+
+**Option Structure:**
+```php
+[
+  'second_child_percent' => 25,  // 0-100 (25 = 25% discount, user pays 75%)
+  'third_child_percent'  => 50,  // 0-100 (50 = 50% discount, user pays 50%)
+]
+```
+
+**Helper Methods:**
+
+```php
+$membership_fees = new \Rondo\Fees\MembershipFees();
+
+// Get discount config for a season (with copy-forward from previous season)
+$config = $membership_fees->get_family_discount_config( '2025-2026' );
+// Returns: [ 'second_child_percent' => 25, 'third_child_percent' => 50 ]
+
+// Save discount config for a season
+$membership_fees->save_family_discount_config(
+  [ 'second_child_percent' => 30, 'third_child_percent' => 60 ],
+  '2025-2026'
+);
+
+// Calculate discount rate for a family position (existing method, now reads config)
+$rate = $membership_fees->get_family_discount_rate( 2, '2025-2026' );
+// Returns: 0.25 (for 2nd child with 25% discount) or 0.5 (for 3rd+ child)
+```
+
+**Copy-Forward Behavior:**
+
+When `get_family_discount_config()` is called for a season with no existing config:
+1. Fetches config from the previous season (via `get_previous_season_key()`)
+2. If previous season has config, copies it to the new season and returns
+3. If no previous season config exists, returns defaults: `['second_child_percent' => 25, 'third_child_percent' => 50]`
+
+This ensures discount policy carries forward year-to-year, matching the category copy-forward pattern.
+
+**API Integration:**
+
+The discount configuration is included in the membership fee settings REST API endpoints:
+
+- **GET `/rondo/v1/membership-fees/settings`**: Includes `family_discount` field for both seasons
+- **POST `/rondo/v1/membership-fees/settings`**: Accepts optional `family_discount` parameter alongside `categories`
+
+**Validation:**
+
+- `second_child_percent` must be 0-100
+- `third_child_percent` must be 0-100
+- **Warning (not error):** If `second_child_percent >= third_child_percent`, API returns warning to guide typical use case but allows save for flexibility
+
+**Default Behavior:**
+
+If no config exists for a season and no previous season to copy from, the system falls back to hardcoded defaults (25%/50%). This ensures backward compatibility with existing installations.
 
 ### Pro-Rata Adjustment
 
@@ -716,6 +809,7 @@ The following constants, methods, and patterns were removed in v21.0 (Phase 156)
 
 ## Version History
 
+- **v21.1** (2026-02-09, Phase 160): Configurable family discount percentages per season with copy-forward pattern and REST API integration
 - **v21.0** (2026-02-09, Phase 157): REST API updates with full category CRUD, structured validation (errors vs warnings), and category metadata in fee list endpoint
 - **v21.0** (2026-02-08, Phase 156): Config-driven fee calculation with `age_classes` arrays and dynamic helper methods
 - **v21.0** (2026-02-08, Phase 155): Per-season fee category configuration with copy-forward
