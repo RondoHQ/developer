@@ -85,6 +85,14 @@ The nonce is available in `window.rondoConfig.nonce` when logged in to Rondo Clu
 | `acf.pronouns` | string | Pronouns | e.g., "hij/hem", "zij/haar" |
 | `acf.birthdate` | string | Birthdate | `Y-m-d` format (e.g., "1982-02-06"). Read-only in UI, synced from Sportlink |
 
+### Membership Status
+
+| Field | Type | Description | Values |
+|-------|------|-------------|--------|
+| `acf.former_member` | boolean | Whether the person is a former member (oud-lid) | `true`, `false` (default) |
+
+**Note:** This field is managed by rondo-sync. When a member is no longer found in Sportlink data, they are automatically marked as a former member. The field defaults to `false` for all new and active members.
+
 ### Contact Information
 
 Contact info is stored as a repeater field with multiple entries:
@@ -275,6 +283,7 @@ X-WP-Nonce: {nonce}
     "last_name": "de Vries",
     "gender": "male",
     "birthdate": "",
+    "former_member": false,
     "contact_info": [...],
     "addresses": [...],
     "work_history": [],
@@ -325,6 +334,14 @@ X-WP-Nonce: {nonce}
 **Response (200 OK):**
 Returns the full updated person object.
 
+**Example - Mark a member as former (used by rondo-sync):**
+```bash
+curl -X PUT "https://your-site.com/wp-json/wp/v2/people/456" \
+  -u "username:xxxx xxxx xxxx xxxx xxxx xxxx" \
+  -H "Content-Type: application/json" \
+  -d '{"acf": {"former_member": true}}'
+```
+
 ---
 
 ## Get a Person
@@ -348,6 +365,7 @@ X-WP-Nonce: {nonce}
     "gender": "male",
     "pronouns": "",
     "birthdate": "",
+    "former_member": false,
     "photo_gallery": [],
     "contact_info": [...],
     "addresses": [...],
