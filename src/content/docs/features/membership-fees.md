@@ -138,65 +138,254 @@ The system will:
 
 ### GET `/rondo/v1/membership-fees/settings`
 
-Returns settings for both current and next season.
+Returns category configuration for both current and next season.
+
+**Permission:** Admin users only
 
 **Response:**
 ```json
 {
   "current_season": {
     "key": "2025-2026",
-    "fees": {
-      "mini": 130,
-      "pupil": 180,
-      "junior": 230,
-      "senior": 255,
-      "recreant": 65,
-      "donateur": 55
+    "categories": {
+      "senior": {
+        "label": "Senior",
+        "amount": 255,
+        "age_classes": [],
+        "is_youth": false,
+        "sort_order": 40
+      },
+      "junior": {
+        "label": "Junior (Onder 18)",
+        "amount": 230,
+        "age_classes": ["Onder 18"],
+        "is_youth": true,
+        "sort_order": 30
+      },
+      "pupil": {
+        "label": "Pupil (Onder 12)",
+        "amount": 180,
+        "age_classes": ["Onder 9", "Onder 10", "Onder 11", "Onder 12"],
+        "is_youth": true,
+        "sort_order": 20
+      },
+      "mini": {
+        "label": "Mini (Onder 8)",
+        "amount": 130,
+        "age_classes": ["Onder 5", "Onder 6", "Onder 7", "Onder 8"],
+        "is_youth": true,
+        "sort_order": 10
+      },
+      "recreant": {
+        "label": "Recreant",
+        "amount": 65,
+        "age_classes": [],
+        "is_youth": false,
+        "sort_order": 50
+      },
+      "donateur": {
+        "label": "Donateur",
+        "amount": 55,
+        "age_classes": [],
+        "is_youth": false,
+        "sort_order": 60
+      }
     }
   },
   "next_season": {
     "key": "2026-2027",
-    "fees": {
-      "mini": 130,
-      "pupil": 180,
-      "junior": 230,
-      "senior": 255,
-      "recreant": 65,
-      "donateur": 55
+    "categories": {
+      "senior": { /* ... same structure ... */ },
+      "junior": { /* ... */ }
     }
   }
 }
 ```
 
+**Category Object Fields:**
+- `label` (string): Display name for UI
+- `amount` (int): Fee amount in euros
+- `age_classes` (array): Sportlink age class strings (e.g., `["Onder 9"]`). Empty array = catch-all.
+- `is_youth` (bool): Whether category is eligible for family discount
+- `sort_order` (int): Display order (lower = earlier)
+
 ### POST `/rondo/v1/membership-fees/settings`
 
-Updates settings for a specific season.
+Updates category configuration for a specific season using full replacement pattern.
+
+**Permission:** Admin users only
 
 **Request Body:**
 ```json
 {
   "season": "2025-2026",
-  "mini": 130,
-  "pupil": 180,
-  "junior": 230,
-  "senior": 255,
-  "recreant": 65,
-  "donateur": 55
+  "categories": {
+    "senior": {
+      "label": "Senior",
+      "amount": 275,
+      "age_classes": [],
+      "is_youth": false,
+      "sort_order": 40
+    },
+    "junior": {
+      "label": "Junior (Onder 18)",
+      "amount": 245,
+      "age_classes": ["Onder 18"],
+      "is_youth": true,
+      "sort_order": 30
+    }
+  }
 }
 ```
 
 **Required Fields:**
-- `season` (string) - Must be either current season or next season key
+- `season` (string): Must be current season or next season key
+- `categories` (object): Complete category configuration for the season
 
-**Optional Fields:**
-- Any fee type keys (updates only provided fields)
+**Category Object Required Fields:**
+- `label` (string): Non-empty display name
+- `amount` (int/float): Non-negative fee amount
+- `age_classes` (array): Array of age class strings (can be empty)
+- `is_youth` (bool): Family discount eligibility
+- `sort_order` (int): Display order
+
+**Full Replacement Pattern:**
+The `categories` parameter completely replaces the existing configuration for the season. To preserve existing categories, include them in the request. To delete a category, omit it. To reset all categories, send an empty object `{}`.
 
 **Validation:**
-- Season must match current or next season
-- Fee amounts must be numeric and non-negative
+
+Validation distinguishes between **errors** (block save) and **warnings** (informational):
+
+**Errors (block save):**
+- Season not current or next season
+- `categories` is not an object
+- Duplicate category slugs within same season
+- Category missing `label`, `amount`, or required fields
+- Invalid `amount` (non-numeric or negative)
+- Invalid slug format (contains spaces, special characters). Error message suggests normalized alternative via `sanitize_title()`.
+
+**Warnings (allow save):**
+- Duplicate age class assignments (same age class in multiple categories). Warning indicates which categories conflict. Admin may intentionally create graduated fee structures.
+
+**Validation Response (on error):**
+```json
+{
+  "code": "invalid_categories",
+  "message": "Category configuration validation failed",
+  "data": {
+    "errors": [
+      {
+        "field": "categories.junior.amount",
+        "message": "Amount must be a non-negative number"
+      },
+      {
+        "field": "categories.my slug",
+        "message": "Invalid slug format. Suggestion: 'my-slug'"
+      }
+    ],
+    "warnings": [
+      {
+        "field": "categories",
+        "message": "Age class 'Onder 9' is assigned to multiple categories",
+        "categories": ["mini", "pupil"]
+      }
+    ]
+  }
+}
+```
+
+**Response (on success):**
+```json
+{
+  "current_season": {
+    "key": "2025-2026",
+    "categories": { /* updated categories */ }
+  },
+  "next_season": {
+    "key": "2026-2027",
+    "categories": { /* categories */ }
+  },
+  "warnings": [
+    {
+      "field": "categories",
+      "message": "Age class 'Onder 9' is assigned to multiple categories",
+      "categories": ["mini", "pupil"]
+    }
+  ]
+}
+```
+
+**Note:** Warnings are included in the success response for transparency but do not block the save.
+
+### GET `/rondo/v1/fees`
+
+Returns calculated membership fees for all members with optional category metadata.
+
+**Query Parameters:**
+- `forecast` (bool, optional): If true, returns fees for next season with 100% pro-rata
+- `season` (string, optional): Season key (e.g., `2025-2026`). Defaults to current season. Ignored if `forecast=true`.
 
 **Response:**
-Same structure as GET endpoint (returns both seasons after update)
+```json
+{
+  "season": "2025-2026",
+  "forecast": false,
+  "total": 150,
+  "members": [
+    {
+      "id": 123,
+      "first_name": "Jan",
+      "last_name": "Jansen",
+      "category": "junior",
+      "leeftijdsgroep": "Onder 18",
+      "base_fee": 230,
+      "family_discount_rate": 0.25,
+      "family_discount_amount": 57.50,
+      "fee_after_discount": 172.50,
+      "prorata_percentage": 1.0,
+      "final_fee": 172.50,
+      "family_key": "1234AB-10",
+      "family_size": 2,
+      "family_position": 2,
+      "lid_sinds": "2023-08-15",
+      "from_cache": true,
+      "calculated_at": "2026-02-09 10:30:00",
+      "nikki_total": 172.50,
+      "nikki_saldo": 0.00
+    }
+  ],
+  "categories": {
+    "mini": {
+      "label": "Mini (Onder 8)",
+      "sort_order": 10,
+      "is_youth": true
+    },
+    "pupil": {
+      "label": "Pupil (Onder 12)",
+      "sort_order": 20,
+      "is_youth": true
+    },
+    "junior": {
+      "label": "Junior (Onder 18)",
+      "sort_order": 30,
+      "is_youth": true
+    },
+    "senior": {
+      "label": "Senior",
+      "sort_order": 40,
+      "is_youth": false
+    }
+  }
+}
+```
+
+**Categories Metadata (Phase 157+):**
+The `categories` key provides display metadata for the frontend:
+- `label`: Category name for badges/headers
+- `sort_order`: Column ordering (lower = leftmost)
+- `is_youth`: Family discount eligibility (for grouping/filtering)
+
+**Note:** Full category configuration (including `amount` and `age_classes`) is available via the settings endpoint. The fee list endpoint returns only display-relevant fields.
 
 ## PHP Service Methods
 
@@ -527,6 +716,7 @@ The following constants, methods, and patterns were removed in v21.0 (Phase 156)
 
 ## Version History
 
+- **v21.0** (2026-02-09, Phase 157): REST API updates with full category CRUD, structured validation (errors vs warnings), and category metadata in fee list endpoint
 - **v21.0** (2026-02-08, Phase 156): Config-driven fee calculation with `age_classes` arrays and dynamic helper methods
 - **v21.0** (2026-02-08, Phase 155): Per-season fee category configuration with copy-forward
 - **v18.1.0** (2026-02-05): Per-season fee storage with automatic migration
