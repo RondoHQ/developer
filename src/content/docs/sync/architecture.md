@@ -11,7 +11,7 @@ graph LR
     SL[Sportlink Club]
     NK[Nikki]
     SYNC[Rondo Sync Tool<br>+ SQLite databases]
-    ST[Rondo Club WordPress]
+    ST[Rondo Club]
     LP[Laposta]
     FS[FreeScout]
 
@@ -83,7 +83,7 @@ When API calls are needed, all pipelines insert delays between requests to avoid
 | Target | Delay | Notes |
 |--------|-------|-------|
 | Laposta API | 2s between requests | Fixed delay via `waitForRateLimit()` |
-| Rondo Club WordPress API | Exponential backoff on errors | 1s, 2s, 4s on retries |
+| Rondo Club API | Exponential backoff on errors | 1s, 2s, 4s on retries |
 | Rondo Club photo uploads | 2s between uploads | Both upload and delete operations |
 | Nikki to Rondo Club | 500ms between updates | |
 | Photo downloads (Sportlink) | 500ms-1.5s between members | Playwright-based, random jitter |
@@ -116,11 +116,11 @@ Four SQLite databases on the server at `/home/rondo/data/` track sync state. See
 | Database | Purpose | Key Tables |
 |---|---|---|
 | `laposta-sync.sqlite` | Laposta sync + Sportlink run data | `members`, `laposta_fields`, `sportlink_runs` |
-| `rondo-sync.sqlite` | Rondo Club ID mappings + all Sportlink scraped data | `stadion_members`, `stadion_parents`, `stadion_teams`, `stadion_commissies`, `stadion_work_history`, `stadion_commissie_work_history`, `sportlink_member_functions`, `sportlink_member_committees`, `sportlink_member_free_fields`, `sportlink_team_members` |
+| `rondo-sync.sqlite` | Rondo Club ID mappings + all Sportlink scraped data | `rondo_club_members`, `rondo_club_parents`, `rondo_club_teams`, `rondo_club_commissies`, `rondo_club_work_history`, `rondo_club_commissie_work_history`, `sportlink_member_functions`, `sportlink_member_committees`, `sportlink_member_free_fields`, `sportlink_team_members` |
 | `nikki-sync.sqlite` | Nikki contribution data | `nikki_contributions` |
 | `freescout-sync.sqlite` | FreeScout customer mappings | `freescout_customers` |
 
-The `stadion_id` mapping (knvb_id -> WordPress post ID) is critical: without it, syncs create duplicate entries instead of updating existing ones. All databases live on the production server only.
+The `rondo_club_id` mapping (knvb_id -> WordPress post ID) is critical: without it, syncs create duplicate entries instead of updating existing ones. All databases live on the production server only.
 
 ---
 

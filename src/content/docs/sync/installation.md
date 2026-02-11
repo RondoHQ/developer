@@ -15,7 +15,7 @@ This guide covers setting up Rondo Sync from scratch on a fresh server.
 - **Network:** Outbound HTTPS access to:
   - `club.sportlink.com` (Sportlink Club)
   - `api.laposta.nl` (Laposta email marketing)
-  - Your Rondo Club WordPress instance
+  - Your Rondo Club instance
   - `api.postmarkapp.com` (email delivery)
   - `nikki-online.nl` (Nikki contributions, if used)
   - Your FreeScout instance (if used)
@@ -28,7 +28,7 @@ You'll need credentials for:
 |---------|--------------|-----------------|
 | Sportlink Club | Username, password, TOTP secret | Club administrator |
 | Laposta | API key, list ID(s) | Laposta dashboard -> Account -> API |
-| Rondo Club WordPress | URL, username, application password | WordPress admin -> Users -> Profile -> Application Passwords |
+| Rondo Club | URL, username, application password | WordPress admin -> Users -> Profile -> Application Passwords |
 | Postmark | Server API token, verified sender email | Postmark dashboard -> Servers -> API Tokens |
 | FreeScout (optional) | API key, instance URL | FreeScout admin panel |
 | Nikki (optional) | API key, URL | Nikki administrator |
@@ -90,11 +90,11 @@ LAPOSTA_LIST2=                         # Optional second list
 LAPOSTA_LIST3=                         # Optional third list
 LAPOSTA_LIST4=                         # Optional fourth list
 
-# Rondo Club WordPress
-STADION_URL=https://your-stadion-site.nl
-STADION_USERNAME=your-wp-username
-STADION_APP_PASSWORD=xxxx xxxx xxxx xxxx xxxx xxxx
-STADION_PERSON_TYPE=person
+# Rondo Club
+RONDO_URL=https://your-rondo-club-site.nl
+RONDO_USERNAME=your-wp-username
+RONDO_APP_PASSWORD=xxxx xxxx xxxx xxxx xxxx xxxx
+RONDO_PERSON_TYPE=person
 
 # Email delivery
 OPERATOR_EMAIL=operator@example.com
@@ -209,9 +209,9 @@ git pull
 npm install  # Only needed if dependencies changed
 ```
 
-## Rondo Club WordPress Requirements
+## Rondo Club Requirements
 
-The Rondo Club WordPress site needs:
+The Rondo Club site needs:
 
 - **ACF Pro** plugin for custom fields and REST API integration
 - **Rondo Club theme** with custom post types: `person`, `team`, `commissie`, `discipline_case`
@@ -242,7 +242,7 @@ Run `npx playwright install chromium` to install/reinstall the browser.
 
 ### Duplicate entries in Rondo Club
 
-This happens when sync runs from multiple machines (each has its own SQLite database with different `stadion_id` mappings). **Always sync from the production server only.**
+This happens when sync runs from multiple machines (each has its own SQLite database with different `rondo_club_id` mappings). **Always sync from the production server only.**
 
 To clean up duplicates:
 ```bash

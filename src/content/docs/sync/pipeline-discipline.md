@@ -3,7 +3,7 @@ title: "Discipline Pipeline"
 ---
 
 
-Downloads discipline (tucht) cases from Sportlink and syncs them to Rondo Club WordPress as `discipline_case` posts linked to person records.
+Downloads discipline (tucht) cases from Sportlink and syncs them to Rondo Club as `discipline_case` posts linked to person records.
 
 ## Schedule
 
@@ -19,7 +19,7 @@ node pipelines/sync-discipline.js --verbose    # Direct execution (verbose)
 ```
 pipelines/sync-discipline.js
 ├── Step 1: steps/download-discipline-cases.js       → data/rondo-sync.sqlite
-└── Step 2: steps/submit-rondo-club-discipline.js       → Rondo Club WordPress API
+└── Step 2: steps/submit-rondo-club-discipline.js       → Rondo Club API
 ```
 
 ## Step-by-Step Details
@@ -51,7 +51,7 @@ pipelines/sync-discipline.js
 **Function:** `runSync({ logger, verbose, force })`
 
 1. Reads cases from `data/rondo-sync.sqlite` → `discipline_cases`
-2. Looks up `stadion_id` for each case's `public_person_id` from `stadion_members`
+2. Looks up `rondo_club_id` for each case's `public_person_id` from `rondo_club_members`
 3. Gets or creates the season taxonomy term (e.g., "2025-2026"):
    - `GET /wp/v2/seizoen?slug=2025-2026`
    - If not found: `POST /wp/v2/seizoen`
@@ -74,7 +74,7 @@ pipelines/sync-discipline.js
 | Rondo Club ACF Field | SQLite Column | Type | Notes |
 |---|---|---|---|
 | `dossier_id` | `dossier_id` | Text | Unique case ID (e.g., T-12345). Has server-side uniqueness validation. |
-| `person` | → `stadion_members.stadion_id` | Post Object | Single integer ID (not array). Looked up via `public_person_id`. |
+| `person` | → `rondo_club_members.rondo_club_id` | Post Object | Single integer ID (not array). Looked up via `public_person_id`. |
 | `match_date` | `match_date` | Date Picker | Returns `Ymd` format (e.g., "20260115") |
 | `match_description` | `match_description` | Text | e.g., "JO11-1 vs Ajax JO11-2" |
 | `team_name` | `team_name` | Text | Team name from Sportlink |
@@ -101,9 +101,9 @@ Generated as: `"{person_name} - {match_description} - {match_date}"`
 | Database | Table | Usage |
 |---|---|---|
 | `rondo-sync.sqlite` | `discipline_cases` | Case data + dossier_id (unique key) |
-| `rondo-sync.sqlite` | `stadion_members` | KNVB ID → Rondo Club ID lookup (for person linking) |
+| `rondo-sync.sqlite` | `rondo_club_members` | KNVB ID → Rondo Club ID lookup (for person linking) |
 
-## Rondo Club WordPress Requirements
+## Rondo Club Requirements
 
 - **ACF Pro** (for Post Object fields and REST API integration)
 - **Custom post type:** `discipline_case` with `show_in_rest = true`
