@@ -42,7 +42,7 @@ Syncs a single member from Sportlink to Rondo Club. Launches a Playwright browse
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| `knvb_id` | string | Yes | KNVB member ID (numeric, 6-10 digits) |
+| `knvb_id` | string | Yes | KNVB member ID (4-10 alphanumeric characters, e.g. `TJJS83T`) |
 
 #### Responses
 
@@ -67,7 +67,7 @@ Syncs a single member from Sportlink to Rondo Club. Launches a Playwright browse
 
 | Status | Condition | Response |
 |--------|-----------|----------|
-| 400 | Invalid or missing `knvb_id` | `{ ok: false, error: "Invalid knvb_id: must be a numeric string of 6-10 digits" }` |
+| 400 | Invalid or missing `knvb_id` | `{ ok: false, error: "Invalid knvb_id: must be 4-10 alphanumeric characters" }` |
 | 422 | Member not found in Sportlink data | `{ ok: false, error: "Member not found" }` |
 | 429 | Another sync already running | `{ ok: false, error: "Another individual sync is already in progress. Try again in a minute." }` |
 | 500 | Internal error | `{ ok: false, error: "Internal sync error" }` |
