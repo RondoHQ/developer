@@ -13,8 +13,8 @@ The theme initializes on `after_setup_theme` and `plugins_loaded`, loading class
 
 | Class | Responsibility |
 |-------|---------------|
-| `Rondo\Core\PostTypes` | Registers Person, Team, Important Date CPTs |
-| `Rondo\Core\Taxonomies` | Registers labels and relationship types |
+| `Rondo\Core\PostTypes` | Registers Person, Team, Commissie, and other CPTs |
+| `Rondo\Core\Taxonomies` | Registers relationship types and seizoen taxonomy |
 | `Rondo\Core\AutoTitle` | Auto-generates post titles |
 | `Rondo\Core\AccessControl` | Row-level user data filtering |
 | `Rondo\Core\UserRoles` | Registers custom "Rondo User" role |
@@ -34,7 +34,7 @@ A React SPA with:
 - **State:** TanStack Query for server state, Zustand for client state
 - **API client:** Axios with WordPress nonce injection
 - **Two API namespaces:**
-  - `/wp/v2/` — Standard WordPress REST (people, teams, important-dates)
+  - `/wp/v2/` — Standard WordPress REST (people, teams, commissies)
   - `/rondo/v1/` — Custom endpoints (dashboard, search, timeline)
 
 ## Development

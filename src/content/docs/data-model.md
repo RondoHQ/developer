@@ -114,35 +114,7 @@ Represents teams where contacts work. Note: The post type slug remains `team` fo
 
 ## Taxonomies
 
-The CRM uses three custom taxonomies, registered in `includes/class-taxonomies.php`.
-
-### Person Label (`person_label`)
-
-Tags for categorizing people.
-
-| Property | Value |
-|----------|-------|
-| Hierarchical | No (tag-like) |
-| Attached To | person |
-| REST Enabled | Yes |
-
-**Example labels:** Family, Work, School Friends, Neighbors
-
----
-
-### Team Label (`team_label`)
-
-Tags for categorizing teams.
-
-| Property | Value |
-|----------|-------|
-| Hierarchical | No (tag-like) |
-| Attached To | team |
-| REST Enabled | Yes |
-
-**Example labels:** Clients, Vendors, Partners, Past Employers
-
----
+The CRM uses two custom taxonomies, registered in `includes/class-taxonomies.php`.
 
 ### Relationship Type (`relationship_type`)
 
@@ -185,18 +157,17 @@ For more details, see [Relationship Types](./relationship-types.md) and [Relatio
 
 ---
 
-### Workspace (`workspace`)
+### Seizoen (`seizoen`)
 
-Represents collaborative workspaces for multi-user features (Phase 7+).
+Season classification for discipline cases.
 
 | Property | Value |
 |----------|-------|
-| REST Base | `/wp/v2/workspaces` |
-| Menu Icon | `dashicons-networking` |
-| Supports | title, editor, author, thumbnail |
-| Public | No (private, accessed via REST API) |
+| Hierarchical | No (tag-like) |
+| Attached To | discipline_case |
+| REST Enabled | Yes |
 
-**Membership:** Stored in user meta via `Rondo\Collaboration\WorkspaceMembers` class (see below).
+**Example values:** 2024-2025, 2025-2026
 
 ---
 

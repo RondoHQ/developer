@@ -7,7 +7,7 @@ Rondo is a platform for managing sports club members, teams, and operations. It 
 
 ## Rondo Club
 
-A WordPress theme (PHP + React/Vite) that provides a web application for managing people, teams, and important dates. It exposes a REST API for both its own frontend and external consumers.
+A WordPress theme (PHP + React/Vite) that provides a web application for managing people, teams, and club operations. It exposes a REST API for both its own frontend and external consumers.
 
 **Tech stack:** WordPress 6.0+, PHP 8.0+, ACF Pro, React 18, Vite 5, Tailwind CSS, TanStack Query.
 
