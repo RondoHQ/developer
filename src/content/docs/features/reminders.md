@@ -280,7 +280,6 @@ Users can enable/disable email notifications in Settings.
     "next_occurrence": "2025-06-15",
     "days_until": 5,
     "is_recurring": true,
-    "date_type": ["birthday"],
     "related_people": [
       { "id": 456, "name": "John Doe", "thumbnail": "..." }
     ]

@@ -149,7 +149,6 @@ SUMMARY:John Doe's Birthday
 DESCRIPTION:Birthday
 URL:https://your-site.com/people/456
 RRULE:FREQ=YEARLY
-CATEGORIES:Birthday
 END:VEVENT
 ```
 
@@ -165,7 +164,6 @@ END:VEVENT
 | `DESCRIPTION` | `Birthday` |
 | `URL` | Link to person |
 | `RRULE` | `FREQ=YEARLY` (always recurring) |
-| `CATEGORIES` | `Birthday` |
 
 ### All-Day Events
 

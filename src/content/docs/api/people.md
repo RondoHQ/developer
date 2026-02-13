@@ -449,8 +449,7 @@ X-WP-Nonce: {nonce}
   "updates": {
     "visibility": "workspace",
     "assigned_workspaces": [5],
-    "labels_add": [10, 11],
-    "labels_remove": [9]
+    "organization_id": 42
   }
 }
 ```
@@ -462,8 +461,6 @@ X-WP-Nonce: {nonce}
 | `visibility` | string | Set visibility for all |
 | `assigned_workspaces` | array | Set workspace IDs |
 | `organization_id` | int | Set team association |
-| `labels_add` | array | Label term IDs to add |
-| `labels_remove` | array | Label term IDs to remove |
 
 **Response:**
 ```json

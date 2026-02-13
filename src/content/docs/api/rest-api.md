@@ -55,9 +55,8 @@ These endpoints are provided by WordPress with access control applied:
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| GET | `/wp/v2/person_label` | List person labels |
-| GET | `/wp/v2/team_label` | List team labels |
 | GET | `/wp/v2/relationship_type` | List relationship types |
+| GET | `/wp/v2/seizoen` | List seasons (for discipline cases) |
 
 ---
 
@@ -88,8 +87,7 @@ Returns summary statistics and recent activity for the dashboard.
       "infix": "",
       "last_name": "Doe",
       "thumbnail": "https://...",
-      "is_favorite": true,
-      "labels": ["Family", "Friends"]
+      "is_favorite": true
     }
   ],
   "upcoming_reminders": [
@@ -144,10 +142,10 @@ Search across people and teams.
 ```json
 {
   "people": [
-    { "id": 1, "name": "John Doe", "thumbnail": "...", "is_favorite": true, "labels": [] }
+    { "id": 1, "name": "John Doe", "thumbnail": "...", "is_favorite": true }
   ],
   "teams": [
-    { "id": 2, "name": "Acme Corp", "thumbnail": "...", "website": "https://...", "labels": [] }
+    { "id": 2, "name": "Acme Corp", "thumbnail": "...", "website": "https://..." }
   ]
 }
 ```
