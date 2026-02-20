@@ -20,6 +20,7 @@ graph LR
     SYNC -->|Members, custom fields| LP
     SYNC -->|Members, parents, teams,<br>commissies, work history,<br>photos| ST
     SYNC -->|Customers| FS
+    FS -->|Conversations| SYNC
     ST -->|Field changes| SYNC
     SYNC -->|Reverse sync| SL
 ```
@@ -103,7 +104,7 @@ Each pipeline has its own detailed documentation page covering step-by-step flow
 | [Nikki](/sync/pipeline-nikki/) | Downloads contribution data from Nikki, writes per-year financial fields to Rondo Club | Playwright scraping of HTML tables + CSV; aggregates multiple contribution lines per member per year |
 | [Teams](/sync/pipeline-teams/) | Downloads team rosters from Sportlink, creates team posts, links members via work history | 3-step flow: download teams, sync teams to Rondo Club, sync work history to person posts |
 | [Functions](/sync/pipeline-functions/) | Scrapes committee memberships and free fields from Sportlink | Runs in daily (recent) and weekly (full) modes; also scrapes FreeScout ID, VOG date, and financial block used by the People pipeline |
-| [FreeScout](/sync/pipeline-freescout/) | Syncs Rondo Club member data to FreeScout as customers | Enriches helpdesk customers with team memberships, KNVB ID, and Nikki contribution data |
+| [FreeScout](/sync/pipeline-freescout/) | Syncs Rondo Club member data to FreeScout as customers; downloads conversations as activities | Enriches helpdesk customers with team memberships, KNVB ID, Nikki contribution data, photo URLs, and website URLs. Downloads FreeScout conversations and creates activities in Rondo Club. |
 | [Discipline](/sync/pipeline-discipline/) | Downloads discipline cases from Sportlink, syncs to Rondo Club | Cases linked to person posts via `knvb_id`; categorized by season taxonomy |
 | [Reverse Sync](/sync/reverse-sync/) | Detects field changes in Rondo Club, pushes back to Sportlink | **Currently disabled.** Two-phase: change detection + browser automation sync with conflict resolution |
 
@@ -118,7 +119,7 @@ Four SQLite databases on the server at `/home/rondo/data/` track sync state. See
 | `laposta-sync.sqlite` | Laposta sync + Sportlink run data | `members`, `laposta_fields`, `sportlink_runs` |
 | `rondo-sync.sqlite` | Rondo Club ID mappings + all Sportlink scraped data | `rondo_club_members`, `rondo_club_parents`, `rondo_club_teams`, `rondo_club_commissies`, `rondo_club_work_history`, `rondo_club_commissie_work_history`, `sportlink_member_functions`, `sportlink_member_committees`, `sportlink_member_free_fields`, `sportlink_team_members` |
 | `nikki-sync.sqlite` | Nikki contribution data | `nikki_contributions` |
-| `freescout-sync.sqlite` | FreeScout customer mappings | `freescout_customers` |
+| `freescout-sync.sqlite` | FreeScout customer mappings + conversation tracking | `freescout_customers`, `freescout_conversations` |
 
 The `rondo_club_id` mapping (knvb_id -> WordPress post ID) is critical: without it, syncs create duplicate entries instead of updating existing ones. All databases live on the production server only.
 

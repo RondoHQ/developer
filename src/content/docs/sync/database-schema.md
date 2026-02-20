@@ -32,7 +32,7 @@ All databases are stored in the `data/` directory on the server at `/home/rondo/
 | `laposta-sync.sqlite` | Laposta email list sync + Sportlink run history | `lib/laposta-db.js` |
 | `rondo-sync.sqlite` | Rondo Club sync (members, teams, commissies, photos, discipline, reverse sync) | `lib/rondo-club-db.js` |
 | `nikki-sync.sqlite` | Nikki contribution tracking | `lib/nikki-db.js` |
-| `freescout-sync.sqlite` | FreeScout customer sync | `lib/freescout-db.js` |
+| `freescout-sync.sqlite` | FreeScout customer + conversation sync | `lib/freescout-db.js` |
 
 ---
 
@@ -547,7 +547,7 @@ Member contribution records per year.
 
 ## Database 4: freescout-sync.sqlite
 
-**Purpose:** Tracks FreeScout customer synchronization.
+**Purpose:** Tracks FreeScout customer synchronization and conversation-to-activity sync.
 
 **Module:** `lib/freescout-db.js`
 
@@ -569,6 +569,28 @@ FreeScout customer records mapped from Rondo Club members.
 | `created_at` | TEXT | First seen timestamp |
 
 **Critical:** `freescout_id` maps KNVB ID to FreeScout customer ID. Without this mapping, sync creates duplicate customers.
+
+---
+
+### freescout_conversations
+
+Tracks FreeScout conversations synced as activities to Rondo Club, preventing duplicate activity creation.
+
+| Column | Type | Description |
+|---|---|---|
+| `id` | INTEGER | Primary key (auto-increment) |
+| `conversation_id` | INTEGER | FreeScout conversation ID - UNIQUE |
+| `freescout_customer_id` | INTEGER | FreeScout customer ID |
+| `knvb_id` | TEXT | Member KNVB ID |
+| `rondo_club_person_id` | INTEGER | Rondo Club person post ID |
+| `subject` | TEXT | Conversation subject |
+| `status` | TEXT | Conversation status (active, pending, closed) |
+| `synced_at` | TEXT | When conversation was synced as activity |
+| `created_at` | TEXT | When record was first tracked |
+
+**Indexes:** `idx_freescout_conversations_knvb` on `(knvb_id)`
+
+**Module:** `lib/freescout-db.js`
 
 ---
 
@@ -665,8 +687,8 @@ SELECT data_json FROM rondo_club_parents WHERE email = 'parent@example.com';
 | `laposta-sync.sqlite` | 3 | Email marketing sync (Laposta) |
 | `rondo-sync.sqlite` | 16 | WordPress sync (members, teams, committees, photos, discipline, reverse sync) |
 | `nikki-sync.sqlite` | 1 | Contribution tracking (Nikki) |
-| `freescout-sync.sqlite` | 1 | Customer sync (FreeScout) |
+| `freescout-sync.sqlite` | 2 | Customer sync + conversation tracking (FreeScout) |
 
-**Total:** 21 tables across 4 databases
+**Total:** 22 tables across 4 databases
 
 **Common pattern:** All main tables use `source_hash` / `last_synced_hash` for efficient change detection and idempotent sync operations.

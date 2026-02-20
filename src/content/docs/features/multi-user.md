@@ -3,7 +3,7 @@ title: "Multi-User System"
 ---
 
 
-This document describes Rondo Club's multi-user setup and user management.
+This document describes Rondo Club's multi-user setup, user management, and provisioning.
 
 ## Overview
 
@@ -13,8 +13,9 @@ Rondo Club uses a **shared access model**: all authenticated users can see and e
 
 - Multiple users can access the same Rondo Club installation
 - All logged-in users see all contacts, teams, dates, and todos
-- Users are created by administrators (no self-registration)
+- Users can be created manually by administrators or provisioned from person records
 - User activity is tracked via post author and note author fields
+- Person records and WordPress users are bidirectionally linked
 
 ## User Roles
 
@@ -40,6 +41,40 @@ WordPress administrators (`manage_options` capability):
 
 - Full access in both frontend and WordPress admin
 - Can manage other users
+- Can provision new user accounts from person records
+
+### Role-Based Access via Functies
+
+Sportlink "functies" (club-level roles) can be mapped to Rondo permission roles via the [Functie-Capability Map](./access-control.md#functie-capability-map). This allows specific members to access features like financial settings without being full administrators.
+
+## User Provisioning
+
+Administrators can create WordPress user accounts directly from a person's detail page. This links the person record to a WP user account and optionally sends a welcome email.
+
+See [User Provisioning](./user-provisioning.md) for full details.
+
+**Key concepts:**
+
+- **Bidirectional linking** - Person records store `_rondo_wp_user_id`, WP users store `rondo_linked_person_id`
+- **AccountCard** - Admin-only UI component on person detail pages for managing the linked user account
+- **Welcome email** - Configurable email template sent when provisioning a new user
+- **KNVB ID** - Stored on the WP user as `_rondo_knvb_id` for cross-referencing
+
+### Person-User Data in API Responses
+
+**Person response** includes:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `linked_user_id` | int\|null | WordPress user ID linked to this person |
+| `welcome_email_sent_at` | string\|null | ISO timestamp of when welcome email was sent |
+
+**Users list** includes:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `linked_person_id` | int\|null | Person post ID linked to this user |
+| `linked_person_name` | string\|null | Display name of the linked person |
 
 ## Collaborative Features
 
@@ -83,6 +118,7 @@ Configure digest delivery in **Settings > Notifications**.
 
 ## Related Documentation
 
-- [Access Control](./access-control.md) - Permission system details
-- [Data Model](./data-model.md) - Post types and field definitions
-- [REST API](./rest-api.md) - API endpoints
+- [Access Control](./access-control.md) - Permission system and functie-capability map
+- [User Provisioning](./user-provisioning.md) - Creating user accounts from person records
+- [Data Model](../data-model.md) - Post types and field definitions
+- [REST API](../api/rest-api.md) - API endpoints

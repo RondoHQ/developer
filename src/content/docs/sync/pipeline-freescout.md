@@ -3,7 +3,7 @@ title: "FreeScout Pipeline"
 ---
 
 
-Syncs Rondo Club member data to FreeScout helpdesk as customers, enriching support tickets with member context.
+Syncs Rondo Club member data to FreeScout helpdesk as customers, enriching support tickets with member context. Also downloads FreeScout conversations and creates activities in Rondo Club.
 
 ## Schedule
 
@@ -19,12 +19,16 @@ node pipelines/sync-freescout.js --verbose    # Direct execution (verbose)
 ```
 pipelines/sync-freescout.js
 ├── Check credentials (FREESCOUT_API_KEY + FREESCOUT_URL)
-└── steps/submit-freescout-sync.js
-    ├── steps/prepare-freescout-customers.js   → data/freescout-sync.sqlite
-    └── Submit to FreeScout API          → FreeScout customers
+├── steps/submit-freescout-sync.js
+│   ├── steps/prepare-freescout-customers.js   → data/freescout-sync.sqlite
+│   └── Submit to FreeScout API          → FreeScout customers
+└── Conversations pipeline
+    ├── steps/download-freescout-conversations.js  → data/freescout-sync.sqlite
+    ├── steps/prepare-freescout-conversations.js   → activity payloads
+    └── steps/submit-freescout-activities.js       → Rondo Club activities
 ```
 
-## Step-by-Step Details
+## Customer Sync
 
 ### Credential Check
 
@@ -39,13 +43,15 @@ Before running, `pipelines/sync-freescout.js` verifies that `FREESCOUT_API_KEY` 
 3. Reads contribution data from `data/nikki-sync.sqlite` → `nikki_contributions`
 4. Builds customer records with:
    - Name, email, phone from Rondo Club member data
+   - Photo URL from member data
+   - Website URLs from contact info
    - Team memberships (comma-separated)
    - KNVB ID, member since date
    - Latest Nikki contribution balance and status
 5. Computes `source_hash` per customer
 6. Upserts into `data/freescout-sync.sqlite` → `freescout_customers`
 
-### Customer Sync
+### Customer Submit
 
 **Script:** `steps/submit-freescout-sync.js`
 **Function:** `runSubmit({ logger, verbose, force })`
@@ -73,6 +79,8 @@ Sent to `POST/PUT /api/customers`:
 | `lastName` | `acf.last_name` | `rondo_club_members.data_json` |
 | `emails[].value` | Email from `contact_info` repeater | `rondo_club_members.data_json` |
 | `phones[].value` | Mobile from `contact_info` repeater | `rondo_club_members.data_json` |
+| `photoUrl` | Photo URL | `rondo_club_members.data_json` |
+| `websites[].value` | Website URLs from `contact_info` repeater | `rondo_club_members.data_json` |
 
 ### Custom Fields
 
@@ -88,6 +96,31 @@ Sent to `PUT /api/customers/{id}/customer_fields`:
 
 Field IDs are configurable via `FREESCOUT_FIELD_*` environment variables.
 
+### RelationEnd Field
+
+The `RelationEnd` field from Sportlink member functions is included in FreeScout customer sync data. This tracks when a member's club-level function ended (e.g., when they stopped being "Voorzitter").
+
+## Conversations Pipeline
+
+The conversations pipeline downloads conversations from FreeScout and creates corresponding activities in Rondo Club, providing a unified timeline of member interactions.
+
+### Flow
+
+1. **Download** - Fetches conversations from FreeScout API
+2. **Prepare** - Matches conversations to Rondo Club persons via email/customer ID
+3. **Submit** - Creates activities on person records in Rondo Club
+
+### Tracking
+
+Conversations are tracked in `data/freescout-sync.sqlite` → `freescout_conversations` table to avoid duplicate activity creation. Each conversation is stored with its FreeScout ID and sync state.
+
+### Integration
+
+The conversations pipeline is:
+- Integrated into the main FreeScout pipeline orchestrator
+- Runs as part of the daily cron schedule
+- Visible on the sync dashboard
+
 ## Database Tables Used
 
 | Database | Table | Usage |
@@ -96,6 +129,7 @@ Field IDs are configurable via `FREESCOUT_FIELD_*` environment variables.
 | `rondo-sync.sqlite` | `rondo_club_work_history` | Current team assignments |
 | `nikki-sync.sqlite` | `nikki_contributions` | Financial contribution data |
 | `freescout-sync.sqlite` | `freescout_customers` | Customer → FreeScout ID mapping + hashes |
+| `freescout-sync.sqlite` | `freescout_conversations` | Conversation tracking for activity sync |
 
 ## CLI Flags
 
@@ -109,16 +143,20 @@ Field IDs are configurable via `FREESCOUT_FIELD_*` environment variables.
 - Missing credentials cause immediate exit (not a silent skip)
 - Individual customer sync failures don't stop the pipeline
 - 5xx errors trigger exponential backoff (up to 3 retries)
+- Conversation sync failures are tracked independently
 - All errors collected in summary report
 
 ## Source Files
 
 | File | Purpose |
 |------|---------|
-| `pipelines/sync-freescout.js` | Pipeline orchestrator |
+| `pipelines/sync-freescout.js` | Pipeline orchestrator (customers + conversations) |
 | `steps/submit-freescout-sync.js` | FreeScout API sync + customer preparation |
 | `steps/prepare-freescout-customers.js` | Customer data preparation |
-| `lib/freescout-db.js` | FreeScout SQLite operations |
+| `steps/download-freescout-conversations.js` | Download conversations from FreeScout |
+| `steps/prepare-freescout-conversations.js` | Match conversations to persons |
+| `steps/submit-freescout-activities.js` | Create activities in Rondo Club |
+| `lib/freescout-db.js` | FreeScout SQLite operations (customers + conversations) |
 | `lib/freescout-client.js` | FreeScout HTTP client + credential check |
 | `lib/rondo-club-db.js` | Rondo Club data lookup |
 | `lib/nikki-db.js` | Nikki contribution lookup |

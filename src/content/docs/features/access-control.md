@@ -7,12 +7,37 @@ This document describes the access control system in Rondo Club.
 
 ## Overview
 
-Rondo Club uses a simple **shared access model**: all authenticated users can see and edit all data. This makes it ideal for teams that collaborate on the same contact database.
+Rondo Club uses a **shared access model**: all authenticated users can see and edit all data. On top of this, a role-based permission system controls access to administrative features and specific sections of the application.
 
 **Key principles:**
 
 1. **Authenticated users see everything** - Once logged in, users can view and edit all people, teams, dates, and todos
 2. **Trashed posts are hidden** - Posts in the trash are not accessible via the frontend
+3. **WP Admin is blocked** - Non-admin users are redirected away from wp-admin
+4. **Roles map from Sportlink** - Sportlink "functies" are mapped to Rondo permission roles via the Functie-Capability Map
+
+## WP Admin Blocking
+
+Non-admin users are blocked from accessing the WordPress admin dashboard. This is implemented in `functions.php` via `rondo_block_wp_admin()`.
+
+**Behavior:**
+- Non-admin users requesting `/wp-admin/` are redirected to the site homepage
+- Exemptions: AJAX requests, WP-CLI, and cron jobs pass through
+- Administrators (`manage_options` capability) are never blocked
+
+```php
+// Simplified logic
+function rondo_block_wp_admin() {
+    if ( is_admin() && ! current_user_can( 'manage_options' ) ) {
+        // Exempt AJAX, WP-CLI, and cron
+        if ( wp_doing_ajax() || defined( 'WP_CLI' ) || wp_doing_cron() ) {
+            return;
+        }
+        wp_safe_redirect( home_url( '/' ) );
+        exit;
+    }
+}
+```
 
 ## Implementation
 
@@ -115,13 +140,55 @@ The WordPress REST API is **not affected** by admin blocking. REST requests do n
 
 The blocking function is `rondo_block_wp_admin()` in `functions.php`, hooked to `admin_init`.
 
+## Functie-Capability Map
+
+The Functie-Capability Map connects Sportlink "functies" (club-level roles like "Voorzitter", "Penningmeester") to Rondo permission roles. This enables role-based access to specific features without manual user management.
+
+**Class:** `Rondo\Config\FunctieCapabilityMap`
+
+**Methods:**
+
+| Method | Description |
+|--------|-------------|
+| `get_map()` | Returns the current functie-to-role mapping |
+| `update_map( $map )` | Updates the mapping (admin only) |
+| `get_roles_for_functie( $functie )` | Returns Rondo roles for a given Sportlink functie |
+
+**REST Endpoints:**
+
+| Method | Endpoint | Permission | Description |
+|--------|----------|------------|-------------|
+| GET | `/rondo/v1/functie-capability-map` | Admin | Get current mapping |
+| POST | `/rondo/v1/functie-capability-map` | Admin | Update mapping |
+
+**UI:** Configured in **Settings > Beheer > Functies** tab (FunctiesTab component).
+
+**Example mapping:**
+
+```json
+{
+  "Voorzitter": ["admin"],
+  "Penningmeester": ["financieel"],
+  "Secretaris": ["admin"],
+  "Wedstrijdsecretaris": ["wedstrijdzaken"]
+}
+```
+
+When a member is synced from Sportlink with an active functie, the system looks up the corresponding Rondo roles and applies the appropriate capabilities to their WordPress user account.
+
+### Finance Settings Access
+
+Users with the `financieel` role can access **Financien > Instellingen** (financial settings). Previously this was restricted to administrators only.
+
 ## Security Considerations
 
 1. **All access control is enforced server-side** - Never trust client-side checks
 2. **REST API is protected** - Unauthenticated users receive 403 errors
+3. **WP Admin is blocked** - Non-admin users cannot access the WordPress dashboard
 
 ## Related Documentation
 
-- [Multi-User System](./multi-user.md) - User management
+- [Multi-User System](./multi-user.md) - User management and provisioning
+- [User Provisioning](./user-provisioning.md) - Creating WordPress accounts for members
 - [Data Model](./data-model.md) - Post types and field definitions
-- [REST API](./rest-api.md) - API endpoints
+- [REST API](../api/rest-api.md) - API endpoints

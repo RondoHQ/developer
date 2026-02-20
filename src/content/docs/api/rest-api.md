@@ -840,6 +840,112 @@ Common error codes:
 
 ---
 
+### Functie-Capability Map (Admin Only)
+
+Manage the mapping between Sportlink "functies" (club-level roles) and Rondo permission roles.
+
+**GET** `/rondo/v1/functie-capability-map`
+
+Returns the current functie-to-role mapping.
+
+**Permission:** Admin only
+
+**Response:**
+```json
+{
+  "map": {
+    "Voorzitter": ["admin"],
+    "Penningmeester": ["financieel"],
+    "Secretaris": ["admin"],
+    "Wedstrijdsecretaris": ["wedstrijdzaken"]
+  }
+}
+```
+
+---
+
+**POST** `/rondo/v1/functie-capability-map`
+
+Update the functie-to-role mapping.
+
+**Permission:** Admin only
+
+**Body:**
+```json
+{
+  "map": {
+    "Voorzitter": ["admin"],
+    "Penningmeester": ["financieel"]
+  }
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "map": { ... }
+}
+```
+
+---
+
+### User Provisioning (Admin Only)
+
+Create WordPress user accounts from person records and manage provisioning settings.
+
+**POST** `/rondo/v1/people/{person_id}/provision`
+
+Provision a WordPress user account for a person. Creates a user with the Rondo User role, links it bidirectionally to the person record, and optionally sends a welcome email.
+
+**Permission:** Admin only
+
+**Response:**
+```json
+{
+  "success": true,
+  "user_id": 42,
+  "person_id": 789,
+  "welcome_email_sent": true
+}
+```
+
+---
+
+**GET** `/rondo/v1/provisioning/settings`
+
+Returns current provisioning settings including the welcome email template.
+
+**Permission:** Admin only
+
+**Response:**
+```json
+{
+  "welcome_email_subject": "Welkom bij Rondo",
+  "welcome_email_body": "Beste {{naam}},\n\nJe account is aangemaakt...",
+  "auto_send_welcome_email": true
+}
+```
+
+---
+
+**POST** `/rondo/v1/provisioning/settings`
+
+Update provisioning settings.
+
+**Permission:** Admin only
+
+**Body:**
+```json
+{
+  "welcome_email_subject": "Welkom bij Rondo",
+  "welcome_email_body": "Beste {{naam}},\n\nJe account is aangemaakt...",
+  "auto_send_welcome_email": true
+}
+```
+
+---
+
 ### Volunteer Role Classification (Admin Only)
 
 Manage how Sportlink job titles are classified for volunteer status calculation.
@@ -904,7 +1010,8 @@ When no option is set, hardcoded defaults from `VolunteerStatus` class are used.
 
 ## Related Documentation
 
-- [Access Control](./access-control.md) - How permissions work
-- [Data Model](./data-model.md) - Post types and fields
-- [VOG Filtered People](./api-vog-filtered-people.md) - VOG tab endpoint with KNVB IDs and volunteer filters
+- [Access Control](../features/access-control.md) - How permissions work
+- [User Provisioning](../features/user-provisioning.md) - Provisioning user accounts
+- [Data Model](../data-model.md) - Post types and fields
+- [VOG Filtered People](./vog-filtered-people.md) - VOG tab endpoint with KNVB IDs and volunteer filters
 

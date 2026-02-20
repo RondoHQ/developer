@@ -32,6 +32,7 @@ export default defineConfig({
 						{ label: 'Teams', slug: 'api/teams' },
 						{ label: 'Committees', slug: 'api/committees' },
 						{ label: 'Custom Fields', slug: 'api/custom-fields' },
+						{ label: 'Activities', slug: 'api/activities' },
 						{ label: 'VOG Filtered People', slug: 'api/vog-filtered-people' },
 						{ label: 'Public Endpoints', slug: 'api/public-endpoints' },
 					],
@@ -41,6 +42,7 @@ export default defineConfig({
 					items: [
 						{ label: 'Access Control', slug: 'features/access-control' },
 						{ label: 'Multi-User System', slug: 'features/multi-user' },
+						{ label: 'User Provisioning', slug: 'features/user-provisioning' },
 						{ label: 'Relationships', slug: 'features/relationships' },
 						{ label: 'Relationship Types', slug: 'features/relationship-types' },
 						{ label: 'Membership Fees', slug: 'features/membership-fees' },
@@ -75,6 +77,7 @@ export default defineConfig({
 						{ label: 'FreeScout Pipeline', slug: 'sync/pipeline-freescout' },
 						{ label: 'Discipline Pipeline', slug: 'sync/pipeline-discipline' },
 						{ label: 'Reverse Sync', slug: 'sync/reverse-sync' },
+						{ label: 'Web Server API', slug: 'sync/web-api' },
 						{ label: 'Operations', slug: 'sync/operations' },
 						{ label: 'Troubleshooting', slug: 'sync/troubleshooting' },
 						{ label: 'Utility Scripts', slug: 'sync/utility-scripts' },

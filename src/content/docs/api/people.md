@@ -62,6 +62,7 @@ The nonce is available in `window.rondoConfig.nonce` when logged in to Rondo Clu
 | `DELETE` | `/wp/v2/people/{id}` | Delete person |
 | `POST` | `/rondo/v1/people/bulk-update` | Update multiple people |
 | `POST` | `/rondo/v1/people/{id}/photo` | Upload profile photo |
+| `POST` | `/rondo/v1/people/{id}/provision` | Provision WordPress user account (admin only) |
 
 ---
 
@@ -196,6 +197,15 @@ Link people to other people:
 | `related_person` | integer | Related person post ID |
 | `relationship_type` | integer | Relationship type taxonomy term ID |
 | `relationship_label` | string | Custom label override |
+
+### User Linking (Read-Only)
+
+These fields relate to the [user provisioning](../features/user-provisioning.md) system. They are included in the API response when a person has a linked WordPress user account.
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `linked_user_id` | int\|null | WordPress user ID linked to this person |
+| `welcome_email_sent_at` | string\|null | ISO timestamp of when the welcome email was sent |
 
 ### Computed Fields (Read-Only)
 

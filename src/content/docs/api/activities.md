@@ -153,6 +153,14 @@ Returns all activities for a person, sorted by creation date (newest first).
 
 ---
 
+## Automated Activity Creation
+
+Activities can be created automatically by external integrations:
+
+- **FreeScout conversations** - The [FreeScout pipeline](../sync/pipeline-freescout.md) downloads helpdesk conversations and creates activities on the matching person records. This provides a unified timeline of member interactions without manual data entry.
+
+---
+
 ## Timeline Integration
 
 Activities also appear in the combined timeline endpoint:
