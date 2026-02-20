@@ -74,8 +74,11 @@ Loaded for: Admin, REST API, Cron
 These classes provide REST API endpoints:
 
 - **Rondo\REST\Api** - Custom `/rondo/v1/` endpoints
+- **Rondo\REST\RestInvoices** - Invoice endpoints
+- **Rondo\REST\RestFeedback** - Feedback agent endpoints
+- **Rondo\REST\RestCommissies** - Committee endpoints
+- **Rondo\REST\RestImportExport** - Import/export endpoints
 - **Rondo\Import\VCardImport** - vCard import
-- **Rondo\Import\GoogleContactsImport** - Google Contacts import
 
 Loaded for: REST API requests only
 

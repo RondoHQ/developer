@@ -7,7 +7,7 @@ This document describes the custom post types, taxonomies, and ACF field groups 
 
 ## Custom Post Types
 
-The CRM uses two custom post types, registered in `includes/class-post-types.php`.
+The system uses six custom post types, registered in `includes/class-post-types.php`.
 
 ### Person (`person`)
 

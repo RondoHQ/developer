@@ -322,40 +322,6 @@ Upload and set a person's profile photo. The filename is automatically generated
 
 ---
 
-### Gravatar Sideload
-
-**POST** `/rondo/v1/people/{person_id}/gravatar`
-
-Fetch and set a person's Gravatar as their profile photo.
-
-**Permission:** Must have access to the person
-
-**Body:**
-```json
-{
-  "email": "john@example.com"
-}
-```
-
-**Response:**
-```json
-{
-  "success": true,
-  "attachment_id": 789,
-  "thumbnail_url": "https://..."
-}
-```
-
-If no Gravatar exists:
-```json
-{
-  "success": false,
-  "message": "No Gravatar found for this email address"
-}
-```
-
----
-
 ### Team Logo Upload
 
 **POST** `/rondo/v1/teams/{team_id}/logo/upload`
