@@ -88,6 +88,33 @@ Rondo Club creates a custom user role called **"Rondo User"** (`rondo_user`) on 
 
 The role is removed on theme deactivation (users are reassigned to Subscriber).
 
+## WP Admin Blocking
+
+Non-admin users are blocked from accessing the WordPress admin panel (`/wp-admin/`). When a user without `manage_options` capability navigates to any wp-admin URL, they are immediately redirected to the app home page.
+
+### How It Works
+
+A function hooked to `admin_init` checks whether the current user has the `manage_options` capability. If not, the user is redirected via `wp_safe_redirect()`.
+
+### Exemptions
+
+The following request types are exempt from the redirect:
+
+| Request Type | Detection | Why Exempt |
+|-------------|-----------|------------|
+| AJAX | `wp_doing_ajax()` | admin-ajax.php serves frontend AJAX requests and lives under /wp-admin/ |
+| WP-CLI | `defined( 'WP_CLI' )` | CLI commands should never be redirected |
+| Cron | `defined( 'DOING_CRON' )` | Scheduled tasks must run unimpeded |
+| Administrators | `current_user_can( 'manage_options' )` | Admins need full wp-admin access |
+
+### REST API
+
+The WordPress REST API is **not affected** by admin blocking. REST requests do not go through `admin_init` (they use `rest_api_init` instead), so no exemption is needed.
+
+### Implementation
+
+The blocking function is `rondo_block_wp_admin()` in `functions.php`, hooked to `admin_init`.
+
 ## Security Considerations
 
 1. **All access control is enforced server-side** - Never trust client-side checks
