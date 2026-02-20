@@ -289,10 +289,50 @@ Get information about the currently logged in user.
   "email": "admin@example.com",
   "avatar_url": "https://...",
   "is_admin": true,
+  "can_access_fairplay": false,
+  "can_access_vog": false,
+  "can_access_financieel": false,
   "profile_url": "https://.../wp-admin/profile.php",
-  "admin_url": "https://.../wp-admin/"
+  "admin_url": "https://.../wp-admin/",
+  "linked_person_name": "Jan de Vries",
+  "active_functies": ["Voorzitter", "Penningmeester"]
 }
 ```
+
+`linked_person_name` is `null` when the user has no linked person record. `active_functies` is an empty array when there are no current job titles.
+
+---
+
+### Change Password
+
+**POST** `/rondo/v1/user/password`
+
+Change the current user's password. On success all sessions are destroyed, requiring the user to log in again.
+
+**Permission:** Logged in users only (demo user is blocked)
+
+**Request body:**
+```json
+{
+  "current_password": "old-password",
+  "new_password": "new-secure-password"
+}
+```
+
+**Success response (200):**
+```json
+{
+  "success": true,
+  "message": "Wachtwoord succesvol gewijzigd. Log opnieuw in."
+}
+```
+
+**Error responses:**
+
+| Status | Code | Message |
+|--------|------|---------|
+| 400 | `wrong_password` | Huidig wachtwoord is onjuist. |
+| 403 | `demo_user` | Wachtwoord wijzigen is niet beschikbaar in de demo. |
 
 ---
 
