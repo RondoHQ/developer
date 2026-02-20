@@ -140,41 +140,82 @@ The WordPress REST API is **not affected** by admin blocking. REST requests do n
 
 The blocking function is `rondo_block_wp_admin()` in `functions.php`, hooked to `admin_init`.
 
-## Functie-Capability Map
+## Functie-to-Role Mapping
 
-The Functie-Capability Map connects Sportlink "functies" (club-level roles like "Voorzitter", "Penningmeester") to Rondo permission roles. This enables role-based access to specific features without manual user management.
+Administrators can configure which Sportlink Functies (job titles from work history) automatically grant which Rondo WordPress roles. This configuration is used by Phase 206 (Capability Sync) during rondo-sync runs to grant or revoke roles.
 
-**Class:** `Rondo\Config\FunctieCapabilityMap`
+### Overview
 
-**Methods:**
+- Admin navigates to **Settings > Beheer > Functies**
+- A checkbox matrix shows all known Functies as rows and all Rondo roles as columns
+- Checking a cell means "this Functie grants this role"
+- A Functie can grant multiple roles simultaneously
+- Functies are populated automatically from `work_history.job_title` data in the database — admins never type them manually
 
-| Method | Description |
-|--------|-------------|
-| `get_map()` | Returns the current functie-to-role mapping |
-| `update_map( $map )` | Updates the mapping (admin only) |
-| `get_roles_for_functie( $functie )` | Returns Rondo roles for a given Sportlink functie |
+### Data Model
 
-**REST Endpoints:**
+Stored in WordPress options as a nested associative array:
 
-| Method | Endpoint | Permission | Description |
-|--------|----------|------------|-------------|
-| GET | `/rondo/v1/functie-capability-map` | Admin | Get current mapping |
-| POST | `/rondo/v1/functie-capability-map` | Admin | Update mapping |
+```php
+// Option key: rondo_functie_capability_map
+[
+    'Trainer'        => [ 'rondo_user' => true,  'rondo_fairplay' => false, 'rondo_vog' => false, 'rondo_bestuur' => false ],
+    'Penningmeester' => [ 'rondo_user' => true,  'rondo_fairplay' => false, 'rondo_vog' => false, 'rondo_bestuur' => true  ],
+]
+```
 
-**UI:** Configured in **Settings > Beheer > Functies** tab (FunctiesTab component).
+Only roles checked `true` are considered granted — entries with `false` are ignored by `get_roles_for_functie()`.
 
-**Example mapping:**
+### REST API
+
+| Method | Endpoint | Auth | Description |
+|--------|----------|------|-------------|
+| `GET` | `/rondo/v1/functie-capability-map` | Admin | Returns `{ map, roles }` — current mapping and all Rondo role definitions |
+| `POST` | `/rondo/v1/functie-capability-map` | Admin | Accepts `{ map: {...} }`, persists and returns updated `{ map, roles }` |
+
+**GET response example:**
 
 ```json
 {
-  "Voorzitter": ["admin"],
-  "Penningmeester": ["financieel"],
-  "Secretaris": ["admin"],
-  "Wedstrijdsecretaris": ["wedstrijdzaken"]
+  "map": {},
+  "roles": [
+    { "slug": "rondo_user",     "label": "Rondo User" },
+    { "slug": "rondo_fairplay", "label": "Rondo FairPlay" },
+    { "slug": "rondo_vog",      "label": "Rondo VOG" },
+    { "slug": "rondo_bestuur",  "label": "Rondo Bestuur" }
+  ]
 }
 ```
 
-When a member is synced from Sportlink with an active functie, the system looks up the corresponding Rondo roles and applies the appropriate capabilities to their WordPress user account.
+### PHP Usage
+
+The `FunctieCapabilityMap` class lives in `includes/class-functie-capability-map.php` under the `Rondo\Config` namespace.
+
+```php
+// Get the full mapping
+$map = \Rondo\Config\FunctieCapabilityMap::get_map();
+
+// Get role slugs granted by a specific Functie
+$roles = \Rondo\Config\FunctieCapabilityMap::get_roles_for_functie('Trainer');
+// Returns e.g. ['rondo_user', 'rondo_fairplay'] — only truthy entries
+
+// Persist an updated mapping
+\Rondo\Config\FunctieCapabilityMap::update_map($map);
+```
+
+This is the primary integration point for **Phase 206 (Capability Sync)**: for each user's active Functies, call `get_roles_for_functie()` to determine which roles they should have.
+
+### UI: Settings > Beheer > Functies
+
+The `FunctiesTab` component in `src/pages/Settings/Settings.jsx` renders the checkbox matrix:
+
+- **Rows:** Union of Functies from `/rondo/v1/werkfuncties/available` and keys already in the saved map, sorted alphabetically
+- **Columns:** All Rondo roles from `/rondo/v1/functie-capability-map` response
+- **Stale Functies:** If a Functie exists in the saved map but is no longer returned by the available endpoint, the row still appears with the label `(niet meer actief)` in gray italic
+
+### Stale Functies
+
+When a Functie is removed from Sportlink (and no longer appears in work history), its row remains visible in the matrix with a `(niet meer actief)` label. This allows admins to review and clean up stale mappings. The mapping itself is preserved until the admin explicitly unchecks and saves.
 
 ### Finance Settings Access
 
