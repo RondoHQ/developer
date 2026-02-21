@@ -772,7 +772,221 @@ Search for workspace members for @mention autocomplete.
 
 ---
 
+### Invoice Endpoints
+
+All invoice endpoints require the `financieel` capability.
+
+---
+
+**GET** `/rondo/v1/invoices`
+
+List invoices with optional filters.
+
+**Parameters:**
+
+| Name | Type | Default | Description |
+|------|------|---------|-------------|
+| `status` | string | (all) | Filter by status: `draft`, `sent`, `paid`, `overdue` |
+| `person_id` | int | 0 | Filter by person |
+| `type` | string | (all) | Filter by type: `membership`, `discipline` |
+| `payment_plan` | string | (all) | Filter by plan: `full`, `quarterly_3`, `monthly_8` |
+
+---
+
+**GET** `/rondo/v1/invoices/{id}`
+
+Get a single invoice with full details including line items, installment data, and person summary.
+
+---
+
+**POST** `/rondo/v1/invoices`
+
+Create a new invoice (typically used for discipline case invoices).
+
+---
+
+**DELETE** `/rondo/v1/invoices/{id}`
+
+Delete an invoice.
+
+---
+
+**POST** `/rondo/v1/invoices/{id}/status`
+
+Update invoice status.
+
+**Body:**
+```json
+{
+  "status": "paid"
+}
+```
+
+---
+
+**POST** `/rondo/v1/invoices/{id}/generate-pdf`
+
+Generate or regenerate PDF for an invoice.
+
+---
+
+**GET** `/rondo/v1/invoices/{id}/pdf`
+
+Download the generated PDF file.
+
+---
+
+**POST** `/rondo/v1/invoices/{id}/send`
+
+Send invoice email to the linked person. Updates status to `sent` and records `sent_date`.
+
+---
+
+**POST** `/rondo/v1/invoices/{id}/resend`
+
+Resend a previously sent invoice email.
+
+---
+
+**POST** `/rondo/v1/invoices/{id}/regenerate-payment-link`
+
+Regenerate the Mollie payment link for an invoice.
+
+---
+
+**GET** `/rondo/v1/invoices/{id}/qr`
+
+Download the QR code image for the invoice payment link.
+
+---
+
+**POST** `/rondo/v1/invoices/{id}/reset-payment-state`
+
+Reset payment state for an invoice (test/debug mode only).
+
+---
+
+**POST** `/rondo/v1/invoices/{id}/toggle-installments`
+
+Enable or disable installments for a specific invoice.
+
+**Body:**
+```json
+{
+  "disabled": true
+}
+```
+
+---
+
+**GET** `/rondo/v1/invoices/invoiced-cases`
+
+Get discipline case IDs that already have invoices for a given person.
+
+**Parameters:**
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `person_id` | int | Yes | Person to check |
+
+---
+
+### Bulk Invoice Creation
+
+**POST** `/rondo/v1/fees/bulk-create-invoices`
+
+Start a bulk invoice creation job for all uninvoiced members.
+
+**Permission:** Admin only
+
+**Parameters:**
+
+| Name | Type | Default | Description |
+|------|------|---------|-------------|
+| `season` | string | current | Season key (e.g., `2025-2026`) |
+
+---
+
+**GET** `/rondo/v1/fees/bulk-invoice-job`
+
+Get progress of the current bulk invoice job.
+
+**Permission:** Admin only
+
+**Response:**
+```json
+{
+  "status": "running",
+  "total": 150,
+  "processed": 45,
+  "created": 42,
+  "skipped": 3,
+  "errors": []
+}
+```
+
+---
+
+**POST** `/rondo/v1/fees/create-membership-invoice`
+
+Create a membership invoice for a single person.
+
+**Permission:** Admin only
+
+**Parameters:**
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `person_id` | int | Yes | Person to invoice |
+| `season` | string | No | Season key (defaults to current) |
+
+---
+
+### Mollie Webhook
+
+**POST** `/rondo/v1/mollie/webhook`
+
+Public webhook endpoint called by Mollie when payment status changes. No authentication required — validates via Mollie API callback.
+
+**Permission:** Public (`__return_true`)
+
+---
+
 ## Response Enhancements
+
+### Fee List Invoice Enrichment
+
+The `GET /rondo/v1/fees` endpoint enriches each member's fee data with invoice information when invoices exist:
+
+```json
+{
+  "id": 123,
+  "first_name": "Jan",
+  "final_fee": 172.50,
+  "invoice_id": 456,
+  "invoice_status": "sent"
+}
+```
+
+The `invoice_id` and `invoice_status` fields are `null` when no invoice exists for the member.
+
+### Fee Settings Installment Fields
+
+The `GET /rondo/v1/membership-fees/settings` response includes installment plan flags for each season:
+
+```json
+{
+  "current_season": {
+    "key": "2025-2026",
+    "categories": { ... },
+    "family_discount": { ... },
+    "installment_plan_3_enabled": true,
+    "installment_plan_8_enabled": true
+  }
+}
+```
+
+These can be updated via `POST /rondo/v1/membership-fees/settings` by including `installment_plan_3_enabled` and/or `installment_plan_8_enabled` boolean parameters.
 
 ### Person Relationships Expansion
 
