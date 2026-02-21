@@ -29,11 +29,16 @@ src/
 │   └── app.js            # Application-wide constants
 ├── hooks/                # Custom React hooks
 ├── pages/                # Route page components
-│   ├── Teams/
-│   ├── People/
-│   ├── Settings/
-│   ├── Todos/
-│   └── Workspaces/
+│   ├── Commissies/       # Committee list and detail
+│   ├── Contributie/      # Fee overview, member list, not-yet-invoiced
+│   ├── DisciplineCases/  # Discipline cases list
+│   ├── Feedback/         # Feedback list and detail
+│   ├── Finance/          # Invoice list, invoice detail, finance settings
+│   ├── People/           # People list and detail
+│   ├── Settings/         # App settings, relationship types, custom fields
+│   ├── Teams/            # Team list and detail
+│   ├── Todos/            # Todo list
+│   └── VOG/              # VOG certificate tracking
 ├── utils/                # Utility functions
 ├── App.jsx               # Main routing component
 ├── main.jsx              # Application entry point
@@ -71,26 +76,34 @@ Main routing component:
 
 ### Route Structure
 
-| Path | Component | Description |
-|------|-----------|-------------|
-| `/login` | `Login` | Public login page |
-| `/` | `Dashboard` | Home dashboard |
-| `/people` | `PeopleList` | Contact list |
-| `/people/new` | `PersonForm` | Create contact |
-| `/people/:id` | `PersonDetail` | View contact |
-| `/people/:id/edit` | `PersonForm` | Edit contact |
-| `/people/:personId/contact/new` | `ContactDetailForm` | Add contact method |
-| `/people/:personId/work-history/new` | `WorkHistoryForm` | Add work history |
-| `/people/:personId/relationship/new` | `RelationshipForm` | Add relationship |
-| `/teams` | `TeamsList` | Team list |
-| `/teams/new` | `TeamForm` | Create team |
-| `/teams/:id` | `TeamDetail` | View team |
-| `/teams/:id/edit` | `TeamForm` | Edit team |
-| `/settings` | `Settings` | Settings page |
-| `/settings/relationship-types` | `RelationshipTypes` | Manage relationship types |
-| `/settings/import` | `Import` | Import contacts |
-| `/workspaces` | `WorkspacesList` | Workspace list |
-| `/workspaces/:id` | `WorkspaceDetail` | View workspace, manage members |
+| Path | Component | Description | Access |
+|------|-----------|-------------|--------|
+| `/login` | `Login` | Public login page | Public |
+| `/` | `Dashboard` | Home dashboard | Auth |
+| `/people` | `PeopleList` | Contact list | Auth |
+| `/people/:id` | `PersonDetail` | View contact | Auth |
+| `/teams` | `TeamsList` | Team list | Auth |
+| `/teams/:id` | `TeamDetail` | View team | Auth |
+| `/commissies` | `CommissiesList` | Committee list | Auth |
+| `/commissies/:id` | `CommissieDetail` | Committee detail | Auth |
+| `/todos` | `TodosList` | Todo list | Auth |
+| `/feedback` | `FeedbackList` | Feedback list | Auth |
+| `/feedback/:id` | `FeedbackDetail` | Feedback detail | Auth |
+| `/vog` | `VOG` | VOG certificate tracking | VOG capability |
+| `/vog/:tab` | `VOG` | VOG tab view | VOG capability |
+| `/tuchtzaken` | `DisciplineCasesList` | Discipline cases | Fairplay capability |
+| `/financien/contributie` | `Contributie` | Fee overview | Financieel capability |
+| `/financien/contributie/:tab` | `Contributie` | Fee tab view | Financieel capability |
+| `/financien/facturen` | `Facturen` | Invoice list | Financieel capability |
+| `/financien/facturen/:id` | `FactuurDetail` | Invoice detail | Financieel capability |
+| `/financien/instellingen` | `FinanceSettings` | Finance configuration | Financieel capability |
+| `/settings` | `Settings` | Settings page | Auth |
+| `/settings/:tab` | `Settings` | Settings tab | Auth |
+| `/settings/relationship-types` | `RelationshipTypes` | Manage relationship types | Auth |
+| `/settings/custom-fields` | `CustomFields` | Custom field management | Auth |
+| `/settings/feedback` | `FeedbackManagement` | Feedback settings | Auth |
+
+**Capability-based route guards:** Routes under `/financien/` require `financieel` capability, `/vog` requires VOG capability, and `/tuchtzaken` requires fairplay capability. These are enforced by `CapabilityRoute` wrapper components (`FinancieelRoute`, `VOGRoute`, `FairplayRoute`).
 
 ### Authentication
 
