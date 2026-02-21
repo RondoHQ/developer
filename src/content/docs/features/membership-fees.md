@@ -886,6 +886,118 @@ The following constants, methods, and patterns were removed in v21.0 (Phase 156)
   - **Migration:** Automatic migration converts old ranges to empty arrays (catch-all)
   - **Reason:** Age class matching must align exactly with Sportlink's classification system
 
+## Invoice Creation from Fees (v27+)
+
+Once membership fees are calculated, invoices can be created for individual members or in bulk.
+
+### Single Invoice Creation
+
+**Endpoint:** `POST /rondo/v1/fees/create-membership-invoice`
+
+Creates a `rondo_invoice` post of type `membership` for one person:
+
+1. Retrieves the person's fee snapshot for the season
+2. Generates a sequential invoice number with `C` prefix (e.g., `C-2025-0042`) via `InvoiceNumbering`
+3. Creates the invoice post with line items from the fee breakdown
+4. Returns the created invoice ID
+
+### Bulk Invoice Creation
+
+**Endpoint:** `POST /rondo/v1/fees/bulk-create-invoices`
+
+Creates invoices for all uninvoiced members in a season:
+
+1. Admin triggers the job via the "Nog te factureren" (not yet invoiced) UI
+2. `BulkInvoiceCreator` iterates all members with fee snapshots
+3. Skips members who already have an invoice for the season
+4. Calls `create_membership_invoice()` for each eligible member
+5. Progress is tracked in a WordPress option (`rondo_bulk_invoice_job`)
+6. Frontend polls `GET /rondo/v1/fees/bulk-invoice-job` for progress updates
+
+### Invoice Lifecycle
+
+```
+Draft → Send Email → Sent → Payment via Mollie → Paid
+                       ↓
+                   (overdue after due_date)
+                       ↓
+                    Overdue
+```
+
+## Installment Payment Plans (v28+)
+
+Members can pay membership invoices in installments instead of a lump sum.
+
+### Plan Types
+
+| Plan | Key | Installments | Description |
+|------|-----|-------------|-------------|
+| Full payment | `full` | 1 | Single payment (default) |
+| Quarterly | `quarterly_3` | 3 | Three equal installments |
+| Monthly | `monthly_8` | 8 | Eight monthly installments |
+
+### Plan Configuration
+
+Plans are enabled/disabled per season via WordPress options:
+
+| Option Key | Default | Description |
+|------------|---------|-------------|
+| `rondo_installment_plan_3_enabled_{season}` | `true` | Enable 3-installment plan |
+| `rondo_installment_plan_8_enabled_{season}` | `true` | Enable 8-installment plan |
+
+These are managed via the `MembershipFees` class methods:
+- `get_installment_plan_3_enabled( $season )`
+- `set_installment_plan_3_enabled( $enabled, $season )`
+- `get_installment_plan_8_enabled( $season )`
+- `set_installment_plan_8_enabled( $enabled, $season )`
+
+### Installment Admin Fee
+
+An optional admin fee can be added to each installment when a member chooses to pay in installments:
+
+| Option | Key | Default |
+|--------|-----|---------|
+| Admin fee per installment | `rondo_finance_installment_admin_fee` | `0.00` |
+
+Configured in `FinanceConfig` and editable via the Finance Settings UI.
+
+### Installment Email Template
+
+A separate email template is used when sending installment payment requests:
+
+| Option | Key |
+|--------|-----|
+| Installment email template | `rondo_finance_installment_email_template` |
+
+**Available placeholders:**
+
+| Placeholder | Description |
+|-------------|-------------|
+| `{voornaam}` | Person's first name |
+| `{factuur_nummer}` | Invoice number |
+| `{termijn_nummer}` | Current installment number |
+| `{totaal_termijnen}` | Total number of installments |
+| `{termijn_bedrag}` | Installment amount |
+| `{vervaldatum}` | Due date |
+| `{betaallink}` | Mollie payment link |
+| `{organisatie_naam}` | Organization name |
+
+### Installment Processing
+
+The `InstallmentScheduler` runs on WP-Cron and:
+1. Checks for installments with upcoming due dates
+2. Triggers `InstallmentEmailSender` to send payment request emails
+3. Creates individual Mollie payment links per installment
+4. Updates installment status as payments are received via `MollieWebhook`
+
+### Toggling Installments per Invoice
+
+Individual invoices can have installments enabled/disabled via:
+
+`POST /rondo/v1/invoices/{id}/toggle-installments` with `{ "disabled": true/false }`
+
+This allows admins to override the plan for specific members.
+
 ## Version History
 
 - **v21.1** (2026-02-09, Phase 161): Configurable team and werkfunctie matching rules with admin UI, migration helpers, and werkfuncties/available endpoint
