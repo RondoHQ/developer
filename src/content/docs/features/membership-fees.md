@@ -988,6 +988,7 @@ Rendering notes:
 - This same shared wrapper is also used for direct invoice mails and invoice reminders, so finance-related emails now have a consistent visual structure.
 - The `Standaard e-mail voor gewone facturen` setting now uses the same rich text editor as the other finance templates and stores HTML with `wp_kses_post()` sanitization.
 - Existing plain-text regular-invoice templates remain backward compatible: if no HTML markup is detected, the sender still converts the text to paragraphs/line breaks before wrapping it.
+- Naming split: invoice PDFs continue to use the legal finance organization name (`org_name`), while user-facing finance branding such as email sender/display text and public payment pages now prefers `Clubnaam` via `FinanceConfig::get_display_name()`.
 
 ### Sending Test Emails
 
