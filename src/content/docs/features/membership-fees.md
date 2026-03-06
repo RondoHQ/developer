@@ -1068,6 +1068,7 @@ Manual invoices for external recipients support extra recipient metadata in addi
   - `customer_name`
   - `customer_attention`
   - `customer_email`
+  - `customer_cc_email`
   - `customer_address`
   - `payment_account_id`
 
@@ -1075,7 +1076,9 @@ Manual invoices for external recipients support extra recipient metadata in addi
 
 - `customer_attention` is stored on the invoice and rendered on the PDF directly below the customer name as `T.a.v. {value}` when present.
 - `customer_email` is stored on the invoice, shown in invoice detail, rendered on the PDF below the attention line, and included in the recipient list when the invoice is sent.
+- `customer_cc_email` is stored on the invoice, shown in invoice detail, not rendered on the PDF, and sent as a real `Cc:` header when the invoice email is delivered.
 - `customer_email` is validated as an email address when provided, but remains optional so external invoices without an email can still be saved as draft.
+- `customer_cc_email` is also validated as an email address when provided, and remains optional.
 - `custom_fields` (max 2) are shown below `Vervaldatum` on invoice detail and now also render in the same metadata block on the PDF.
 - When a field label is `Ter attentie van`, the detail view removes a leading `T.a.v.` from the stored value to avoid duplicate wording.
 - `payment_account_id` stores the selected bank account snapshot on the invoice, so the chosen IBAN and account holder remain visible in invoice detail, PDFs, and provider-driven payment flows.
@@ -1103,6 +1106,7 @@ Finance settings now support multiple bank accounts in the `Betaling` tab.
 
 ## Version History
 
+- **v31.6.38** (2026-03-06): Added a separate CC email field for manual external invoices; it is not shown on PDFs but is included as a mail CC recipient.
 - **v31.6.37** (2026-03-06): Added multi-bank-account finance settings, per-invoice account selection, and invoice/PDF payment details based on the selected account.
 - **v31.6.36** (2026-03-06): Moved `Bewerk concept` to the invoice header, removed duplicate `T.a.v.` wording in invoice detail, and rendered manual invoice custom fields in the PDF metadata block.
 - **v31.6.35** (2026-03-06): Added full draft-invoice editing via `POST /rondo/v1/invoices/{id}/draft-details` and a shared draft form for create/edit flows.
