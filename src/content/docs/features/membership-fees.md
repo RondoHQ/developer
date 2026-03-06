@@ -987,6 +987,17 @@ Rendering notes:
 - The resolved HTML is then wrapped in the shared `Rondo\Notifications\EmailTemplate` layout, which adds branded spacing, footer, and a CTA button.
 - This same shared wrapper is also used for direct invoice mails and invoice reminders, so finance-related emails now have a consistent visual structure.
 
+### Sending Test Emails
+
+The invoice detail screen now exposes a `Verstuur testmail` action for invoices in status `draft`, `sent`, or `overdue`.
+
+Behavior:
+- Accepts an explicit recipient address entered by the finance user.
+- Uses the existing invoice send/resend endpoints with the `recipient` request field.
+- Forces the invoice mailer to send only to that override address and suppresses BCC.
+- Keeps the `[TEST]` subject prefix from `InvoiceEmailSender`.
+- For `draft` invoices, the test send does **not** transition the invoice to `sent`; it remains a draft after the preview mail is sent.
+
 ### Installment Processing
 
 The `InstallmentScheduler` runs on WP-Cron and:

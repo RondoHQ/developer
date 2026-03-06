@@ -962,11 +962,17 @@ Download the generated PDF file.
 
 Send invoice email to the linked person. Updates status to `sent` and records `sent_date`.
 
+Optional body field:
+- `recipient` — send a test mail to this address instead of the normal recipients. BCC is skipped and draft invoices remain in `draft`.
+
 ---
 
 **POST** `/rondo/v1/invoices/{id}/resend`
 
 Resend a previously sent invoice email.
+
+Optional body field:
+- `recipient` — send the resend as a test mail to this address only.
 
 ---
 
