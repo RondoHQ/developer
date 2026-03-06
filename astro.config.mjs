@@ -81,6 +81,7 @@ export default defineConfig({
 						{ label: 'Operations', slug: 'sync/operations' },
 						{ label: 'Troubleshooting', slug: 'sync/troubleshooting' },
 						{ label: 'Utility Scripts', slug: 'sync/utility-scripts' },
+						{ label: 'Web Server API', slug: 'sync/web-api' },
 					],
 				},
 			],

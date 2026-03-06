@@ -225,6 +225,8 @@ Background maintenance task that runs with reminders:
 
 **User Meta:** `rondo_notification_channels` (array containing `'email'`)
 
+**Transport:** `wp_mail()` is intercepted by `Rondo\Notifications\LettermintMailer`, which sends through Lettermint when configured.
+
 **Email Format:**
 ```
 Subject: [Rondo Club] Your Reminders & Todos - June 15, 2025
@@ -388,8 +390,9 @@ Birthdays are detected from the `birthdate` field on person records. All birthda
 ### Server Requirements
 
 - WordPress cron must be functioning
-- Email (wp_mail) must be configured for email channel
-- Consider using SMTP plugin for email reliability
+- Lettermint must be configured for outbound delivery:
+  - `RONDO_LETTERMINT_API_TOKEN` constant **or** `LETTERMINT_API_TOKEN` env var
+  - Optional route: `RONDO_LETTERMINT_ROUTE_ID` constant or `LETTERMINT_ROUTE_ID` env var
 
 ## Testing Reminders
 
@@ -420,7 +423,7 @@ if ($next_run) {
 
 ### Verify Email
 
-Test that `wp_mail()` works:
+Test that `wp_mail()` still works (Rondo will route through Lettermint when configured):
 
 ```php
 wp_mail('test@example.com', 'Test Subject', 'Test message');
@@ -431,7 +434,7 @@ wp_mail('test@example.com', 'Test Subject', 'Test message');
 ### Emails Not Sending
 
 1. **Check cron is running** - WordPress cron requires page visits or server cron
-2. **Check email configuration** - Use an SMTP plugin like WP Mail SMTP
+2. **Check Lettermint credentials** - verify API token/route configuration in env/constants/options
 3. **Check spam folder** - Emails may be filtered
 4. **Check user emails** - Users must have valid email addresses
 5. **Check user preferences** - User must have email channel enabled

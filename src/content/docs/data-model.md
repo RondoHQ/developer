@@ -35,6 +35,13 @@ Represents individual contacts in the CRM.
 | Addresses | `addresses` | repeater | Physical addresses (see below) |
 | Work History | `work_history` | repeater | Employment history (see below) |
 | Relationships | `relationships` | repeater | Connections to other people (see below) |
+| Vrijwilliger sinds | `vrijwilliger-sinds` | date_picker | Sportlink-synced volunteer start date |
+
+**Native WordPress Meta Fields** (registered in `includes/class-post-types.php`):
+
+| Field | Key | Type | Description |
+|-------|-----|------|-------------|
+| Primary Team | `team` | integer (post meta) | Direct team post ID on person for sync/integration workflows. Exposed via REST as `meta.team`. |
 
 **Sportlink-Synced Fields** (from `acf-json/group_person_fields.json`, Sportlink tab):
 
@@ -101,7 +108,7 @@ Years currently tracked: 2022, 2023, 2024, 2025.
 
 | Field | Key | Type | Options |
 |-------|-----|------|---------|
-| Type | `contact_type` | select | email, phone, mobile, website, calendar, linkedin, twitter, instagram, facebook, other |
+| Type | `contact_type` | select | email, email2, phone, mobile, website, calendar, linkedin, twitter, instagram, facebook, other |
 | Label | `contact_label` | text | e.g., "Work", "Personal" |
 | Value | `contact_value` | text | The actual contact value |
 
@@ -471,4 +478,3 @@ For details, see [Access Control](./access-control.md).
 - [REST API](./rest-api.md) - API endpoints for accessing data
 - [Relationships](./relationships.md) - Bidirectional relationship system
 - [Relationship Types](./relationship-types.md) - Configuring relationship types
-

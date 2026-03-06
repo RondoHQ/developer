@@ -130,6 +130,13 @@ This endpoint is called periodically by the frontend to detect when a new versio
 
 Search across people and teams.
 
+People matches include:
+- first name, infix, last name
+- general post search/title
+- searchable custom fields
+- KNVB ID (`knvb-id` and `custom_knvb-id`)
+- e-mail addresses inside `contact_info` (ACF repeater)
+
 **Permission:** Logged in users only
 
 **Parameters:**
@@ -149,6 +156,25 @@ Search across people and teams.
   ]
 }
 ```
+
+---
+
+### Sportlink Individual Sync
+
+**POST** `/rondo/v1/sportlink/sync-individual`
+
+Start a single-member Sportlink sync for one KNVB ID.
+
+**Permission:** `manage_options` (admin) **or** `toegangscontrole` capability.
+
+**Parameters:**
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `knvb_id` | string | Yes | KNVB member ID to sync |
+
+**Response:**
+Returns the proxied response from the sync service, optionally including immediate capability-sync output for the linked person/user.
 
 ---
 
@@ -216,6 +242,35 @@ Get all people who work or worked at a team.
       "end_date": "2023-06-30"
     }
   ]
+}
+```
+
+---
+
+### Filtered People
+
+**GET** `/rondo/v1/people/filtered`
+
+Returns paginated people with server-side filtering and sorting for the `/people` list.
+
+**Authentication:** Required (approved user)
+
+**Useful query params:**
+
+- `page`, `per_page`
+- `orderby`, `order`
+- `birth_year_from`, `birth_year_to`
+- `birth_month` (1-12, filters people by birthday month)
+- `include_former` (`1` to include former members)
+- `lid_tot_future` (`1` to show members with a future `lid-tot` date)
+
+**Response:**
+```json
+{
+  "people": [],
+  "total": 0,
+  "page": 1,
+  "total_pages": 0
 }
 ```
 
@@ -745,6 +800,33 @@ Note: The current user is automatically excluded from search results.
 
 ---
 
+### Admin User List
+
+**GET** `/rondo/v1/users`
+
+Returns provisioned app users (users linked to a person record) for admin management screens.
+
+**Permission:** Admin only
+
+**Response:**
+```json
+[
+  {
+    "id": 12,
+    "name": "Jane Doe",
+    "email": "jane@example.com",
+    "registered": "2026-02-20 09:15:00",
+    "last_active": "2026-02-24 08:42:10",
+    "linked_person_id": 345,
+    "linked_person_name": "Jane Doe"
+  }
+]
+```
+
+`last_active` is `null` when no tracked activity exists yet.
+
+---
+
 ### Mention Notifications Preference
 
 **POST** `/rondo/v1/user/mention-notifications`
@@ -1269,3 +1351,15 @@ When no option is set, hardcoded defaults from `VolunteerStatus` class are used.
 - [Data Model](../data-model.md) - Post types and fields
 - [VOG Filtered People](./vog-filtered-people.md) - VOG tab endpoint with KNVB IDs and volunteer filters
 
+
+---
+
+### Membership Passes
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/rondo/v1/membership-passes/people/{person_id}/qr-token` | Issue signed membership pass QR token |
+| GET | `/rondo/v1/membership-passes/people/{person_id}/landing-url` | Ensure and return person's public membership pass landing URL |
+| POST | `/rondo/v1/membership-passes/verify` | Validate scanned membership pass token |
+
+Detailed reference: `api/membership-passes.md`.

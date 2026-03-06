@@ -1,0 +1,50 @@
+---
+title: Clothing API
+---
+
+Base namespace: `/wp-json/rondo/v1`.
+
+All endpoints require `manage_clothing` (or admin).
+
+## Items
+
+- `GET /clothing/items`
+- `POST /clothing/items`
+- `PUT /clothing/items/{id}`
+- `DELETE /clothing/items/{id}`
+
+## Assignments
+
+- `GET /clothing/assignments`
+  - Optional query params: `person_id`, `item_id`, `season`
+- `POST /clothing/assignments`
+
+`POST /clothing/assignments` body keys:
+
+- `person_id` (required)
+- `item_id` (required)
+- `size` (required)
+- `condition`
+- `date`
+- `in_or_out` (`in` or `out`, required)
+- `season`
+- `deposit_paid`
+- `deposit_returned`
+- `notes`
+- `override_reason` (optional eligibility override)
+
+## Profile + Reporting
+
+- `GET /clothing/person/{person_id}/profile`
+- `GET /clothing/overview`
+- `GET /clothing/export` (CSV)
+
+## Settings
+
+- `GET /clothing/settings`
+- `POST /clothing/settings`
+
+Settings keys:
+
+- `cooldown_seasons`
+- `current_season`

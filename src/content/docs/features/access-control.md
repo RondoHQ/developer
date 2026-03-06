@@ -7,37 +7,15 @@ This document describes the access control system in Rondo Club.
 
 ## Overview
 
-Rondo Club uses a **shared access model**: all authenticated users can see and edit all data. On top of this, a role-based permission system controls access to administrative features and specific sections of the application.
+Rondo Club uses a mostly shared access model: authenticated users can see and edit all people and teams, with task-specific visibility rules for todos. On top of this, a role-based permission system controls access to administrative features and specific sections of the application.
 
 **Key principles:**
 
-1. **Authenticated users see everything** - Once logged in, users can view and edit all people, teams, dates, and todos
-2. **Trashed posts are hidden** - Posts in the trash are not accessible via the frontend
-3. **WP Admin is blocked** - Non-admin users are redirected away from wp-admin
-4. **Roles map from Sportlink** - Sportlink "functies" are mapped to Rondo permission roles via the Functie-Capability Map
-
-## WP Admin Blocking
-
-Non-admin users are blocked from accessing the WordPress admin dashboard. This is implemented in `functions.php` via `rondo_block_wp_admin()`.
-
-**Behavior:**
-- Non-admin users requesting `/wp-admin/` are redirected to the site homepage
-- Exemptions: AJAX requests, WP-CLI, and cron jobs pass through
-- Administrators (`manage_options` capability) are never blocked
-
-```php
-// Simplified logic
-function rondo_block_wp_admin() {
-    if ( is_admin() && ! current_user_can( 'manage_options' ) ) {
-        // Exempt AJAX, WP-CLI, and cron
-        if ( wp_doing_ajax() || defined( 'WP_CLI' ) || wp_doing_cron() ) {
-            return;
-        }
-        wp_safe_redirect( home_url( '/' ) );
-        exit;
-    }
-}
-```
+1. **Authenticated users share core data** - Once logged in, users can view and edit all people, teams, and dates
+2. **Todo visibility is scoped** - Users only see todos they created or todos assigned to them
+3. **Trashed posts are hidden** - Posts in the trash are not accessible via the frontend
+4. **WP Admin is blocked** - Non-admin users are redirected away from wp-admin
+5. **Roles map from Sportlink** - Sportlink "functies" are mapped to Rondo permission roles via the Functie-Capability Map
 
 ## Implementation
 
@@ -62,6 +40,15 @@ The class intercepts data access at multiple levels:
 | `pre_get_posts` | Blocks unauthenticated users from seeing any posts |
 | `rest_{post_type}_query` | Blocks unauthenticated users from REST API list queries |
 | `rest_prepare_{post_type}` | Verifies authentication for single item REST access |
+
+### Todo Visibility Rule
+
+For post type `rondo_todo`, list and single-item access use this rule:
+
+- Creator visibility: `post_author = current_user`
+- Assignee visibility: post meta `assigned_user_id = current_user`
+
+This lets a user assign a todo to another user while still keeping the todo visible for themselves.
 
 ### Access Check Methods
 

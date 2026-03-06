@@ -42,7 +42,7 @@ Syncs a single member from Sportlink to Rondo Club. Launches a Playwright browse
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| `knvb_id` | string | Yes | KNVB member ID (4-10 alphanumeric characters, e.g. `TJJS83T`) |
+| `knvb_id` | string | Yes | KNVB member ID (4-10 alphanumeric characters, e.g. `SYQG014`) |
 
 #### Responses
 

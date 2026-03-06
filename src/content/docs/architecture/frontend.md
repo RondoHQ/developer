@@ -45,6 +45,19 @@ src/
 └── index.css             # Global styles (Tailwind imports)
 ```
 
+## Global Styling Conventions
+
+Shared visual styles are defined in `src/index.css` to keep page components consistent.
+
+- **Heading typography**
+  - `h1` and `h2` default to Montserrat with a stronger title weight.
+  - Brand gradient heading treatment is applied through `h1.text-brand-gradient`, `h2.text-brand-gradient`, or `.brand-heading`.
+  - Use `.heading-plain` to explicitly opt out of gradient text on detail/legal contexts.
+- **Cards**
+  - Use the shared `.card` class for standard content containers.
+  - `.card` includes the light neutral surface, subtle border/shadow, and a 3px brand gradient top accent.
+  - Hover states are defined centrally so card interactions remain consistent across pages.
+
 ## Entry Points
 
 ### `src/main.jsx`
@@ -71,6 +84,14 @@ Main routing component:
 - Defines all application routes
 - Implements `ProtectedRoute` wrapper for authentication
 - Wraps protected routes in `Layout` component
+
+### `src/components/layout/Layout.jsx`
+
+Application shell behavior:
+- Uses document-level scrolling on mobile and a fixed viewport-height shell with a scrollable `<main>` region on desktop.
+- Uses dynamic viewport units (`dvh`) and subtracts a CSS admin-bar offset variable (`--rondo-admin-bar-offset`) so mobile pages can scroll to the real end even when the WordPress admin bar is visible.
+- Applies `min-h-0` on nested flex containers to prevent content clipping in long detail pages.
+- Applies extra mobile bottom padding on `<main>` (including `env(safe-area-inset-bottom)`) so pages with long content remain reachable above mobile browser chrome and fixed bottom UI elements.
 
 ## Routing
 
@@ -442,4 +463,3 @@ When the app is installed as a PWA or loaded in a mobile browser (Add to Home Sc
 - [REST API](./rest-api.md) - Backend API reference
 - [Data Model](./data-model.md) - Post types and fields
 - [Architecture](./architecture.md) - Overall system architecture
-

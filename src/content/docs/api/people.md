@@ -45,6 +45,23 @@ X-WP-Nonce: {nonce_value}
 
 The nonce is available in `window.rondoConfig.nonce` when logged in to Rondo Club.
 
+### Remote Utility Script
+
+For fast remote operations from your terminal, use:
+
+```bash
+bin/person-values.sh find --query "jan"
+bin/person-values.sh get --id 123 --field first_name
+bin/person-values.sh set --id 123 --field former_member --value true --type boolean
+```
+
+The script uses these `.env` variables:
+- `RONDO_API_URL`
+- `RONDO_API_USER`
+- `RONDO_API_PASSWORD`
+
+It updates people via REST only (no WP-CLI dependency) and supports `fields`, `acf`, and `meta` sources (`--source auto` by default).
+
 ---
 
 **Access Control:** Users can only see and modify people they created themselves. Sharing and workspace visibility can extend access to other users.
@@ -117,6 +134,7 @@ Contact info is stored as a repeater field with multiple entries:
 
 **Contact Types:**
 - `email` - E-mailadres
+- `email2` - Tweede e-mailadres (Sportlink `Email2`)
 - `phone` - Telefoon (vast)
 - `mobile` - Mobiel
 - `website` - Website
@@ -128,6 +146,8 @@ Contact info is stored as a repeater field with multiple entries:
 - `facebook` - Facebook
 - `calendar` - Agenda link
 - `other` - Anders
+
+For Sportlink sync, a second mobile or landline number is stored as an additional `mobile`/`phone` row with `contact_label: "2"`.
 
 ### Addresses
 

@@ -1,0 +1,68 @@
+---
+title: Clothing Management
+---
+
+The clothing management module tracks which member has which club clothing item and when it was handed out or returned.
+
+## Capabilities
+
+- Uses capability `manage_clothing`.
+- New role: `rondo_clothing_manager`.
+- Administrators also receive `manage_clothing`.
+
+## Data Model
+
+### `rondo_clothing_item`
+
+Represents a clothing type (for example: wedstrijdshirt, trainingsjack).
+
+Stored fields:
+
+- `post_title` (name)
+- `_clothing_brand`
+- `_clothing_color`
+- `_clothing_season`
+- `_clothing_unit_cost`
+- `_clothing_deposit_amount`
+- `_clothing_active`
+- `_clothing_available_sizes` (array)
+- taxonomy: `clothing_category`
+
+### `rondo_clothing_txn`
+
+Represents one clothing transaction (handout or return).
+
+Stored fields:
+
+- `_clothing_person_id`
+- `_clothing_item_id`
+- `_clothing_size`
+- `_clothing_condition`
+- `_clothing_date`
+- `_clothing_handled_by`
+- `_clothing_in_or_out` (`in` or `out`)
+- `_clothing_deposit_paid`
+- `_clothing_deposit_returned`
+- `_clothing_notes`
+- `_clothing_season`
+- `_clothing_override_reason`
+
+## Frontend
+
+- New page: `/kleding`.
+- Person detail includes a `Kleding` tab with:
+  - eligibility summary
+  - current clothing items in possession
+  - transaction history
+  - outstanding deposit total
+
+## Eligibility Engine (MVP)
+
+Config stored in option `rondo_clothing_settings`:
+
+- `cooldown_seasons` (default: `3`)
+- `current_season` (default generated from current date)
+
+Rule:
+
+- For `out` transactions, if the same member received the same item less than `cooldown_seasons` ago, issuance is blocked unless `override_reason` is provided.

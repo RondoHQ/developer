@@ -7,12 +7,13 @@ This document describes Rondo Club's multi-user setup, user management, and prov
 
 ## Overview
 
-Rondo Club uses a **shared access model**: all authenticated users can see and edit all data. This makes it ideal for teams collaborating on a shared contact database.
+Rondo Club uses a shared model for core entities, with scoped task visibility for todos.
 
 **Key features:**
 
 - Multiple users can access the same Rondo Club installation
-- All logged-in users see all contacts, teams, dates, and todos
+- All logged-in users see all contacts, teams, and dates
+- Todos are visible to their creator and the assigned user
 - Users can be created manually by administrators or provisioned from person records
 - User activity is tracked via post author and note author fields
 - Person records and WordPress users are bidirectionally linked
@@ -84,8 +85,19 @@ All users share:
 
 - **People** - All contact records
 - **Teams** - All team/company records
-- **Todos** - All todo items
+- **Todos** - Todos you created plus todos assigned to you
 - **Notes** - Shared notes on contacts (private notes remain private)
+
+### Todo Assignment Notifications
+
+When a todo is assigned or reassigned to a user, that assignee receives an email notification automatically.
+
+- Subject format: `[Rondo] Nieuwe taak: {todo title}`
+- Body includes:
+  - The assigning user's display name
+  - Todo title
+  - Todo description/notes
+- Delivery uses the standard `wp_mail()` transport configuration (Lettermint when enabled, WordPress fallback otherwise).
 
 ### Note Privacy
 
