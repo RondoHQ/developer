@@ -982,6 +982,11 @@ A separate email template is used when sending installment payment requests:
 | `{betaallink}` | Mollie payment link |
 | `{organisatie_naam}` | Organization name |
 
+Rendering notes:
+- Placeholder substitution still happens inside the finance sender classes.
+- The resolved HTML is then wrapped in the shared `Rondo\Notifications\EmailTemplate` layout, which adds branded spacing, footer, and a CTA button.
+- This same shared wrapper is also used for direct invoice mails and invoice reminders, so finance-related emails now have a consistent visual structure.
+
 ### Installment Processing
 
 The `InstallmentScheduler` runs on WP-Cron and:

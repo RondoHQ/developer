@@ -9,6 +9,27 @@ Rondo Club routes outgoing `wp_mail()` traffic through Lettermint using the them
 - Existing mail call sites remain unchanged (`wp_mail()` is still used throughout the codebase)
 - Delivery is handled via Lettermint API instead of SMTP/plugin transport
 - Delivery failures and complaints are fed back through a signed webhook endpoint
+- Most user-facing emails are wrapped by `Rondo\Notifications\EmailTemplate`, which provides a shared branded HTML shell around each sender's own content
+
+## Shared HTML Layout
+
+Class: `includes/class-email-template.php`
+
+Purpose:
+- Provides a consistent HTML shell for outbound emails with branded header, card layout, footer, and optional CTA button
+- Supports both prebuilt HTML fragments (`body_html`) and plain-text templates converted with `EmailTemplate::format_plain_text()`
+- Keeps existing sender-specific placeholder replacement logic inside each mailer, then wraps the final content
+
+Current adopters:
+- Finance invoice mails (`InvoiceEmailSender`)
+- Installment mails (`InstallmentEmailSender`)
+- Invoice reminders (`InvoiceReminderSender`)
+- VOG request/reminder mails (`VOGEmail`)
+- Welcome mails for provisioned users (`UserProvisioning`)
+- Todo assignment mails
+- Immediate mention notifications
+- Digest mails (`EmailChannel`)
+- Lettermint test and verification mails
 
 ## Outbound Transport
 

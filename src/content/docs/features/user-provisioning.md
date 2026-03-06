@@ -107,6 +107,8 @@ The WordPress users list includes additional fields for linked persons:
 
 The welcome email template is configurable in **Settings > Beheer > Welkomstmail** tab (WelkomstmailTab component).
 
+The stored template body is plain text with placeholders. `Rondo\Users\UserProvisioning` resolves those placeholders first and then renders the message inside the shared `Rondo\Notifications\EmailTemplate` HTML layout, including a primary CTA button for the password-set link.
+
 **Available template variables:**
 
 | Variable | Description |
