@@ -986,6 +986,8 @@ Rendering notes:
 - Placeholder substitution still happens inside the finance sender classes.
 - The resolved HTML is then wrapped in the shared `Rondo\Notifications\EmailTemplate` layout, which adds branded spacing, footer, and a CTA button.
 - This same shared wrapper is also used for direct invoice mails and invoice reminders, so finance-related emails now have a consistent visual structure.
+- The `Standaard e-mail voor gewone facturen` setting now uses the same rich text editor as the other finance templates and stores HTML with `wp_kses_post()` sanitization.
+- Existing plain-text regular-invoice templates remain backward compatible: if no HTML markup is detected, the sender still converts the text to paragraphs/line breaks before wrapping it.
 
 ### Sending Test Emails
 
