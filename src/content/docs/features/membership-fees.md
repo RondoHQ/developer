@@ -1106,6 +1106,8 @@ Finance settings now support multiple bank accounts in the `Betaling` tab.
 
 ## Version History
 
+- **v31.6.42** (2026-03-06): Removed the duplicate `Ter attentie van` row from invoice detail; the normalized value now renders only once.
+- **v31.6.41** (2026-03-06): Removed the internal bank-account label from invoice payment details; only IBAN and account holder remain visible.
 - **v31.6.40** (2026-03-06): Removed the duplicate lower `Bewerk concept` action from invoice detail; the header button remains the single edit entry point.
 - **v31.6.39** (2026-03-06): Moved the manual external invoice `E-mail` and `CC` fields onto the same row in the draft form.
 - **v31.6.38** (2026-03-06): Added a separate CC email field for manual external invoices; it is not shown on PDFs but is included as a mail CC recipient.
