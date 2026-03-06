@@ -998,8 +998,128 @@ Individual invoices can have installments enabled/disabled via:
 
 This allows admins to override the plan for specific members.
 
+## Adjusting Discounts On Sent Membership Invoices
+
+For membership invoices that are already sent but still unpaid, finance users can update family discount and instapkorting percentages directly on the invoice detail page.
+
+### Endpoint
+
+- **POST** `/rondo/v1/invoices/{id}/membership-discount`
+- **Body:** `{ "family_discount_percent": 0..100, "entry_discount_percent": 0..100 }` (one or both fields)
+- **Permission:** `financieel`
+
+### Guardrails
+
+- Only works for `membership` invoices.
+- Only works for invoice status `sent` or `overdue` (not `draft` or `paid`).
+- Blocked when any installment is already paid (`_installment_{N}_status = betaald`).
+- Blocked when installment payment links were already issued (`_installment_{N}_mollie_payment_id` exists), to avoid stale external payment links.
+
+### What Gets Updated
+
+- Updates or inserts the `Gezinskorting (X%)` and `Instapkorting (Y%)` line items in `line_items`.
+- Recalculates and stores `total_amount`.
+- Clears the stored invoice PDF (`pdf_path`) so totals in shared PDFs cannot become stale.
+
+## Adjusting Totals On Draft Invoices
+
+Finance users can add a manual correction line to any draft invoice to adjust the total amount before sending.
+
+### Endpoint
+
+- **POST** `/rondo/v1/invoices/{id}/draft-line-items`
+- **Body:** `{ "description": "Correctie", "amount": -12.50 }`
+- **Permission:** `financieel`
+
+### Behavior
+
+- Only works when invoice post status is `rondo_draft`.
+- Appends a new line item with no linked discipline case.
+- Accepts both positive amounts (extra costs) and negative amounts (discounts).
+- Recalculates and stores `total_amount`.
+- Clears `pdf_path` so a stale draft PDF cannot be reused.
+- Draft invoices can also be marked directly as paid from invoice detail (without sending first), behind a required confirmation dialog.
+- PDFs generated for paid invoices now include a large `BETAALD` watermark and omit payment QR codes.
+
+## Editing Draft Invoices
+
+Conceptfacturen kunnen volledig worden bijgewerkt zolang ze nog status `rondo_draft` hebben.
+
+### Endpoint
+
+- **POST** `/rondo/v1/invoices/{id}/draft-details`
+- **Permission:** `financieel`
+
+### Behavior
+
+- Hergebruikt dezelfde validatie en invoervelden als het formulier voor `Nieuwe factuur`.
+- Werkt alleen voor conceptfacturen; verstuurde of betaalde facturen geven een `invoice_not_draft` fout terug.
+- Ondersteunt ook `customer_attention`, `customer_email`, `custom_fields`, vervaldatum en alle factuurregels.
+- Leegt `pdf_path` na wijzigingen zodat een bestaande concept-PDF niet verouderd kan blijven.
+
+## External Manual Invoice Recipient Fields
+
+Manual invoices for external recipients support extra recipient metadata in addition to `customer_name` and `customer_address`.
+
+### Create Payload
+
+- **POST** `/rondo/v1/invoices`
+- **Relevant fields for external/manual invoices:**
+  - `customer_name`
+  - `customer_attention`
+  - `customer_email`
+  - `customer_address`
+  - `payment_account_id`
+
+### Behavior
+
+- `customer_attention` is stored on the invoice and rendered on the PDF directly below the customer name as `T.a.v. {value}` when present.
+- `customer_email` is stored on the invoice, shown in invoice detail, rendered on the PDF below the attention line, and included in the recipient list when the invoice is sent.
+- `customer_email` is validated as an email address when provided, but remains optional so external invoices without an email can still be saved as draft.
+- `custom_fields` (max 2) are shown below `Vervaldatum` on invoice detail and now also render in the same metadata block on the PDF.
+- When a field label is `Ter attentie van`, the detail view removes a leading `T.a.v.` from the stored value to avoid duplicate wording.
+- `payment_account_id` stores the selected bank account snapshot on the invoice, so the chosen IBAN and account holder remain visible in invoice detail, PDFs, and provider-driven payment flows.
+
+## Multiple Bank Accounts
+
+Finance settings now support multiple bank accounts in the `Betaling` tab.
+
+### Configuration
+
+- Each account stores:
+  - `internal_name`
+  - `account_holder`
+  - `iban`
+  - `linked_provider` (`''`, `rabobank`, or `mollie`)
+- At most one account can be linked to each payment provider.
+- The bank account linked to the active payment provider becomes the default choice on new draft invoices.
+
+### Invoice behavior
+
+- Draft invoice create/edit flows expose a bank-account selector.
+- The selected account is snapshotted onto the invoice as payment metadata.
+- Invoice detail and PDF `Betaalgegevens` render the chosen account instead of a single global IBAN.
+- Rabobank payment requests read the snapshotted invoice IBAN, so the provider uses the same account shown on the invoice.
+
 ## Version History
 
+- **v31.6.37** (2026-03-06): Added multi-bank-account finance settings, per-invoice account selection, and invoice/PDF payment details based on the selected account.
+- **v31.6.36** (2026-03-06): Moved `Bewerk concept` to the invoice header, removed duplicate `T.a.v.` wording in invoice detail, and rendered manual invoice custom fields in the PDF metadata block.
+- **v31.6.35** (2026-03-06): Added full draft-invoice editing via `POST /rondo/v1/invoices/{id}/draft-details` and a shared draft form for create/edit flows.
+- **v31.6.34** (2026-03-06): Added `Ter attentie van` and external invoice email fields for manual external invoices; both now appear on PDFs and the external email can be used as send recipient.
+- **v31.0.21** (2026-02-27): Credit invoice PDFs now include a `CREDIT` watermark in the same style as paid-invoice watermarks.
+- **v31.0.20** (2026-02-27): Credit invoice creation now preserves user-entered positive and negative line amounts instead of forcing all credit lines negative.
+- **v31.0.19** (2026-02-27): Fixed paid-PDF generation error by passing watermark color in mPDF-supported hex format.
+- **v31.0.18** (2026-02-27): Paid PDFs now omit the `Betaalgegevens` section and render `BETAALD` in the primary club color.
+- **v31.0.17** (2026-02-27): Paid PDF watermark rendering switched to native mPDF watermarking to enforce 45° angle and 50% opacity consistently.
+- **v31.0.16** (2026-02-27): Paid invoice detail now hides legacy payment links consistently (API + UI) and paid PDF watermark is rendered at 45° with 50% opacity.
+- **v31.0.15** (2026-02-27): Marking an invoice as paid now automatically clears payment links, provider payment IDs, and QR code.
+- **v31.0.14** (2026-02-27): Paid invoice detail now offers `Genereer PDF` when no PDF exists yet, instead of a disabled download button.
+- **v31.0.13** (2026-02-27): Paid invoice PDFs now show a `BETAALD` watermark and no longer include payment QR codes.
+- **v31.0.12** (2026-02-27): Added a draft invoice detail action to mark invoices directly as paid (without sending), guarded by a confirmation dialog.
+- **v31.0.11** (2026-02-27): Added manual draft-invoice correction lines via `POST /rondo/v1/invoices/{id}/draft-line-items` and invoice-detail UI action.
+- **v31.0.3** (2026-02-26): Expanded sent/unpaid membership invoice adjustment to support both family discount and instapkorting percentages.
+- **v31.0.2** (2026-02-26): Added sent/unpaid membership invoice family-discount adjustment endpoint and UI action with installment-link safety guards.
 - **v21.1** (2026-02-09, Phase 161): Configurable team and werkfunctie matching rules with admin UI, migration helpers, and werkfuncties/available endpoint
 - **v21.1** (2026-02-09, Phase 160): Configurable family discount percentages per season with copy-forward pattern and REST API integration
 - **v21.0** (2026-02-09, Phase 157): REST API updates with full category CRUD, structured validation (errors vs warnings), and category metadata in fee list endpoint
