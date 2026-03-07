@@ -990,6 +990,7 @@ Rendering notes:
 - Existing plain-text regular-invoice templates remain backward compatible: if no HTML markup is detected, the sender still converts the text to paragraphs/line breaks before wrapping it.
 - Naming split: invoice PDFs continue to use the legal finance organization name (`org_name`), while user-facing finance branding such as email sender/display text and public payment pages now prefers `Clubnaam` via `FinanceConfig::get_display_name()`.
 - The per-invoice `E-mail body` override in the draft/create form also uses the rich text editor now, matching the global finance template editing experience.
+- The shared `RichTextEditor` normalizes legacy plain-text template values into paragraph HTML on load, so existing newline-separated finance templates keep their structure when opened in the editor.
 
 ### Sending Test Emails
 
