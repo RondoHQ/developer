@@ -9,14 +9,36 @@ The payment system handles online payment collection for invoices. It supports t
 
 ## Mollie Integration
 
+### Mollie Accounts in Finance Settings
+
+Mollie no longer uses one global API key. Finance settings now store a list of **Mollie accounts**, each with:
+
+- internal name
+- account holder
+- IBAN
+- one encrypted API key
+
+The key is never returned by the REST API. The UI only gets:
+
+- `has_api_key`
+- `environment` (`live` or `test`)
+
+Finance settings also store three default account IDs:
+
+- `mollie_default_membership_account_id`
+- `mollie_default_discipline_account_id`
+- `mollie_default_manual_account_id`
+
+These decide which Mollie account is snapshotted onto new invoices of each type.
+
 ### MollieClient
 
 **Class:** `Rondo\Finance\MollieClient`
 
-Thin wrapper around the official Mollie PHP SDK (`MollieApiClient`). Reads the API key from `FinanceConfig` and initializes a configured client. Not a singleton — each instantiation reads a fresh key.
+Thin wrapper around the official Mollie PHP SDK (`MollieApiClient`). It now receives the API key explicitly so each invoice can use the correct Mollie account.
 
 ```php
-$client = new MollieClient();
+$client = new MollieClient( $apiKey );
 $mollie = $client->get(); // Returns configured MollieApiClient
 ```
 
@@ -30,10 +52,11 @@ Creates **payment links** (not regular payments) via `POST /v2/payment-links`. P
 
 1. Validate invoice exists
 2. **Idempotency check** — If `_mollie_payment_link_id` and `payment_link` are already stored, return existing URL
-3. Build payload with amount, description (`Factuur {number}`), and redirect URL
-4. Conditionally add `webhookUrl` — omitted on `localhost` and `.local` environments
-5. Call Mollie Payment Links API
-6. Store checkout URL in `payment_link` ACF field and payment link ID in `_mollie_payment_link_id` meta
+3. Read the snapshotted invoice account and load that account's API key
+4. Build payload with amount, description (`Factuur {number}`), and redirect URL
+5. Conditionally add `webhookUrl` — omitted on `localhost` and `.local` environments
+6. Call Mollie Payment Links API
+7. Store checkout URL in `payment_link` ACF field and payment link ID in `_mollie_payment_link_id` meta
 
 ### MollieWebhook
 
@@ -45,26 +68,24 @@ Receives webhook POST events at `POST /wp-json/rondo/v1/mollie/webhook` (public 
 
 #### Lookup Paths
 
-The webhook handler supports four lookup paths based on the incoming ID:
+The webhook handler supports payment-link IDs only:
 
 | Path | ID Prefix | Lookup Method | Use Case |
 |------|-----------|---------------|----------|
 | 0a | `pl_xxx` | `_mollie_pid_{pl_xxx}` meta | Installment payment links |
 | 0b | `pl_xxx` | `_mollie_payment_link_id` meta | Discipline / full payment links |
-| 1 | `tr_xxx` | `_mollie_pid_{tr_xxx}` meta | Legacy installment payments |
-| 2 | `tr_xxx` | `_mollie_payment_id` meta | Legacy full payments |
 
-**Security:** For `tr_xxx` IDs, the webhook re-fetches the payment from the Mollie API to verify `isPaid()` status — never trusts the POST body alone. For `pl_xxx` IDs, the payment link is re-fetched and verified similarly.
+**Security:** The webhook first finds the invoice, then re-fetches the payment link from Mollie using that invoice's snapshotted account key. It never trusts the POST body alone.
 
 #### Payment Confirmation Flow
 
-For full payments (Path 0b / Path 2):
+For full payments (Path 0b):
 1. Find invoice by payment link ID or payment ID
 2. Idempotency check — skip if already `rondo_paid`
 3. Transition post status to `rondo_paid`
 4. Update ACF `status` field to `paid`
 
-For installment payments (Path 0a / Path 1):
+For installment payments (Path 0a):
 1. Find invoice by reverse-lookup meta
 2. Mark specific installment as `betaald`
 3. Check if all installments are now paid → transition to `rondo_paid` if so

@@ -5,7 +5,7 @@ title: "Invoicing System"
 
 ## Overview
 
-The invoicing system manages the full lifecycle of club invoices — from creation through PDF generation, email delivery, and payment tracking. It supports two invoice types: **discipline invoices** (for yellow/red card fines) and **membership invoices** (for seasonal contributions).
+The invoicing system manages the full lifecycle of club invoices — from creation through PDF generation, email delivery, and payment tracking. It supports discipline invoices, membership invoices, and manual invoices.
 
 All invoice functionality requires the `financieel` capability.
 
@@ -44,9 +44,12 @@ Each invoice stores the following fields:
 Additional metadata stored as raw post meta:
 
 - `_mollie_payment_link_id` — Mollie payment link ID (`pl_xxx`)
-- `_mollie_payment_id` — Legacy Mollie payment ID (`tr_xxx`)
 - `_invoice_season` — Season key (e.g. `2025-2026`) for membership invoices
 - `_payment_token` — 64-char hex token for the public payment page
+- `_payment_account_id` — Snapshotted Mollie account ID (or empty for non-Mollie flows)
+- `_payment_account_internal_name` — Snapshotted account label
+- `_payment_account_account_holder` — Snapshotted account holder
+- `_payment_account_iban` — Snapshotted IBAN shown on the invoice/PDF
 - `_installment_plan` — Payment plan choice (`full`, `quarterly_3`, `monthly_8`)
 - `_installment_count` — Number of installments
 - `_installment_N_*` — Per-installment meta (see [Installments](/features/installments/))
@@ -75,6 +78,7 @@ Created manually via the REST API when a member receives fines from discipline c
 - PDF generation includes a detailed table of discipline cases
 - Payment via Mollie payment link (persistent, no expiry)
 - QR code generated for the payment link
+- Always snapshots the `mollie_default_discipline_account_id` account when Mollie is active
 
 ### Membership Invoices
 
@@ -85,6 +89,15 @@ Created in bulk for an entire season via the bulk invoice creator. Features:
 - Payment via the public payment page (`/betaling/{token}`) with plan selection
 - No PDF attachment — email contains payment link directly
 - Supports installment payment plans (see [Installments](/features/installments/))
+- Always snapshots the `mollie_default_membership_account_id` account when Mollie is active
+
+### Manual Invoices
+
+Manual invoices are created from `/financien/facturen/nieuw`.
+
+- Default to `mollie_default_manual_account_id` when Mollie is the active provider
+- Show a manual account picker only when more than one usable Mollie account exists
+- Do not expose account switching for discipline or membership invoices
 
 ## PDF Generation
 
