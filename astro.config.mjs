@@ -1,4 +1,5 @@
 import { defineConfig } from 'astro/config';
+import mermaid from 'astro-mermaid';
 import starlight from '@astrojs/starlight';
 import sitemap from '@astrojs/sitemap';
 import tailwindcss from '@tailwindcss/vite';
@@ -6,12 +7,15 @@ import tailwindcss from '@tailwindcss/vite';
 export default defineConfig({
 	site: 'https://developer.rondo.club',
 	integrations: [
+		mermaid(),
 		starlight({
 			title: 'Rondo Developer',
 			logo: {
-				src: './src/assets/logo.png',
+				dark: './src/assets/rondo-logo-wordmark-white.svg',
+				light: './src/assets/rondo-logo-wordmark.svg',
 				replacesTitle: true,
 			},
+			favicon: '/favicon.svg',
 			social: [
 				{ icon: 'github', label: 'GitHub', href: 'https://github.com/RondoHQ' },
 			],

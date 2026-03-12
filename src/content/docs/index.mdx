@@ -9,40 +9,54 @@ hero:
 import { Card } from '@astrojs/starlight/components';
 
 <div class="architecture-diagram">
-  <svg viewBox="40 10 720 480" role="img" aria-label="System architecture: Sportlink and Nikki feed into Rondo Sync, which syncs to Rondo Club, Laposta, and FreeScout">
+  <svg viewBox="0 0 860 460" role="img" aria-label="System architecture: Sportlink and Nikki feed into Rondo Sync, which syncs to Rondo Club (connected to Mollie and Lettermint), Laposta, and FreeScout">
     <defs>
       <linearGradient id="node-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
         <stop offset="0%" stop-color="#0891B2" />
         <stop offset="100%" stop-color="#2563EB" />
       </linearGradient>
     </defs>
-    {/* External sources */}
-    <rect x="80" y="30" width="160" height="80" rx="12" class="diagram-node" />
-    <text x="160" y="75" class="diagram-text">Sportlink Club</text>
-    <rect x="560" y="30" width="160" height="80" rx="12" class="diagram-node" />
-    <text x="640" y="75" class="diagram-text">Nikki</text>
-    {/* Primary nodes */}
-    <rect x="80" y="210" width="160" height="80" rx="12" class="diagram-node-primary" />
-    <text x="160" y="255" class="diagram-text-primary">Rondo Sync</text>
-    <rect x="560" y="210" width="160" height="80" rx="12" class="diagram-node-primary" />
-    <text x="640" y="255" class="diagram-text-primary">Rondo Club</text>
-    {/* Outputs */}
-    <rect x="80" y="390" width="160" height="80" rx="12" class="diagram-node" />
-    <text x="160" y="435" class="diagram-text">Laposta</text>
-    <rect x="560" y="390" width="160" height="80" rx="12" class="diagram-node" />
-    <text x="640" y="435" class="diagram-text">FreeScout</text>
-    {/* Arrows */}
-    <path d="M 160 110 L 160 210" class="diagram-arrow" />
-    <path d="M 560 90 L 240 235" class="diagram-arrow" />
-    <path d="M 240 250 L 560 250" class="diagram-arrow" />
-    <path d="M 160 290 L 160 390" class="diagram-arrow" />
-    <path d="M 240 270 L 560 420" class="diagram-arrow" />
-    {/* Labels */}
-    <text x="170" y="165" class="diagram-label">member data</text>
-    <text x="405" y="155" class="diagram-label">contributions</text>
-    <text x="350" y="240" class="diagram-label">REST API</text>
-    <text x="170" y="345" class="diagram-label">mailing lists</text>
-    <text x="310" y="365" class="diagram-label">customers</text>
+    {/* Top row: external sources */}
+    <rect x="30" y="30" width="160" height="80" rx="12" class="diagram-node" />
+    <text x="110" y="75" class="diagram-text">Sportlink Club</text>
+    <rect x="250" y="30" width="160" height="80" rx="12" class="diagram-node" />
+    <text x="330" y="75" class="diagram-text">Nikki</text>
+    {/* Middle row: primary nodes + Mollie */}
+    <rect x="100" y="190" width="160" height="80" rx="12" class="diagram-node-primary" />
+    <text x="180" y="235" class="diagram-text-primary">Rondo Sync</text>
+    <rect x="370" y="190" width="160" height="80" rx="12" class="diagram-node-primary" />
+    <text x="450" y="235" class="diagram-text-primary">Rondo Club</text>
+    <rect x="640" y="190" width="160" height="80" rx="12" class="diagram-node" />
+    <text x="720" y="235" class="diagram-text">Mollie</text>
+    {/* Bottom row: outputs */}
+    <rect x="30" y="355" width="160" height="80" rx="12" class="diagram-node" />
+    <text x="110" y="400" class="diagram-text">Laposta</text>
+    <rect x="250" y="355" width="160" height="80" rx="12" class="diagram-node" />
+    <text x="330" y="400" class="diagram-text">FreeScout</text>
+    <rect x="640" y="355" width="160" height="80" rx="12" class="diagram-node" />
+    <text x="720" y="400" class="diagram-text">Lettermint</text>
+    {/* Arrow: Sportlink → Rondo Sync */}
+    <path d="M 110 110 L 165 190" class="diagram-arrow" />
+    <text x="115" y="155" class="diagram-label">member data</text>
+    {/* Arrow: Nikki → Rondo Sync */}
+    <path d="M 330 110 L 220 190" class="diagram-arrow" />
+    <text x="285" y="145" class="diagram-label">contributions</text>
+    {/* Arrow: Rondo Sync ↔ Rondo Club */}
+    <path d="M 260 230 L 370 230" class="diagram-arrow" />
+    <text x="300" y="218" class="diagram-label">REST API</text>
+    {/* Arrow: Rondo Sync → Laposta */}
+    <path d="M 165 270 L 120 355" class="diagram-arrow" />
+    <text x="120" y="318" class="diagram-label">member data</text>
+    {/* Arrow: Rondo Sync ↔ FreeScout */}
+    <path d="M 220 270 L 310 355" class="diagram-arrow" />
+    <text x="235" y="305" class="diagram-label">member data</text>
+    <text x="285" y="325" class="diagram-label-alt">contacts</text>
+    {/* Arrow: Rondo Club ↔ Mollie */}
+    <path d="M 530 230 L 640 230" class="diagram-arrow" />
+    <text x="585" y="218" class="diagram-label">payments</text>
+    {/* Arrow: Rondo Club ↔ Lettermint */}
+    <path d="M 490 270 L 644 358" class="diagram-arrow" />
+    <text x="575" y="305" class="diagram-label">emails</text>
   </svg>
 </div>
 
@@ -153,6 +167,12 @@ import { Card } from '@astrojs/starlight/components';
     font-size: 12px;
     text-anchor: start;
     opacity: 0.8;
+  }
+  .diagram-label-alt {
+    fill: var(--sl-color-gray-3);
+    font-size: 12px;
+    text-anchor: start;
+    opacity: 0.7;
   }
 
   /* Two-column card grid — flat grid so rows align */
