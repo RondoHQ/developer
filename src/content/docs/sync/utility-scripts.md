@@ -236,7 +236,7 @@ node tools/show-nikki-contributions.js --json                   # JSON output
 
 ### detect-rondo-club-changes.js
 
-Detects field changes in Rondo Club for reverse sync (currently disabled).
+Detects field changes in Rondo Club for reverse sync.
 
 ```bash
 node tools/detect-rondo-club-changes.js --verbose

@@ -42,12 +42,12 @@ All times are **Europe/Amsterdam** timezone.
 | FreeScout | Daily | `0 8 * * *` | Rondo Club members to FreeScout customers |
 | Teams | Weekly Sunday | `0 6 * * 0` | Team creation + work history |
 | Discipline | Weekly Monday | `30 23 * * 1` | Discipline cases |
-| Reverse Sync | Hourly | `0 * * * *` | Rondo Club changes back to Sportlink (**currently disabled**) |
+| Reverse Sync | Hourly | `0 * * * *` | Rondo Club changes back to Sportlink |
 
 ### Daily Timeline
 
 ```
- Every hour    Reverse sync (Rondo Club -> Sportlink) [currently disabled]
+ Every hour    Reverse sync (Rondo Club -> Sportlink)
  07:00         Nikki sync
  07:30         Functions sync (recent) -> 08:00 People sync (1st) + FreeScout sync
  10:30         Functions sync (recent) -> 11:00 People sync (2nd)
@@ -106,7 +106,7 @@ Each pipeline has its own detailed documentation page covering step-by-step flow
 | [Functions](/sync/pipeline-functions/) | Scrapes committee memberships and free fields from Sportlink | Runs in daily (recent) and weekly (full) modes; also scrapes FreeScout ID, VOG date, and financial block used by the People pipeline |
 | [FreeScout](/sync/pipeline-freescout/) | Syncs Rondo Club member data to FreeScout as customers; downloads conversations as activities | Enriches helpdesk customers with team memberships, KNVB ID, Nikki contribution data, photo URLs, and website URLs. Downloads FreeScout conversations and creates activities in Rondo Club. |
 | [Discipline](/sync/pipeline-discipline/) | Downloads discipline cases from Sportlink, syncs to Rondo Club | Cases linked to person posts via `knvb_id`; categorized by season taxonomy |
-| [Reverse Sync](/sync/reverse-sync/) | Detects field changes in Rondo Club, pushes back to Sportlink | **Currently disabled.** Two-phase: change detection + browser automation sync with conflict resolution |
+| [Reverse Sync](/sync/reverse-sync/) | Detects field changes in Rondo Club, pushes back to Sportlink | Two-phase: change detection + browser automation sync with conflict resolution. Syncs contact fields, addresses, and administrative fields. |
 
 ---
 

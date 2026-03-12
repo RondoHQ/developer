@@ -23,7 +23,7 @@ pipelines/sync-people.js
 ├── Step 4: steps/submit-rondo-club-sync.js             → Rondo Club API (members + parents + birthdate)
 ├── Step 5: steps/download-photos-from-api.js        → photos/ directory
 ├── Step 6: steps/upload-photos-to-rondo-club.js        → Rondo Club API (media)
-└── Step 7: lib/reverse-sync-sportlink.js      → Sportlink Club (currently disabled)
+└── Step 7: lib/reverse-sync-sportlink.js      → Sportlink Club
 ```
 
 ## Step-by-Step Details
@@ -143,7 +143,7 @@ pipelines/sync-people.js
 **Script:** `lib/reverse-sync-sportlink.js`
 **Function:** `runReverseSync({ logger, verbose })`
 
-Detects field changes made in Rondo Club and pushes them back to Sportlink via browser automation. Currently disabled pending fixes.
+Detects field changes made in Rondo Club and pushes them back to Sportlink via browser automation. Syncs contact fields (email, phone, mobile), home address fields, and administrative fields (VOG date, FreeScout ID, financial block).
 
 ## Field Mappings
 

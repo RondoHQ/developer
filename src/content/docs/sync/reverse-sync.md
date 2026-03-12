@@ -5,7 +5,7 @@ title: "Reverse Sync (Rondo Club → Sportlink)"
 
 Detects field changes made in Rondo Club and pushes them back to Sportlink Club via browser automation.
 
-**Status: currently disabled.** The detection and sync code is complete but needs testing and re-enabling.
+**Status: active.** Runs hourly, syncing contact fields, address fields, and administrative fields back to Sportlink.
 
 ## Schedule
 
@@ -31,12 +31,32 @@ Phase 2: Sync to Sportlink (when unsynced changes exist)
 
 ## Tracked Fields
 
+### Contact fields
+
+| Field | Rondo Club ACF Field | Sportlink Page | Sportlink Selector | Type |
+|---|---|---|---|---|
+| `email_1` | `email_1` | /general | `input[name="Email"]` | text |
+| `email_2` | `email_2` | /general | `input[name="Email2"]` | text |
+| `mobile_1` | `mobile_1` | /general | `input[name="Mobile"]` | text |
+| `mobile_2` | `mobile_2` | /general | `input[name="Mobile2"]` | text |
+| `telephone_1` | `telephone_1` | /general | `input[name="Phone"]` | text |
+| `telephone_2` | `telephone_2` | /general | `input[name="Phone2"]` | text |
+
+### Address fields
+
 | Field | Rondo Club ACF Location | Sportlink Page | Sportlink Selector | Type |
 |---|---|---|---|---|
-| `email` | `contact_info` repeater (type=email) | /general | `input[name="Email"]` | text |
-| `email2` | `contact_info` repeater (type=email2) | /general | `input[name="Email2"]` | text |
-| `mobile` | `contact_info` repeater (type=mobile) | /general | `input[name="Mobile"]` | text |
-| `phone` | `contact_info` repeater (type=phone) | /general | `input[name="Phone"]` | text |
+| `street_name` | `addresses` repeater (Home row) | /general (address section) | `input[name="StreetName"]` | text |
+| `house_number` | `addresses` repeater (Home row) | /general (address section) | `input[name="AddressNumber"]` | text |
+| `house_number_addition` | `addresses` repeater (Home row) | /general (address section) | `input[name="AddressNumberAppendix"]` | text |
+| `postal_code` | `addresses` repeater (Home row) | /general (address section) | `input[name="ZipCode"]` | text |
+| `city` | `addresses` repeater (Home row) | /general (address section) | `input[name="City"]` | text |
+| `country_code` | `addresses` repeater (Home row) | /general (address section) | `select[name="CountryCode"]` | select |
+
+### Administrative fields
+
+| Field | Rondo Club ACF Field | Sportlink Page | Sportlink Selector | Type |
+|---|---|---|---|---|
 | `datum_vog` | `datum-vog` | /other | `input[name="Remarks8"]` | text |
 | `freescout_id` | `freescout-id` | /other | `input[name="Remarks3"]` | text |
 | `financiele_blokkade` | `financiele-blokkade` | /financial | `input[name="HasFinancialTransferBlockOwnClub"]` | checkbox |
