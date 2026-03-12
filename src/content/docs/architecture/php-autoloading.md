@@ -43,11 +43,10 @@ The `rondo_init()` function determines which classes to instantiate based on the
 | Context | Classes Loaded |
 |---------|----------------|
 | **All Requests** | Post Types, Taxonomies, Access Control |
-| **iCal Feed** | iCal Feed (early return for performance) |
 | **REST API** | Auto Title, Inverse Relationships, Comment Types, REST API, Import classes |
-| **Admin** | Auto Title, Inverse Relationships, Comment Types, Reminders, iCal Feed |
+| **Admin** | Auto Title, Inverse Relationships, Comment Types, Reminders |
 | **Cron** | Auto Title, Inverse Relationships, Comment Types, Reminders |
-| **Frontend** | iCal Feed |
+| **Frontend** | (none beyond core) |
 
 ## Class Categories
 
@@ -85,8 +84,6 @@ Loaded for: REST API requests only
 ### Utility Classes
 
 - **Rondo\Core\Reminders** - Daily reminder cron job (Admin, Cron only)
-- **Rondo\Calendar\ICalFeed** - Calendar feed generation (All requests for hook registration)
-
 ## Context Detection
 
 The system uses helper functions to detect the request context:
@@ -101,9 +98,6 @@ function rondo_is_rest_request() {
     return strpos($_SERVER['REQUEST_URI'], '/' . $rest_prefix . '/') !== false;
 }
 
-function rondo_is_ical_request() {
-    return strpos($_SERVER['REQUEST_URI'], '/prm-ical/') !== false;
-}
 ```
 
 ## Adding New Classes
@@ -137,7 +131,7 @@ The conditional loading system provides several benefits:
 1. **Reduced memory usage** - Only loads classes that are actually used
 2. **Faster page loads** - Frontend requests skip admin/import classes
 3. **Optimized REST calls** - Import classes only load for API requests
-4. **iCal optimization** - Early return for feed requests
+
 
 ## Debugging
 

@@ -1125,8 +1125,67 @@ Finance settings now support multiple bank accounts in the `Betaling` tab.
 - Invoice detail and PDF `Betaalgegevens` render the chosen account instead of a single global IBAN.
 - Rabobank payment requests read the snapshotted invoice IBAN, so the provider uses the same account shown on the invoice.
 
+## Contributie Exclusion Notifications (v31.11.0+)
+
+When a user toggles the "Uitsluiten van contributie" setting on a person, the system sends an email notification to board members.
+
+### Trigger
+
+The notification is sent from `FeeCacheInvalidator::log_contributie_exclusion_toggle()` after the exclusion status is saved and the timeline activity comment is recorded.
+
+### Recipients
+
+Recipients are determined by `Rondo\Core\RoleFinder`, which searches for users whose `work_history` ACF field contains a current (no end date) entry with the specified job title keyword:
+
+1. **Secretaris** — users with current work history entry containing "Secretaris" (case-sensitive, so "Wedstrijdsecretaris" does not match)
+2. **Penningmeester** — users with current work history entry containing "Penningmeester" (case-sensitive)
+
+Both lists are merged and deduplicated. If no Secretaris or Penningmeester is found, the system falls back to WordPress administrators.
+
+### Email Content
+
+- **Subject (exclusion):** `{person name} uitgesloten van contributiebetaling`
+- **Subject (re-inclusion):** `{person name} opgenomen in contributiebetaling`
+- **Body:** Branded HTML email rendered via `Rondo\Notifications\EmailTemplate::render()` containing:
+  - Person name (linked to `/people/{id}`)
+  - Actor name (the user who toggled the setting, or "Systeem" in cron context)
+  - Timestamp of the action
+  - CTA button linking to the person's detail page
+
+### Error Handling
+
+- Email sending is wrapped in a try/catch block
+- Failures are logged via `error_log()` with the message: `[Rondo Contributie] Failed to send exclusion notification for person {id}: {error}`
+- Email send failures do **not** block the exclusion toggle — the action completes regardless
+
+### UI Confirmation
+
+Before toggling the exclusion status, the frontend shows a `window.confirm()` dialog:
+
+- **Exclude:** "Weet je zeker dat je dit lid wilt uitsluiten van contributie?"
+- **Re-include:** "Weet je zeker dat je dit lid weer wilt opnemen in de contributiebetaling?"
+
+After confirmation, the FinancesCard refreshes immediately via TanStack Query invalidation (no page reload required).
+
+### RoleFinder Helper
+
+The `Rondo\Core\RoleFinder` static helper class provides reusable role-based user lookup:
+
+```php
+// Find user IDs with a current "Secretaris" role in their work history
+$user_ids = \Rondo\Core\RoleFinder::get_user_ids_by_role('Secretaris');
+
+// Find user IDs with a current "Penningmeester" role
+$user_ids = \Rondo\Core\RoleFinder::get_user_ids_by_role('Penningmeester');
+```
+
+Returns an array of WordPress user IDs. Falls back to administrator user IDs if no matching users are found.
+
+Also used by `LettermintWebhook` for Secretaris notification on new member signup.
+
 ## Version History
 
+- **v31.11.0** (2026-03-12): Added confirmation dialog, immediate FinancesCard refresh, and email notification to Secretaris/Penningmeester on contributie exclusion toggle. Extracted reusable `RoleFinder` helper class.
 - **v31.6.42** (2026-03-06): Removed the duplicate `Ter attentie van` row from invoice detail; the normalized value now renders only once.
 - **v31.6.41** (2026-03-06): Removed the internal bank-account label from invoice payment details; only IBAN and account holder remain visible.
 - **v31.6.40** (2026-03-06): Removed the duplicate lower `Bewerk concept` action from invoice detail; the header button remains the single edit entry point.

@@ -56,7 +56,7 @@ export default defineConfig({
 				{
 					label: 'Integrations',
 					items: [
-						{ label: 'iCal Feed', slug: 'integrations/ical-feed' },
+						{ label: 'Demo Data', slug: 'integrations/demo-data' },
 					],
 				},
 				{

@@ -499,5 +499,4 @@ class Rondo_Telegram_Channel extends Rondo\Notifications\Channel {
 ## Related Documentation
 
 - [Data Model](./data-model.md) - Person post type with birthdate field
-- [iCal Feed](./ical-feed.md) - Calendar subscription
 - [Access Control](./access-control.md) - User permissions

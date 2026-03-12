@@ -325,7 +325,6 @@ Potential improvements to the system:
 | [Relationships](./relationships.md) | How bidirectional relationships work |
 | [Relationship Types](./relationship-types.md) | Configuring relationship type mappings |
 | [Import](./import.md) | Contact import from vCard and Google |
-| [iCal Feed](./ical-feed.md) | Calendar subscription system |
 | [Reminders](./reminders.md) | Email notification system |
 
 ### Frontend Documentation
