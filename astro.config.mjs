@@ -56,7 +56,6 @@ export default defineConfig({
 				{
 					label: 'Integrations',
 					items: [
-						{ label: 'CardDAV Sync', slug: 'integrations/carddav' },
 						{ label: 'iCal Feed', slug: 'integrations/ical-feed' },
 					],
 				},
