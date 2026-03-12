@@ -3,7 +3,7 @@ title: "Overview"
 description: "Developer documentation for the Rondo platform — a sports club management system."
 ---
 
-Rondo is a platform for managing sports club members, teams, and operations. It consists of two components:
+Rondo is a platform for managing sports club members, teams, and operations. It consists of two main components plus several integrations.
 
 ## Rondo Club
 
@@ -13,17 +13,37 @@ A WordPress theme (PHP + React/Vite) that provides a web application for managin
 
 ## Rondo Sync
 
-A Node.js CLI tool that syncs member data from Sportlink Club into Rondo Club, Laposta (email marketing), and FreeScout (helpdesk).
+A Node.js CLI tool that syncs member data between Sportlink Club, Nikki, and the downstream systems. It uses browser automation (Playwright) because neither Sportlink nor Nikki provide APIs.
 
 **Tech stack:** Node.js 18+, Playwright (Chromium), better-sqlite3, Postmark.
 
 ## Data Flow
 
+```mermaid
+graph LR
+    SL[Sportlink Club] -->|Members, teams,<br>functions, discipline| SYNC[Rondo Sync]
+    NK[Nikki] -->|Contributions| SYNC
+    SYNC -->|Members, parents, teams,<br>commissies, work history, photos| RC[Rondo Club]
+    SYNC -->|Members, custom fields| LP[Laposta]
+    SYNC -->|Customers| FS[FreeScout]
+    FS -->|Conversations| SYNC
+    RC -->|Field changes| SYNC
+    SYNC -->|Reverse sync| SL
+    RC -->|Payments| MO[Mollie]
+    MO -->|Payment status| RC
+    RC -->|Emails| LM[Lettermint]
 ```
-Sportlink Club (external) --> Rondo Sync --> Rondo Club WordPress (REST API)
-                                         --> Laposta (email marketing)
-                                         --> FreeScout (helpdesk)
-```
+
+| System | Role |
+|--------|------|
+| **Sportlink Club** | Source of truth for member data (KNVB-mandated). No API — scraped via browser automation. |
+| **Nikki** | Financial system for contribution data. Scraped via browser automation. |
+| **Rondo Club** | Central club management app. REST API consumer and provider. |
+| **Rondo Sync** | Orchestrator that keeps all systems in sync via scheduled pipelines. |
+| **Laposta** | Email marketing — receives member data for mailing lists. |
+| **FreeScout** | Helpdesk — receives member data as customers, sends conversations back. |
+| **Mollie** | Payment provider — handles membership fee payments and invoicing. |
+| **Lettermint** | Transactional email delivery from Rondo Club. |
 
 ## Next Steps
 
