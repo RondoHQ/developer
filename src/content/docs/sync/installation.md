@@ -16,7 +16,7 @@ This guide covers setting up Rondo Sync from scratch on a fresh server.
   - `club.sportlink.com` (Sportlink Club)
   - `api.laposta.nl` (Laposta email marketing)
   - Your Rondo Club instance
-  - `api.postmarkapp.com` (email delivery)
+  - Lettermint API (email delivery)
   - `nikki-online.nl` (Nikki contributions, if used)
   - Your FreeScout instance (if used)
 
@@ -29,7 +29,7 @@ You'll need credentials for:
 | Sportlink Club | Username, password, TOTP secret | Club administrator |
 | Laposta | API key, list ID(s) | Laposta dashboard -> Account -> API |
 | Rondo Club | URL, username, application password | WordPress admin -> Users -> Profile -> Application Passwords |
-| Postmark | Server API token, verified sender email | Postmark dashboard -> Servers -> API Tokens |
+| Lettermint | API token, verified sender email | Lettermint dashboard |
 | FreeScout (optional) | API key, instance URL | FreeScout admin panel |
 | Nikki (optional) | API key, URL | Nikki administrator |
 
@@ -98,8 +98,8 @@ RONDO_PERSON_TYPE=person
 
 # Email delivery
 OPERATOR_EMAIL=operator@example.com
-POSTMARK_API_KEY=your-postmark-server-token
-POSTMARK_FROM_EMAIL=verified-sender@example.com
+LETTERMINT_API_TOKEN=your-lettermint-api-token
+LETTERMINT_FROM_EMAIL=verified-sender@example.com
 
 # FreeScout (optional)
 FREESCOUT_API_KEY=your-freescout-key
@@ -158,7 +158,7 @@ Set up automated scheduling:
 npm run install-cron
 ```
 
-This prompts for Postmark credentials (if not already in `.env`) and installs cron entries:
+This prompts for Lettermint credentials (if not already in `.env`) and installs cron entries:
 
 | Schedule | Pipeline | Command |
 |----------|----------|---------|
@@ -252,7 +252,7 @@ node tools/delete-duplicates.js --apply         # Actually delete
 
 ### Sync reports not arriving
 
-Check Postmark credentials in `.env` and verify the sender email is verified in Postmark dashboard.
+Check Lettermint credentials in `.env` and verify the sender email is verified in the Lettermint dashboard.
 
 ### Lock file prevents sync
 

@@ -267,19 +267,19 @@ node pipelines/sync-individual.js --search "Jan Jansen"               # Search b
 
 ### send-email.js
 
-Sends sync report logs as formatted HTML email via Postmark.
+Sends sync report logs as formatted HTML email via Lettermint.
 
 ```bash
 node scripts/send-email.js <log-file-path> [sync-type]
 ```
 
-Requires `POSTMARK_API_KEY`, `POSTMARK_FROM_EMAIL`, `OPERATOR_EMAIL` in `.env`.
+Requires `LETTERMINT_API_TOKEN`, `LETTERMINT_FROM_EMAIL`, `OPERATOR_EMAIL` in `.env`.
 
 ---
 
 ### install-cron.sh
 
-Interactive cron job installer. Prompts for Postmark credentials and installs all sync schedules.
+Interactive cron job installer. Prompts for Lettermint credentials and installs all sync schedules.
 
 ```bash
 npm run install-cron

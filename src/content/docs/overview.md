@@ -15,7 +15,7 @@ A WordPress theme (PHP + React/Vite) that provides a web application for managin
 
 A Node.js CLI tool that syncs member data between Sportlink Club, Nikki, and the downstream systems. It uses browser automation (Playwright) because neither Sportlink nor Nikki provide APIs.
 
-**Tech stack:** Node.js 18+, Playwright (Chromium), better-sqlite3, Postmark.
+**Tech stack:** Node.js 18+, Playwright (Chromium), better-sqlite3, Lettermint.
 
 ## Data Flow
 

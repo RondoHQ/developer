@@ -316,7 +316,7 @@ Task tracking linked to people. Uses custom post statuses for state management.
 
 #### Calendar Event (`calendar_event`)
 
-Cached events synced from external calendars (Google, CalDAV). Not exposed via standard REST API — uses custom endpoints only. No admin UI.
+Cached events from external calendars. Not exposed via standard REST API — uses custom endpoints only. No admin UI.
 
 #### Feedback (`rondo_feedback`)
 

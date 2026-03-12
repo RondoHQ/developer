@@ -66,12 +66,12 @@ sudo apt-get install -y libnss3 libnspr4 libatk1.0-0 libatk-bridge2.0-0 \
 **Symptom:** No email reports after cron runs.
 
 **Checks:**
-1. Verify Postmark credentials in `.env`:
+1. Verify Lettermint credentials in `.env`:
    ```bash
-   grep POSTMARK .env
+   grep LETTERMINT .env
    grep OPERATOR_EMAIL .env
    ```
-2. Verify sender email is verified in Postmark dashboard under Sender Signatures.
+2. Verify sender email is verified in the Lettermint dashboard.
 3. Test manually:
    ```bash
    node scripts/send-email.js logs/cron/sync-people-2026-01-15_08-00-00.log people

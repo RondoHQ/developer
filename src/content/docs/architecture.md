@@ -71,8 +71,6 @@ The theme initializes on `after_setup_theme` and `plugins_loaded`, loading 65+ c
 | Class | Responsibility |
 |-------|---------------|
 | `IcalFeed` | iCal calendar feed generation |
-| `CarddavServer` | CardDAV server for contact sync |
-| `CaldavProvider` | CalDAV calendar provider |
 | `CalendarMatcher` | Matches calendar events to people |
 | `GoogleOauth` / `GoogleSheetsConnection` | Google API integration |
 | `VogEmail` | VOG request email sending |
