@@ -16,9 +16,22 @@ Two cohorts, two templates, two stamps:
 
 A person can appear in both tabs and receive both emails — the timestamps are independent.
 
+## Access control
+
+The Onboarding screen is gated behind a dedicated capability: **`ledenadministratie`** (Ledenadministratie). Administrators auto-receive it; everybody else needs an admin to grant it via **Instellingen → Beheer → Capabilities** (Ledenadministratie column) or by being assigned the `rondo_ledenadministratie` / `rondo_bestuur` role.
+
+| Surface | Permission |
+|---|---|
+| Sidebar item "Onboarding" | hidden unless user has `can_access_ledenadministratie` |
+| Route `/people/onboarding` | "Geen toegang" page unless capability present |
+| `POST /rondo/v1/people/onboarding-email` | `check_ledenadministratie_permission` (`ledenadministratie` cap or admin) |
+| `GET|POST /rondo/v1/onboarding/email-settings/{type}` | Admin only (`manage_options`) |
+
+The cap is exposed on `GET /rondo/v1/user/me` as `can_access_ledenadministratie`.
+
 ## UI
 
-**Route:** `/people/onboarding` (linked under Leden → Onboarding in the sidebar).
+**Route:** `/people/onboarding` (linked under Leden → Onboarding in the sidebar, visible only to users with `ledenadministratie`).
 
 Two tabs (URL: `?tab=leden` or `?tab=vrijwilligers`). Each row shows the person, their start date, their email address, and a `Verstuur` button. A header checkbox plus row checkboxes feed a bulk `Verstuur geselecteerde` action.
 
