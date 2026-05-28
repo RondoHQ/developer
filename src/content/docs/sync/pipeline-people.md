@@ -181,6 +181,7 @@ See `config/field-mapping.json` for the complete mapping. Key fields:
 | `freescout-id` | From `sportlink_member_free_fields.freescout_id` |
 | `datum-vog` | From `sportlink_member_free_fields.vog_datum` |
 | `financiele-blokkade` | From `sportlink_member_free_fields.has_financial_block` |
+| `wacht_op_overschrijving` | `true` when `Tooltip` contains "overschrijving" (case-insensitive). Sportlink markeert overgeschreven leden van een andere club met de tooltip "Actie van een ander (overschrijving)" totdat de KNVB-overschrijving verwerkt is. Het veld wordt altijd weggeschreven (ook `false`), zodat de badge automatisch verdwijnt zodra Sportlink de tooltip weghaalt. |
 
 ## Database Tables Used
 
