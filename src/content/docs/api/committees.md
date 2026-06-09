@@ -80,6 +80,15 @@ The nonce is available in `window.rondoConfig.nonce` when logged in to Rondo Clu
 |-------|------|-------------|--------|
 | `acf.website` | string | Commissie website URL | Full URL |
 | `acf.contact_info` | array | Contact methods (repeater) | See below |
+| `acf.lange_omschrijving` | string | Uitgebreide omschrijving van de commissie | Plain multi-line text |
+| `acf.taakomschrijving` | string | Wat een lid van deze commissie doet | Plain multi-line text |
+| `acf.uren_aantal` | number\|null | Geschat aantal uren tijdsinvestering | Number, send `null` to clear |
+| `acf.uren_periode` | string\|null | Periode voor `uren_aantal` | `week`, `maand`, or `null` |
+| `acf.dagen_flexibel` | string | Vaste dagen of flexibel | Free text |
+| `acf.max_leden` | number\|null | Maximum aantal leden | Number, send `null` to clear |
+| `acf.max_wachtlijst` | number\|null | Maximum aantal op de wachtlijst | Number, send `null` to clear |
+
+> **Note:** These are Rondo-local fields — they are stored only in Rondo (not synced from Sportlink) and are editable via the "Commissie-informatie" card on the commissie detail page in the UI. Because ACF generates a strict REST schema, `uren_periode` rejects an empty string `""` — send `null` to clear it. The numeric fields likewise accept a number or `null`, never `""`.
 
 ### Contact Info (Repeater)
 

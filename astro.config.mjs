@@ -51,6 +51,7 @@ export default defineConfig({
 						{ label: 'Relationship Types', slug: 'features/relationship-types' },
 						{ label: 'Membership Fees', slug: 'features/membership-fees' },
 						{ label: 'Reminders', slug: 'features/reminders' },
+							{ label: 'Taakuitleg', slug: 'features/taakuitleg' },
 					],
 				},
 				{
