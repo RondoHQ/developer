@@ -60,11 +60,15 @@ public `/wp/v2/media` uploads, so they load without auth.
 
 ## Permissions
 
-Taakuitleg follows the app's shared-access model. `AccessControl::grant_taakuitleg_editing()`
+Taakuitleg follows the app's shared-access model. `AccessControl::grant_volunteer_editing()`
 (a `map_meta_cap` filter) lets any user with the `vrijwilligers` capability — or an
-admin (`manage_options`) — edit and delete **every** taakuitleg, not just ones they
-authored. Everyone else is denied. Reading published entries over REST needs no special
-capability.
+admin (`manage_options`) — edit and delete **every** record of the volunteer CPTs, not
+just ones they authored. The covered types are listed in
+`AccessControl::VOLUNTEER_SHARED_CPTS`: `taakuitleg`, `dienst_type`, `shift_template`,
+and `dienst_shift`. This is what makes diensttypes, sjablonen and concrete diensten
+fully manageable from the React SPA — including seeder- or admin-authored records, which
+would otherwise require `edit_others_posts`. Everyone else is denied. Reading published
+entries over REST needs no special capability.
 
 ## QR codes
 
