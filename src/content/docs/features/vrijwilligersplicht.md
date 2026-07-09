@@ -93,6 +93,29 @@ up. `GET /rondo/v1/my-shifts/available` only refuses oud-leden.
 whose `assigned_persons` meta intersects the unit's `person_ids` within the season window
 (1 July – 30 June).
 
+### Attribution: every shift counts once
+
+A person who carries both duties fills the **speler duty first**; only the surplus counts toward the
+gezin. Nothing is stored on the shift — the order is fixed and the speler duty is per-person, so the
+split is derivable:
+
+```
+speler.completed = min( completed[p], speler.required )
+gezin.completed  = Σ over p in gezin.person_ids of max( 0, completed[p] − speler_required(p) )
+```
+
+`speler_required(p)` is 2 for an O17+ player and 0 for children and non-playing parents. Pending
+shifts are consumed after completed ones. A no-show is a personal failure and is counted once, on
+the person's own duty.
+
+Two consequences worth knowing:
+
+- **A player with no youth children has nowhere to spill**, so their speler unit keeps *every*
+  shift. Do six diensten and the unit reads `6 / 2`. Capping there would quietly erase real work
+  from the club's `total_completed`.
+- **Without this, a playing parent who owed 2 + 3 was done after 3 shifts**, because each shift was
+  credited to both units. It now takes 5.
+
 `unit_status()` then buckets the unit:
 
 | Status | Condition |
