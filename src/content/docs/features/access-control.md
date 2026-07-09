@@ -78,6 +78,47 @@ $query = new WP_Query([
 ]);
 ```
 
+## Person visibility
+
+`AccessControl::can_view_person( $person_id, $user_id )` is the **single authority** on who may see
+which person. Three tiers:
+
+| Tier | Who | Sees |
+|---|---|---|
+| Management | A capability in `AGE_GROUP_BYPASS_CAPS` | Everyone |
+| Coordinator | A role with a non-empty `rondo_age_group_access` entry | Their configured age groups |
+| Scoped member | Everyone else | Themselves, plus their children under 18 |
+
+Every enforcement point routes through it — the REST collection filter (`rest_person_query`), the
+single-item filter (`rest_prepare_person`), the raw-SQL `/rondo/v1/people/filtered` endpoint, and
+`user_can_access_post()`. **Do not re-derive the rule anywhere else.** The narrowing itself lives in
+one private helper, `person_scope()`, used by both the REST and `pre_get_posts` paths.
+
+:::caution[The React router is navigation, not authorization]
+`KaderOrVrijwilligRedirect` in `router.jsx` decides what a user is *shown*. It decides nothing about
+what they can *fetch*. Any new person-facing surface must be gated server-side as well.
+:::
+
+A child falls out of their parent's view at 18. A person with no usable birthdate is treated as an
+adult: the check fails closed rather than exposing a record on a missing field. Note that ACF
+`date_picker` stores `Ymd`, not `Y-m-d`.
+
+### Field scope
+
+A scoped member reads an **allowlisted** subset of the ACF payload
+(`MEMBER_VISIBLE_ACF_FIELDS`) — name, contact details, address, membership dates, leeftijdsgroep,
+VOG date. Withheld: `financiele-blokkade`, `wacht_op_overschrijving`, `freescout-id`. The list is an
+allowlist on purpose, so an ACF field added later is private until someone consciously exposes it.
+
+Writes stay closed: `restrict_person_editing()` maps `edit_post` to `do_not_allow` for anyone
+failing `can_edit_people()`, and members never pass it.
+
+### Notes, activities and timeline
+
+`user_can_access_post()` backs the permission callback for `/rondo/v1/people/{id}/notes`,
+`/activities` and `/timeline`. Until 33.30.0 it returned `true` for any logged-in user on any
+person, so those routes were effectively unguarded. They now obey `can_view_person()`.
+
 ## Age-group narrowing
 
 `AccessControl::get_permitted_age_groups()` returns one of three things, and the distinction
@@ -86,10 +127,17 @@ matters:
 | Return | Meaning | Who |
 |---|---|---|
 | `null` | No restriction — sees everyone | Users with a management capability (`manage_options`, `fairplay`, `vog`, `financieel`, `toegangscontrole`, `manage_clothing`) |
-| `[]` | **Sees nobody** — the default | Any other user, including plain members |
+| `[]` | Scoped to their own household | Any other user, including plain members |
 | `['Onder 11', …]` | Sees only these age groups | A role listed in the `rondo_age_group_access` option, e.g. a coordinator |
 
-Non-management users **default to deny**. An unconfigured role sees no people at all.
+Non-management users **default to deny**: an unconfigured role reaches no people beyond its own
+household.
+
+:::caution[Granting a coordinator `vog` or `fairplay` voids their age-group scoping]
+Both are in `AGE_GROUP_BYPASS_CAPS`, so `get_permitted_age_groups()` returns `null` and the
+coordinator sees every person in the club. Their `rondo_age_group_access` entry becomes dead
+configuration. Check the capability matrix before assuming a coordinator is scoped.
+:::
 
 ### `suppress_age_group`
 
