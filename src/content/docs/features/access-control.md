@@ -78,6 +78,35 @@ $query = new WP_Query([
 ]);
 ```
 
+## Age-group narrowing
+
+`AccessControl::get_permitted_age_groups()` returns one of three things, and the distinction
+matters:
+
+| Return | Meaning | Who |
+|---|---|---|
+| `null` | No restriction — sees everyone | Users with a management capability (`manage_options`, `fairplay`, `vog`, `financieel`, `toegangscontrole`, `manage_clothing`) |
+| `[]` | **Sees nobody** — the default | Any other user, including plain members |
+| `['Onder 11', …]` | Sees only these age groups | A role listed in the `rondo_age_group_access` option, e.g. a coordinator |
+
+Non-management users **default to deny**. An unconfigured role sees no people at all.
+
+### `suppress_age_group`
+
+The Kaderlijst rebuild passes `?suppress_age_group=1` to `/wp/v2/people` so a coordinator can see
+kader outside their own age group. This is honoured **only for users whose permitted list is
+non-empty** — that is, configured coordinators. Guard with
+`AccessControl::can_suppress_age_group()`.
+
+:::danger[Never gate this on `is_user_logged_in()`]
+Until 33.28.2 the flag was granted to any logged-in user. Because non-management users default to
+`[]` ("see nobody"), the flag inverted default-deny into "see everybody": a plain member could read
+all person records, with ACF, in one request. Regression-tested in `AgeGroupAccessTest`.
+:::
+
+Management users are unrestricted already, so `can_suppress_age_group()` returns `false` for them —
+there is nothing to suppress.
+
 ## User Roles
 
 Rondo Club creates a custom user role called **"Rondo User"** (`rondo_user`) on theme activation.
