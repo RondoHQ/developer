@@ -23,11 +23,46 @@ Provisioning creates a bidirectional link between person records and WordPress u
 | Person post meta | `_rondo_wp_user_id` | WordPress user ID |
 | WP user meta | `rondo_linked_person_id` | Person post ID |
 | WP user meta | `_rondo_knvb_id` | KNVB member ID |
+| WP user meta | `rondo_contact_email` | The member's real email address |
 
 This linking enables:
 - Showing the linked user account on person detail pages (AccountCard component)
 - Showing the linked person name in the WordPress users list
 - Cross-referencing between member data and user accounts
+
+If the forward link (`_rondo_wp_user_id`) is missing but the reverse link survives, `provision()`
+adopts the existing account rather than creating a duplicate.
+
+## Shared household mailboxes
+
+Families share one email address, but WordPress enforces a unique `user_email`. So:
+
+- The **first** member provisioned on an address keeps it as their `user_email`.
+- **Later** members get an undeliverable placeholder, `person-{id}@members.rondo.invalid`.
+  (`.invalid` is reserved by RFC 2606 and can never resolve.)
+- **Every** provisioned user gets `rondo_contact_email` — the address mail must actually go to.
+
+:::danger[Never `wp_mail()` to `user_email`]
+Use `UserProvisioning::contact_email( $user_id )`. It returns the real address, falling back to
+`user_email` for accounts created before this meta existed, and `null` when only a placeholder
+remains.
+:::
+
+WordPress core does not know about the meta — `retrieve_password()` addresses the reset link
+straight to `user_email`. `ContactEmailRouter` therefore hooks the `wp_mail` filter and rewrites any
+synthetic recipient to the member's real address, **dropping** it when none is known. Fail closed: a
+mail that cannot reach the right person must not reach the wrong one. Without this, every household
+member after the first would have an unrecoverable account.
+
+`is_synthetic_email()` tests for the placeholder domain.
+
+## Who can be provisioned
+
+`GET /rondo/v1/users/provisionable` requires only that the person is published, is not a
+`former_member`, has no account yet, and has a valid `email_1` or `email_2`.
+
+It deliberately does **not** require a `knvb-id`. The parents who carry the ouderplicht are not
+Sportlink members and have none — requiring it hid 269 of them from the picker.
 
 ## REST Endpoints
 
