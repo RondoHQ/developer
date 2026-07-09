@@ -56,6 +56,29 @@ member after the first would have an unrecoverable account.
 
 `is_synthetic_email()` tests for the placeholder domain.
 
+## Signing in
+
+Members never see the username Rondo generated for them, and the second member of a household
+cannot sign in with the family address — it belongs to the first claimant's account. `LoginResolver`
+therefore accepts two extra identifiers and rewrites them to the real `user_login`:
+
+| Identifier | Source | Resolves when |
+|---|---|---|
+| Username | `user_login` | Always (core) |
+| Email | `user_email` | Always (core) |
+| KNVB-ID | `_rondo_knvb_id` | Exactly one user matches |
+| Contact address | `rondo_contact_email` | Exactly one user matches |
+
+A shared family address matches several members, so it is **ambiguous** and the resolver refuses to
+guess — picking one would be impersonation. Those members sign in with their KNVB-ID.
+
+:::caution[The hook fires in `wp_signon()`, not `wp_authenticate()`]
+`LoginResolver` hooks the `wp_authenticate` **action**, which passes `$username` by reference so
+core still performs the password check and every security filter hanging off `authenticate`. That
+action fires inside `wp_signon()` — what `wp-login.php` calls. A test that drives
+`wp_authenticate()` directly exercises nothing and passes for the wrong reason.
+:::
+
 ## Who can be provisioned
 
 `GET /rondo/v1/users/provisionable` requires only that the person is published, is not a
