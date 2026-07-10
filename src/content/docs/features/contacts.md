@@ -12,6 +12,8 @@ Deze dialoog is uitsluitend voor externe contacten. Leden en ouders/verzorgers w
 
 Een contact kan een persoonsnaam, een bedrijfsnaam of beide hebben. Bij een contact zonder persoonsnaam wordt `company_name` de WordPress-posttitel en daarmee de weergavenaam in lijsten en zoekvelden. De REST API weigert alleen records waarbij zowel `first_name` als `company_name` leeg zijn.
 
+Omdat contacten handmatig worden beheerd, zijn voornaam, tussenvoegsel en achternaam in de aanmaakdialoog bewerkbaar. De Sportlink-beperking op het tussenvoegsel geldt alleen voor gesynchroniseerde leden.
+
 Als een contact zowel een bedrijfsnaam als een contactpersoon heeft, blijft de persoonsnaam de weergavenaam en wordt het bedrijf eronder getoond. Facturen en factuur-PDF's gebruiken de bedrijfsnaam als klantnaam; e-mails gebruiken de voornaam van de contactpersoon als aanhef, met de bedrijfsnaam als terugval.
 
 Dezelfde aanmaakdialoog wordt gebruikt wanneer een onbekende vergaderdeelnemer als contact wordt toegevoegd.
