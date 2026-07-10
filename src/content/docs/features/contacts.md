@@ -6,7 +6,9 @@ Rondo Club bewaart externe verenigingscontacten in hetzelfde WordPress `person`-
 
 ## Contact toevoegen
 
-Een gebruiker met rechten om personen te beheren kan op **Leden** de knop **Contact toevoegen** gebruiken. Het nieuwe record krijgt in ACF `person_type = contact`. Na het opslaan opent de persoonspagina, waar adressen en relaties kunnen worden toegevoegd.
+Een gebruiker met rechten om personen te beheren kan op **Relaties** de knop **Contact toevoegen** gebruiken. Het nieuwe record krijgt in ACF `person_type = contact`. Na het opslaan opent de persoonspagina, waar adressen en relaties kunnen worden toegevoegd.
+
+De knop en het achterliggende WordPress REST-endpoint vereisen personenbeheer. Dit is beschikbaar voor beheerders en rollen met `ledenadministratie`, `fairplay`, `vog` of de schrijvende capability `financieel`. Een gewone gebruiker of een rol met uitsluitend `financieel_read` kan geen contact aanmaken.
 
 Deze dialoog is uitsluitend voor externe contacten. Leden en ouders/verzorgers worden via Sportlink toegevoegd en bijgewerkt; daarom kan het persoonstype tijdens het aanmaken niet worden gewijzigd naar lid/ouder.
 
@@ -35,7 +37,7 @@ Bestaande personen zonder opgeslagen `person_type` worden als lid/ouder behandel
 
 Bevoegde gebruikers kunnen het persoonstype op de persoonspagina wijzigen. Contacten krijgen daar en in de personenlijst een **Contact**-label.
 
-De kolom **Type lid** op de personenlijst vat het record samen als **Bondslid**, **Verenigingslid**, **Ouder** of **Contact**. Het expliciete persoonstype heeft voorrang, zodat een contact ook bij vervuilde historische Sportlink-velden als **Contact** zichtbaar blijft.
+De kolom **Type** op de personenlijst vat het record samen als **Bondslid**, **Verenigingslid**, **Ouder** of **Contact**. Het expliciete persoonstype heeft voorrang, zodat een contact ook bij vervuilde historische Sportlink-velden als **Contact** zichtbaar blijft.
 
 ## Filteren via REST
 
@@ -44,7 +46,7 @@ De kolom **Type lid** op de personenlijst vat het record samen als **Bondslid**,
 - `contact` retourneert uitsluitend records met de expliciete waarde `contact`.
 - `member` retourneert records met `member` én bestaande records zonder waarde.
 
-De frontend gebruikt dit endpoint voor het filter **Persoonstype** op de ledenlijst.
+De frontend gebruikt dit endpoint voor het filter **Persoonstype** op de relatieslijst.
 
 ## Relaties
 
