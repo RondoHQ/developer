@@ -348,6 +348,7 @@ Get information about the currently logged in user.
   "can_access_fairplay": false,
   "can_access_vog": false,
   "can_access_financieel": false,
+  "can_edit_financieel": false,
   "profile_url": "https://.../wp-admin/profile.php",
   "admin_url": "https://.../wp-admin/",
   "linked_person_name": "Jan de Vries",
@@ -897,7 +898,7 @@ Search for workspace members for @mention autocomplete.
 
 ### Invoice Endpoints
 
-All invoice endpoints require the `financieel` capability.
+Invoice reads require the `financieel_read` capability; writes require `financieel`, which implies it.
 
 ---
 

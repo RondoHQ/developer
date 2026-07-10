@@ -7,7 +7,7 @@ title: "Invoicing System"
 
 The invoicing system manages the full lifecycle of club invoices — from creation through PDF generation, email delivery, and payment tracking. It supports discipline invoices, membership invoices, and manual invoices.
 
-All invoice functionality requires the `financieel` capability.
+Viewing invoices requires `financieel_read`; creating, sending, deleting or marking them paid requires `financieel` (which implies the read capability).
 
 ## Post Type
 
@@ -194,7 +194,7 @@ Before creating an invoice, the system checks for an existing `rondo_invoice` wi
 
 ## REST API
 
-All endpoints are under `rondo/v1/invoices` and require the `financieel` capability.
+All endpoints are under `rondo/v1/invoices`. Reads (list, single, PDF, QR, invoiced-cases) require `financieel_read`; every write requires `financieel`.
 
 ### Key Endpoints
 

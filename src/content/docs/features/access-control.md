@@ -121,7 +121,8 @@ categories.
 | Callback | Grants |
 |---|---|
 | `check_admin_permission()` | `manage_options` only — genuine site administration |
-| `check_financieel_permission()` | `financieel` |
+| `check_financieel_read_permission()` | `financieel_read`, or `financieel` which implies it |
+| `check_financieel_permission()` | `financieel` — every finance write |
 | `check_admin_or_financieel_permission()` | Endpoints shared with the admin settings screens |
 | `check_admin_or_toegangscontrole_permission()` | `manage_options` or `toegangscontrole` |
 
@@ -129,6 +130,31 @@ categories.
 `vog`, `financieel`, `toegangscontrole`, `manage_clothing`, `ledenadministratie` and `vrijwilligers`
 to the **administrator** role, so an admin passes a capability-only gate. `FeePermissionsTest` pins
 that down — if the grant ever disappears, admins would silently lose the Financiën section.
+
+### Finance: read and write are separate capabilities
+
+`financieel_read` grants inzage; `financieel` grants inzage plus every mutation. Decide by verb, not
+by screen: a `GET` that only renders data belongs behind `check_financieel_read_permission()`, and
+anything that creates, sends, deletes or marks paid belongs behind `check_financieel_permission()`.
+Do not test `current_user_can( 'financieel' )` directly outside the REST layer — call
+`UserRoles::can_view_finances()` or `UserRoles::can_manage_finances()`, which encode the implication.
+
+A read-only user reaches the facturen list, an invoice and its PDF, the contributie overview, the
+FinanciënKaart on a person page, and invoices in search results. They are deliberately excluded from:
+
+- **Editing people.** `financieel_read` is absent from `can_edit_people()`. It appears in
+  `AGE_GROUP_BYPASS_CAPS` only because invoices span the whole club — a view bypass, not an edit grant.
+- **Settings → Financieel.** `GET /rondo/v1/finance/settings` carries payment-provider configuration
+  and stays behind the write gate. `useFinanceSettings()` therefore takes a `{ enabled }` option;
+  any screen a read-only user can reach must pass `{ enabled: false }` rather than eat a 403.
+
+The frontend mirrors this with two booleans on the current-user payload: `can_access_financieel`
+(read or write) decides whether a screen renders, `can_edit_financieel` decides whether its buttons
+do. `FinancieelRoute` guards the former, `FinancieelSchrijfRoute` the latter.
+
+Adding a capability to `BASE_ROLES` does not reach installs where the role already exists —
+`add_role()` is a no-op for those. Bump `UserRoles::ROLES_VERSION` and extend `maybe_upgrade_roles()`,
+which backfills on `init`. Version 2 gave `financieel_read` to every role already holding `financieel`.
 
 ### The member's own household
 
@@ -164,7 +190,7 @@ matters:
 
 | Return | Meaning | Who |
 |---|---|---|
-| `null` | No restriction — sees everyone | Users with a management capability (`manage_options`, `fairplay`, `vog`, `financieel`, `toegangscontrole`, `manage_clothing`) |
+| `null` | No restriction — sees everyone | Users with a management capability (`manage_options`, `fairplay`, `vog`, `financieel`, `financieel_read`, `toegangscontrole`, `manage_clothing`) |
 | `[]` | Scoped to their own household | Any other user, including plain members |
 | `['Onder 11', …]` | Sees only these age groups | A role listed in the `rondo_age_group_access` option, e.g. a coordinator |
 
@@ -321,7 +347,7 @@ When a Functie is removed from Sportlink (and no longer appears in work history)
 
 ### Finance Settings Access
 
-Users with the `financieel` role can access **Financien > Instellingen** (financial settings). Previously this was restricted to administrators only.
+Users with the `financieel` capability can access **Financien > Instellingen** (financial settings). Previously this was restricted to administrators only. `financieel_read` does not reach this screen — it exposes payment-provider configuration.
 
 ## Security Considerations
 
