@@ -99,6 +99,22 @@ one private helper, `person_scope()`, used by both the REST and `pre_get_posts` 
 what they can *fetch*. Any new person-facing surface must be gated server-side as well.
 :::
 
+### `is_kader`
+
+The current-user endpoint returns `is_kader`: admin, **or** any staff capability, **or** any role
+beyond the plain-member baseline (poule roles and admin-created coordinator roles carry no
+capability of their own). `router.jsx` and `Layout.jsx` both read that one field.
+
+Do not re-derive it in the frontend. When the router counted extra roles and the sidebar did not, a
+coordinator was sent to the dashboard while every link to it stayed hidden.
+
+### The member's own household
+
+`GET /wp/v2/people` returns exactly what the caller may see, which for a scoped member is their own
+record plus their children under 18, with the ACF payload already reduced to the allowlist. The
+"Mijn gegevens" page needs no dedicated endpoint and does no filtering of its own — it simply renders
+what comes back. The sidebar hides it from kader, for whom that same endpoint returns the whole club.
+
 A child falls out of their parent's view at 18. A person with no usable birthdate is treated as an
 adult: the check fails closed rather than exposing a record on a missing field. Note that ACF
 `date_picker` stores `Ymd`, not `Y-m-d`.
