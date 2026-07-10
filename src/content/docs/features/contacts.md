@@ -35,6 +35,8 @@ Bestaande personen zonder opgeslagen `person_type` worden als lid/ouder behandel
 
 Bevoegde gebruikers kunnen het persoonstype op de persoonspagina wijzigen. Contacten krijgen daar en in de personenlijst een **Contact**-label.
 
+De kolom **Type lid** op de personenlijst vat het record samen als **Bondslid**, **Verenigingslid**, **Ouder** of **Contact**. Het expliciete persoonstype heeft voorrang, zodat een contact ook bij vervuilde historische Sportlink-velden als **Contact** zichtbaar blijft.
+
 ## Filteren via REST
 
 `GET /wp-json/rondo/v1/people/filtered` accepteert `person_type=member` of `person_type=contact`.
