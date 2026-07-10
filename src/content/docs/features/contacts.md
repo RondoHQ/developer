@@ -10,6 +10,10 @@ Een gebruiker met rechten om personen te beheren kan op **Leden** de knop **Cont
 
 Deze dialoog is uitsluitend voor externe contacten. Leden en ouders/verzorgers worden via Sportlink toegevoegd en bijgewerkt; daarom kan het persoonstype tijdens het aanmaken niet worden gewijzigd naar lid/ouder.
 
+Een contact kan een persoonsnaam, een bedrijfsnaam of beide hebben. Bij een contact zonder persoonsnaam wordt `company_name` de WordPress-posttitel en daarmee de weergavenaam in lijsten en zoekvelden. De REST API weigert alleen records waarbij zowel `first_name` als `company_name` leeg zijn.
+
+Als een contact zowel een bedrijfsnaam als een contactpersoon heeft, blijft de persoonsnaam de weergavenaam en wordt het bedrijf eronder getoond. Facturen en factuur-PDF's gebruiken de bedrijfsnaam als klantnaam; e-mails gebruiken de voornaam van de contactpersoon als aanhef, met de bedrijfsnaam als terugval.
+
 Dezelfde aanmaakdialoog wordt gebruikt wanneer een onbekende vergaderdeelnemer als contact wordt toegevoegd.
 
 ## Persoonstypen
@@ -20,6 +24,8 @@ Het ACF-selectveld `person_type` kent twee waarden:
 | --- | --- |
 | `member` | Lid of ouder/verzorger |
 | `contact` | Extern verenigingscontact |
+
+Het aanvullende tekstveld `company_name` bewaart de bedrijfsnaam. De bedrijfsnaam is ook opgenomen in de CSV-export van de personenlijst en kan op de persoonspagina worden bijgewerkt.
 
 Bestaande personen zonder opgeslagen `person_type` worden als lid/ouder behandeld. Daardoor is geen datamigratie nodig en blijven door Sportlink gesynchroniseerde personen compatibel.
 
