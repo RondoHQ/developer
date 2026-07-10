@@ -992,6 +992,26 @@ Rendering notes:
 - The per-invoice `E-mail body` override in the draft/create form also uses the rich text editor now, matching the global finance template editing experience.
 - The shared `RichTextEditor` normalizes legacy plain-text template values into paragraph HTML on load, so existing newline-separated finance templates keep their structure when opened in the editor.
 
+### Invoice Reminder Emails
+
+Unpaid invoices are swept once per day by `InvoiceReminderScheduler` (cron hook `rondo_invoice_reminder_sweeper`). It queries `rondo_invoice` posts in `rondo_sent`/`rondo_overdue` status and sends, via `InvoiceReminderSender`:
+
+- **Reminder 1** — 14+ days after `sent_date` (no `_invoice_reminder_1_sent_at` meta yet)
+- **Reminder 2** — 28+ days after `sent_date` (no `_invoice_reminder_2_sent_at` meta yet), with a BCC to the treasurer
+
+Eligible invoices are membership invoices where the member has not yet chosen a payment plan (no `_installment_plan` meta) plus discipline and manual invoices identified through Mollie payment-link metadata. Membership invoices that already selected a plan are reminded by the installment flow instead.
+
+**The reminder wording depends on `invoice_type`.** `InvoiceReminderSender::is_membership_invoice()` splits the templates in two families so a manual or discipline invoice never receives contributie-specific text (e.g. "je contributie", plan selection, installments):
+
+| `invoice_type` | Reminder 1 option | Reminder 2 option |
+|----------------|-------------------|-------------------|
+| `membership` | `rondo_finance_invoice_reminder_1_email_template` | `rondo_finance_invoice_reminder_2_email_template` |
+| `manual`, `discipline` (and any other/empty) | `rondo_finance_generic_invoice_reminder_1_email_template` | `rondo_finance_generic_invoice_reminder_2_email_template` |
+
+Each family also has its own heading option (`..._email_heading`). Both families are edited under **Instellingen → Financieel → Factuurherinneringen** ("Herinneringen voor contributiefacturen" vs. "Herinneringen voor overige facturen") and are testable via the finance test-email endpoint with `template_type` `invoice_reminder_1`/`invoice_reminder_2` (contributie) or `generic_invoice_reminder_1`/`generic_invoice_reminder_2` (overige).
+
+**Available placeholders:** `{naam}`, `{voornaam}`, `{factuur_nummer}`, `{totaal_bedrag}`, `{betaallink}`, `{betaalknop}`, `{qr_code}`, `{factuurdatum}`, `{dagen_sinds_factuur}`, `{organisatie_naam}`.
+
 ### Sending Test Emails
 
 The invoice detail screen now exposes a `Verstuur testmail` action for invoices in status `draft`, `sent`, or `overdue`.
