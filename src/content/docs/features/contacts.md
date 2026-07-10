@@ -16,6 +16,8 @@ Omdat contacten handmatig worden beheerd, zijn voornaam, tussenvoegsel en achter
 
 Als een contact zowel een bedrijfsnaam als een contactpersoon heeft, blijft de persoonsnaam de weergavenaam en wordt het bedrijf eronder getoond. Facturen en factuur-PDF's gebruiken de bedrijfsnaam als klantnaam; e-mails gebruiken de voornaam van de contactpersoon als aanhef, met de bedrijfsnaam als terugval.
 
+In het facturenoverzicht en op de factuurdetailpagina is de bedrijfsnaam eveneens de primaire klantnaam. De persoonsnaam staat daar aanvullend als **Contactpersoon**, zodat schermen en PDF steeds dezelfde klantidentiteit tonen.
+
 Dezelfde aanmaakdialoog wordt gebruikt wanneer een onbekende vergaderdeelnemer als contact wordt toegevoegd.
 
 ## Persoonstypen
