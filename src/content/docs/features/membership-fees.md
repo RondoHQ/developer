@@ -1023,6 +1023,14 @@ Behavior:
 - Keeps the `[TEST]` subject prefix from `InvoiceEmailSender`.
 - For `draft` invoices, the test send does **not** transition the invoice to `sent`; it remains a draft after the preview mail is sent.
 
+### Copying an Invoice into a New Draft
+
+Both the Facturen overview (per-row copy icon) and the invoice detail screen ("Kopiëren naar nieuwe factuur") link to `/financien/facturen/nieuw?copyFrom={id}`, available to users with financial edit rights.
+
+`FactuurNieuw` reads the `copyFrom` query param, fetches the source invoice, and seeds `InvoiceDraftForm` with `mapInvoiceToInitialValues(source, { copy: true })` (`src/utils/invoiceFormValues.js` — the same mapper the draft edit screen uses). Person/customer, line items, amounts, email subject/body override, custom fields, and payment account carry over. The due date is reset to a fresh payment term, and no invoice number, status, payment link, QR, or sent metadata is copied — the copy is a plain new draft that gets its own number when sent.
+
+Because contributie invoices are generated automatically (with a payment page and installment context), copying a `membership` invoice creates it as a `manual` invoice; `manual` and `discipline` keep their type. No new backend endpoint is involved — the copy goes through the standard `POST /rondo/v1/invoices` create flow after the user reviews and saves.
+
 ### Installment Processing
 
 The `InstallmentScheduler` runs on WP-Cron and:
