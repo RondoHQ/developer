@@ -101,7 +101,7 @@ Application shell behavior:
 |------|-----------|-------------|--------|
 | `/login` | `Login` | Public login page | Public |
 | `/` | `Dashboard` | Home dashboard | Auth |
-| `/people` | `PeopleList` | Contact list | Auth |
+| `/people` | `PeopleList` | Leden, ouders en externe contacten | Auth |
 | `/people/:id` | `PersonDetail` | View contact | Auth |
 | `/teams` | `TeamsList` | Team list | Auth |
 | `/teams/:id` | `TeamDetail` | View team | Auth |
