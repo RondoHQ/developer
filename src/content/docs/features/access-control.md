@@ -108,6 +108,28 @@ capability of their own). `router.jsx` and `Layout.jsx` both read that one field
 Do not re-derive it in the frontend. When the router counted extra roles and the sidebar did not, a
 coordinator was sent to the dashboard while every link to it stayed hidden.
 
+### Permission callbacks must match the menu
+
+A sidebar entry gated on a capability and an endpoint gated on `manage_options` produce a menu item
+that opens an empty screen. That is exactly what happened to the penningmeester: `Financiën` is
+shown to anyone with `financieel`, but every contributie endpoint required `manage_options`, so
+`GET /rondo/v1/membership-fees/settings` returned 403 and the page rendered no seasons and no
+categories.
+
+**`manage_options` is not a superset.** Use the capability the UI uses:
+
+| Callback | Grants |
+|---|---|
+| `check_admin_permission()` | `manage_options` only — genuine site administration |
+| `check_financieel_permission()` | `financieel` |
+| `check_admin_or_financieel_permission()` | Endpoints shared with the admin settings screens |
+| `check_admin_or_toegangscontrole_permission()` | `manage_options` or `toegangscontrole` |
+
+`financieel` needs no `manage_options` fallback: `UserRoles::register_role()` adds `fairplay`,
+`vog`, `financieel`, `toegangscontrole`, `manage_clothing`, `ledenadministratie` and `vrijwilligers`
+to the **administrator** role, so an admin passes a capability-only gate. `FeePermissionsTest` pins
+that down — if the grant ever disappears, admins would silently lose the Financiën section.
+
 ### The member's own household
 
 `GET /wp/v2/people` returns exactly what the caller may see, which for a scoped member is their own
