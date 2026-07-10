@@ -1023,6 +1023,18 @@ Behavior:
 - Keeps the `[TEST]` subject prefix from `InvoiceEmailSender`.
 - For `draft` invoices, the test send does **not** transition the invoice to `sent`; it remains a draft after the preview mail is sent.
 
+### Scheduled Sending
+
+A draft invoice can be queued to send automatically on a future date instead of immediately.
+
+- **Storage:** `_scheduled_send_date` (Ymd) and `_scheduled_send_by_user_id` post meta on the draft. The invoice stays `rondo_draft` while queued — there is no separate status — so every existing draft/send code path is unchanged.
+- **Setting it:** three entry points, all writing the same meta:
+  - The `Automatisch verzenden op` date field in the create/edit form (`prepare_invoice_payload` / `persist_invoice_payload`).
+  - The schedule control on the invoice detail page and the bulk "Inplannen voor…" action on the Facturen overview, both via `POST /rondo/v1/invoices/{id}/schedule` (`scheduled_send_date` param; empty clears the schedule). Bulk loops the endpoint client-side.
+- **Sending:** `InvoiceScheduledSendScheduler` (`includes/class-invoice-scheduled-send-scheduler.php`) registers a daily cron (`rondo_invoice_scheduled_send_sweeper`, ~06:00) that finds `rondo_draft` invoices with `_scheduled_send_date <= today` and runs each through the normal send flow. It calls `Invoices::send_invoice()` after `wp_set_current_user()` to the scheduling user, so the send is attributed correctly. The cron self-schedules on `init` if missing, so existing installs pick it up without a theme reactivation.
+- **Clearing:** `send_invoice()` deletes the schedule meta on a successful send, and a manual "Verstuur nu" also clears it. A failed scheduled send keeps the meta and is retried on the next daily run. Editing the invoice out of draft status drops any stale schedule.
+- **Response field:** `scheduled_send_date` (Ymd or null) is included on both the list and detail invoice responses; the UI shows an "Ingepland · {date}" badge for scheduled drafts.
+
 ### Copying an Invoice into a New Draft
 
 Both the Facturen overview (per-row copy icon) and the invoice detail screen ("Kopiëren naar nieuwe factuur") link to `/financien/facturen/nieuw?copyFrom={id}`, available to users with financial edit rights.
