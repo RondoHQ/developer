@@ -142,6 +142,32 @@ volunteers, honorary members (Donateur, Erelid, Lid van Verdienste, Verenigingsl
 and parents with a direct `Kind` relation are deliberately kept out of the
 `skipped_no_leeftijdsgroep` bucket — they are *supposed* to have no spelactiviteit.
 
+### Drill-downs
+
+The dashboard's **Datakwaliteit** card links each count to a drill-down that lists the personen
+behind it, so a beheerder can fix the underlying records. All drill-downs share one endpoint:
+
+`GET /rondo/v1/volunteer-data-quality/{category}`
+
+| Category | Personen returned |
+|---|---|
+| `orphan` | JO16- spelers zonder ouder-relatie én zonder volwassen huisgenoot |
+| `address_fallback` | spelers + ouders van een gezin dat alleen via adres-overeenkomst is afgeleid |
+| `missing_leeftijdsgroep` | actieve leden zonder `leeftijdsgroep`-meta |
+| `former_members` | als ex-lid gemarkeerde personen |
+| `no_email` | actieve (niet-`former_member`) leden waarvan `email_1` én `email_2` leeg of ongeldig zijn |
+
+The `no_email` category is not derived from the eligibility view — it is a straight scan for members
+who cannot be reached by the [self-service activation flow](/features/account-activation/) until
+someone collects an address. Because that is a ledenadministratie concern rather than a volunteer
+one, it gates on `check_data_quality_permission()`: `no_email` requires the `ledenadministratie`
+capability (admins included), while the eligibility categories stay open to every approved user. For
+the same reason, `get_eligibility()` only adds a `no_email` count to `diagnostics` for users who
+pass that gate, so the metric — and the card that links to it — stays hidden for everyone else.
+
+Every drill-down page (`VrijwilligersDataQuality.jsx`) has an **Exporteer CSV** button
+(`@/utils/csvExport`) so the list can be worked off outside Rondo.
+
 ## Exemptions
 
 `VolunteerExemptionResolver` handles per-season exemptions. An exempt member sees an explanatory
