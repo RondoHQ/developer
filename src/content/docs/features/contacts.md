@@ -8,6 +8,8 @@ Rondo Club bewaart externe verenigingscontacten in hetzelfde WordPress `person`-
 
 Een gebruiker met rechten om personen te beheren kan op **Leden** de knop **Contact toevoegen** gebruiken. Het nieuwe record krijgt in ACF `person_type = contact`. Na het opslaan opent de persoonspagina, waar adressen en relaties kunnen worden toegevoegd.
 
+Deze dialoog is uitsluitend voor externe contacten. Leden en ouders/verzorgers worden via Sportlink toegevoegd en bijgewerkt; daarom kan het persoonstype tijdens het aanmaken niet worden gewijzigd naar lid/ouder.
+
 Dezelfde aanmaakdialoog wordt gebruikt wanneer een onbekende vergaderdeelnemer als contact wordt toegevoegd.
 
 ## Persoonstypen
@@ -35,4 +37,3 @@ De frontend gebruikt dit endpoint voor het filter **Persoonstype** op de ledenli
 ## Relaties
 
 Contacten gebruiken het bestaande bidirectionele relatiesysteem. De Relaties-kaart is voor bevoegde gebruikers ook zichtbaar als er nog geen relatie bestaat, zodat de eerste relatie vanaf het nieuwe contact kan worden aangemaakt.
-
