@@ -163,9 +163,9 @@ which backfills on `init`. Version 2 gave `financieel_read` to every role alread
 ### The member's own household
 
 `GET /wp/v2/people` returns exactly what the caller may see, which for a scoped member is their own
-record plus their children under 18, with the ACF payload already reduced to the allowlist. The
-"Mijn gegevens" page needs no dedicated endpoint and does no filtering of its own — it simply renders
-what comes back. The sidebar hides it from kader, for whom that same endpoint returns the whole club.
+record plus their children under 18, with the ACF payload already reduced to the allowlist.
+`GET /rondo/v1/people/household` always returns that household scope, independent of management
+privileges, and is the only data source for "Mijn gegevens".
 
 A child falls out of their parent's view at 18. A person with no usable birthdate is treated as an
 adult: the check fails closed rather than exposing a record on a missing field. Note that ACF
