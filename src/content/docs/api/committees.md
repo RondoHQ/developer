@@ -60,6 +60,17 @@ The nonce is available in `window.rondoConfig.nonce` when logged in to Rondo Clu
 | `POST` | `/wp/v2/commissies` | Create new commissie |
 | `PUT` | `/wp/v2/commissies/{id}` | Update commissie |
 | `DELETE` | `/wp/v2/commissies/{id}` | Delete commissie |
+| `GET` | `/rondo/v1/commissies/{id}/people` | List current and former commissie members |
+
+---
+
+## Commissie Members
+
+```http
+GET /rondo/v1/commissies/456/people
+```
+
+The response groups members into `current` and `former`. Each member summary includes `id`, `name`, `thumbnail`, work-history details, and `email`. The `email` value is the first valid address from the person's `email_1` and `email_2` fields, or an empty string when neither field contains a valid address. The commissie detail page uses the current members' unique addresses for its **E-mail leden** mail link.
 
 ---
 
