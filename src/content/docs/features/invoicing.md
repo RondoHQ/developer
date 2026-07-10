@@ -9,6 +9,12 @@ The invoicing system manages the full lifecycle of club invoices — from creati
 
 Viewing invoices requires `financieel_read`; creating, sending, deleting or marking them paid requires `financieel` (which implies the read capability).
 
+## List Exports
+
+The invoice overview at `/financien/facturen` can export its currently filtered and sorted rows as a semicolon-delimited, UTF-8 CSV file for Excel. The export is available to read-only financial users too and includes invoice number, customer and contact names, amount, type, displayed status, payment plan, sent/reminder dates, sender, and creation date.
+
+The discipline-case overview at `/tuchtzaken` offers the same Excel-compatible export for the selected season and active filters. It includes dossier, person, match, team, card and charge details, sanction, charging status, and administrative fee.
+
 ## Post Type
 
 Invoices use the `rondo_invoice` custom post type with four custom post statuses:
