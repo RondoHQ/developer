@@ -102,6 +102,46 @@ same shift.
 Neither response exposes person IDs, email addresses, raw phone fields, or other profile fields.
 Stale or invalid assignee references are omitted.
 
+## Cancellation policy
+
+Members can cancel their own signup until 21 days before `start_datetime`. A signup timestamp is
+stored as `_shift_signup_at_{person_id}`. Inside the 21-day window, that timestamp opens a 30-minute
+grace period so an accidental click can still be corrected. The REST endpoint enforces the rule;
+the interface mirrors it through `can_cancel` and warns before a signup that falls inside the
+deadline.
+
+Users with `manage_options` or the configurable `vrijwilligers` capability can always remove an
+assignee through:
+
+`DELETE /rondo/v1/shifts/{shift_id}/assignees/{person_id}`
+
+This manager action removes the signup timestamp and reopens a full shift. The built-in
+Administrator, Rondo Vrijwilligers, Rondo Bestuur and Rondo IVA Goedkeurder roles currently carry
+the required capability; administrators can assign it to other roles in the capability matrix.
+
+## Reminder and survey emails
+
+`Rondo\Volunteer\ShiftEmailScheduler` runs hourly and sends individual, idempotent messages to the
+primary valid email (`email_1`, falling back to `email_2`) of every current assignee:
+
+| Delivery | Scheduled time |
+|---|---|
+| Reminder | 14 days before `start_datetime` |
+| Reminder | 7 days before `start_datetime` |
+| Reminder | 2 days before `start_datetime` |
+| Survey | 1 day after `end_datetime` |
+
+Each send is marked on the `dienst_shift` using a per-delivery, per-person post-meta key, so repeat
+cron runs cannot send duplicates. Failed sends remove their marker and can be retried. Cancelled
+assignees are no longer in `assigned_persons` and therefore receive no later messages. No-shows do
+not receive the post-shift survey.
+
+The `dienst_type` edit page stores `reminder_email_subject`, `reminder_email_body`,
+`survey_email_subject`, `survey_email_body`, and `survey_url`. Empty reminder fields use the built-in
+Dutch defaults. The survey is disabled until a valid Google Forms URL is configured. Subjects and
+bodies support `{naam}`, `{dienst}`, `{datum}`, `{tijd}`, `{eindtijd}`, and
+`{medevrijwilligers}`. The survey URL is rendered as a branded **Vul de enquête in** button.
+
 ## Progress and status
 
 `Rondo\Volunteer\VolunteerObligationCalculator::decorate_units()` enriches each unit with
