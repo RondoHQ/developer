@@ -341,7 +341,7 @@ Version checking for PWA/mobile app cache invalidation:
 
 ```js
 const { hasUpdate, currentVersion, latestVersion, reload, checkVersion } = useVersionCheck({
-  checkInterval: 5 * 60 * 1000, // Check every 5 minutes (default)
+  checkInterval: 15 * 60 * 1000, // Check every 15 minutes (default)
 });
 ```
 
@@ -354,9 +354,10 @@ const { hasUpdate, currentVersion, latestVersion, reload, checkVersion } = useVe
 | `checkVersion` | function | Manually trigger a version check |
 
 **Check triggers:**
-- Initial check 5 seconds after mount
-- Periodic check every 5 minutes (configurable)
-- When tab becomes visible (user returns to app)
+- Initial fallback check 60 seconds after mount
+- Periodic check every 15 minutes (configurable)
+- When the tab becomes visible and the configured interval has elapsed
+- Concurrent checks are deduplicated
 
 **Backend endpoint:** `/rondo/v1/version` returns `{ version: "1.42.0" }`
 
@@ -425,6 +426,7 @@ Key settings from `vite.config.js`:
 - Path alias: `@` → `src/`
 - Output: `dist/assets/`
 - Manifest: Enabled for WordPress integration
+- PWA precache: App-shell assets only; lazy route chunks use runtime `CacheFirst` caching
 
 ## Styling
 
@@ -451,12 +453,22 @@ When the app is installed as a PWA or loaded in a mobile browser (Add to Home Sc
 
 **How it works:**
 1. On app load, the current version is stored from `window.rondoConfig.version`
-2. Every 5 minutes (and when the user returns to the tab), the hook fetches `/rondo/v1/version`
+2. Every 15 minutes (and when the user returns after that interval), the hook fetches `/rondo/v1/version`
 3. If the server version differs from the loaded version, `hasUpdate` becomes true
 4. The `UpdateBanner` component renders at the top of `App.jsx` when an update is available
 5. User clicks "Reload" → `window.location.reload(true)` forces a fresh load
 
 **Note:** The version is embedded in both the HTML response (via `rondoConfig`) and the asset filenames (via Vite's hash-based naming), ensuring a reload fetches all new assets.
+
+### PWA asset caching
+
+The service worker precaches only the app shell: the main stylesheet, entry script, shared vendor/runtime chunks, offline page, icons, and fonts. Lazy page chunks are fetched on first use and then stored in the `rondo-assets` runtime cache for up to one year. Hashed filenames make long-lived caching safe.
+
+This keeps first-install traffic predictable during a login wave. Do not broaden `globPatterns` to all JavaScript files: that would make every new user download the complete application, including rarely used finance, editor, and scanner screens.
+
+### Dashboard preload
+
+WordPress starts the dashboard REST request from the HTML head so it can overlap with JavaScript startup. This preload only runs for an authenticated request to the site root. Direct links to another SPA route must not preload the dashboard, because the response would be discarded while still consuming PHP and database capacity.
 
 ## Related Documentation
 
