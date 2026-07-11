@@ -57,6 +57,9 @@ Shared visual styles are defined in `src/index.css` to keep page components cons
   - Use the shared `.card` class for standard content containers.
   - `.card` includes the light neutral surface, subtle border/shadow, and a 3px brand gradient top accent.
   - Hover states are defined centrally so card interactions remain consistent across pages.
+- **Wide data tables**
+  - The people list uses `FloatingHorizontalScrollbar` to mirror its native horizontal scroll position while the bottom of the table is outside the viewport.
+  - The floating scrollbar observes both the table size and the nested desktop `<main>` scroll container, and automatically disappears when the native scrollbar becomes visible.
 
 ## Entry Points
 
