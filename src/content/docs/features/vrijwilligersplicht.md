@@ -93,8 +93,14 @@ Both `GET /rondo/v1/shifts/available` and `GET /rondo/v1/my-shifts` include a
 `person` records assigned to that shift, excluding the caller. The member interface shows these
 names so volunteers know who they will work with before signing up and in their own schedule.
 
-The response deliberately does not expose the corresponding person IDs, email addresses, phone
-numbers, or other profile fields. Stale or invalid assignee references are omitted.
+`GET /rondo/v1/my-shifts` additionally includes `fellow_volunteer_contacts`. Each item contains a
+display name and, when `mobile_1` is available and valid, a normalized `https://wa.me/...` URL. The
+personal **Mijn diensten** tab renders the name as a WhatsApp link. The available-shifts response
+deliberately omits this contact array: members can contact one another only after signing up for the
+same shift.
+
+Neither response exposes person IDs, email addresses, raw phone fields, or other profile fields.
+Stale or invalid assignee references are omitted.
 
 ## Progress and status
 
