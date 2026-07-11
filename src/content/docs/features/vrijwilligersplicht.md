@@ -86,6 +86,16 @@ These are different questions, and conflating them turns willing helpers away.
 A sponsor, a grandparent, or a parent whose children have aged out owes nothing and may still sign
 up. `GET /rondo/v1/my-shifts/available` only refuses oud-leden.
 
+## Seeing fellow volunteers
+
+Both `GET /rondo/v1/shifts/available` and `GET /rondo/v1/my-shifts` include a
+`fellow_volunteers` array on every shift. It contains the display names of the other published
+`person` records assigned to that shift, excluding the caller. The member interface shows these
+names so volunteers know who they will work with before signing up and in their own schedule.
+
+The response deliberately does not expose the corresponding person IDs, email addresses, phone
+numbers, or other profile fields. Stale or invalid assignee references are omitted.
+
 ## Progress and status
 
 `Rondo\Volunteer\VolunteerObligationCalculator::decorate_units()` enriches each unit with
