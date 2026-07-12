@@ -8,6 +8,10 @@ The form tells members to use the same address that receives club newsletters an
 Voetbal.nl app. Client-side email validation messages are explicitly Dutch rather than relying on
 the browser locale.
 
+Activation mail uses an explicit `From` header for `ledenadministratie@svawc.nl`. Keep this scoped
+to `ActivationService::send_activation_email()` so other transactional mail retains its configured
+sender. The confirmation page tells members to search their spam folder for that address.
+
 | Route | Does |
 |---|---|
 | `GET /activeren` | Ask for an email address |
