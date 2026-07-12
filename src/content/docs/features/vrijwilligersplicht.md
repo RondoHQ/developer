@@ -112,6 +112,36 @@ The selected post ID is stored in the `diensttype` URL parameter. For example,
 `/vrijwillig?diensttype=123` opens the page with diensttype post `123` selected. Removing the filter
 also removes the parameter; unrelated URL parameters are preserved.
 
+## Shift coverage calendar
+
+Both `/vrijwilligers/diensten` and the member-facing `/vrijwillig` page use the shared
+`ShiftCoverageCalendar` component. It shows the current calendar month and the next two months:
+
+- **Green** means every relevant `dienst_shift` on that date has reached its capacity.
+- **Red** means at least one relevant shift still has an open place.
+- **Neutral** means no relevant shifts are scheduled on that date.
+
+Cancelled and completed shifts are excluded. Selecting a date reveals its individual shifts. The
+manager view links each shift to its edit screen; the signup view exposes the existing signup and
+cancellation actions. Colour is always accompanied by text, an icon and an accessible label.
+
+The `diensttype` URL parameter filters the calendar as well as the personal shifts list. With no
+filter, a date is green only when every diensttype on that date is full. With a filter, only shifts
+of the selected type determine the date status.
+
+Calendar data comes from:
+
+`GET /rondo/v1/shifts/calendar?view=manage|signup&from=YYYY-MM-DD&to=YYYY-MM-DD&dienst_type_id=123`
+
+The requested range is limited to 100 days and interpreted in the WordPress timezone. `view=manage`
+requires `manage_options` or `vrijwilligers`. `view=signup` resolves the current user to their linked
+person and applies the same VOG, IVA and required-pool gates as the signup endpoint. Full shifts stay
+visible so members can understand green dates, but they have `can_signup: false`. Person IDs and
+contact details are never returned by the calendar endpoint.
+
+The template expander keeps 93 days of concrete shifts available. This covers every possible
+three-calendar-month view, including three consecutive 31-day months.
+
 ## Cancellation policy
 
 Members can cancel their own signup until 21 days before `start_datetime`. A signup timestamp is
