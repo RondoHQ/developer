@@ -4,6 +4,9 @@ description: The public self-service flow at /activeren, and the security model 
 ---
 
 Members create their own account at **`/activeren`**. No admin action, no mass mailing.
+The form tells members to use the same address that receives club newsletters and is used for the
+Voetbal.nl app. Client-side email validation messages are explicitly Dutch rather than relying on
+the browser locale.
 
 | Route | Does |
 |---|---|
