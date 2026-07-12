@@ -19,7 +19,7 @@ The public page publishes a 1200×630 Open Graph image from
 | Route | Does |
 |---|---|
 | `GET /activeren` | Ask for an email address |
-| `POST /activeren` | Mail an activation link, if the address is known |
+| `POST /activeren` | Mail an activation or Magic Login link, if the address is known |
 | `GET /activeren/{token}` | "Who are you?" — the people on that address |
 | `POST /activeren/{token}` | Create the account, redirect to set a password |
 
@@ -68,6 +68,18 @@ Transient counters, per hour:
 
 The IP limiter is what stops enumeration across many addresses from one host. A rate-limited request
 renders the normal confirmation — it does not announce that it was throttled.
+
+## Existing accounts and Magic Login
+
+When every matching person already has an account, `ActivationService` asks the active Magic Login
+plugin to create its single-use token and emails the resulting link to the submitted address. A
+shared household address receives one branded email with a named button for every matching account.
+The plugin remains responsible for token creation, validity, and authentication; Rondo applies its
+stricter `/activeren` request limits and respects the plugin's per-user send failsafe.
+
+If at least one person on the address still needs an account, the normal activation flow wins. If
+Magic Login is unavailable or cannot create a link, the old activation-token page remains the
+fallback and points existing users to account recovery.
 
 ### Timing
 
