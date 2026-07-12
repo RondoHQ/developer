@@ -12,6 +12,10 @@ Activation mail uses an explicit `From` header for `ledenadministratie@svawc.nl`
 to `ActivationService::send_activation_email()` so other transactional mail retains its configured
 sender. The confirmation page tells members to search their spam folder for that address.
 
+The public page publishes a 1200×630 Open Graph image from
+`public/images/og-account-activation.png`. `ActivationPage` passes that image to the shared
+`PublicPageChrome` header, which emits the Open Graph and Twitter Card image metadata.
+
 | Route | Does |
 |---|---|
 | `GET /activeren` | Ask for an email address |
