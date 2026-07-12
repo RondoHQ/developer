@@ -102,6 +102,16 @@ same shift.
 Neither response exposes person IDs, email addresses, raw phone fields, or other profile fields.
 Stale or invalid assignee references are omitted.
 
+## Filtering member shifts by diensttype
+
+The member page at `/vrijwillig` builds its diensttype filter from the `dienst_type_id` and
+`dienst_type_name` already included in the available and personal shift responses. The filter
+applies to both the **Beschikbaar** and **Mijn diensten** tabs.
+
+The selected post ID is stored in the `diensttype` URL parameter. For example,
+`/vrijwillig?diensttype=123` opens the page with diensttype post `123` selected. Removing the filter
+also removes the parameter; unrelated URL parameters are preserved.
+
 ## Cancellation policy
 
 Members can cancel their own signup until 21 days before `start_datetime`. A signup timestamp is
