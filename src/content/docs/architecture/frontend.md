@@ -473,6 +473,14 @@ This keeps first-install traffic predictable during a login wave. Do not broaden
 
 WordPress starts the dashboard REST request from the HTML head so it can overlap with JavaScript startup. This preload only runs for an authenticated request to the site root. Direct links to another SPA route must not preload the dashboard, because the response would be discarded while still consuming PHP and database capacity.
 
+## Volunteer load testing
+
+The repository contains a demo-only k6 journey at `tests/load/volunteer-journey.js`. It creates a real WordPress session for a unique synthetic volunteer, opens `/vrijwillig`, and calls `user/me`, `my-shifts`, and `shifts/available`. Signup mode lets multiple volunteers claim the same synthetic shift at nearly the same time.
+
+Use `bin/load-test-fixtures.php` through `wp eval-file` to seed, reset, verify, or remove the synthetic users, people, dienst types, and shifts. The script refuses every host except `demo.rondo.club` and marks every generated record with `_rondo_load_test_fixture=1`. After a concurrent signup run, always use `verify`; successful HTTP responses alone do not prove that every read-modify-write survived.
+
+Because demo and production share a server, run 5, 25, and 50 virtual-user steps separately. Run 100 only after production remains stable. Full commands and stop criteria are documented in `tests/load/README.md` in the theme repository.
+
 ## Related Documentation
 
 - [REST API](./rest-api.md) - Backend API reference
