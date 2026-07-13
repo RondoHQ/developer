@@ -72,7 +72,10 @@ Class: `Rondo\Passes\MembershipPassApple`
 - Uses tier-based primary label (`BONDSLID`, `VERENIGINGSLID`, or `SPONSOR`)
 - Shows KNVB ID field only for `Bondslid` tier
 - Sponsor passes use a white background with dark foreground and label text and replace team/function fields with `BEDRIJF` and the person's `company_name`
-- `businessclub` shows `Businessclub {organization name}` with the dedicated Businessclub AWC logo asset; `awc_sponsor` shows `{organization name} Sponsor` with the standard club logo
+- `businessclub` shows `Businessclub {organization name}` with the separately configurable Businessclub logo; without an uploaded logo it falls back to the bundled Businessclub AWC asset
+- `awc_sponsor` shows `{organization name} Sponsor` with the standard club logo
+
+Administrators upload both the standard club logo and the optional Businessclub logo under **Instellingen → Club → Huisstijl**. The Businessclub attachment ID is stored in the WordPress option `rondo_finance_businessclub_logo_id`.
 
 Config keys (stored via Finance settings):
 
@@ -94,7 +97,8 @@ Class: `Rondo\Passes\MembershipPassGoogle`
 - Uses uploaded service-account JSON attachment
 - Tier routing depends on `type-lid`, not KNVB ID presence
 - Uses the club logo as wallet `logo` (not `heroImage`) and sets `cardTitle` to issuer/club name to keep a standard Google Generic Pass layout
-- Sponsor `businessclub` passes use the dedicated Businessclub AWC logo and `Businessclub {issuer name}`; `awc_sponsor` passes use the standard club logo and `{issuer name} Sponsor`
+- Sponsor `businessclub` passes use the separately configurable Businessclub logo and `Businessclub {issuer name}`; without an uploaded logo they fall back to the bundled Businessclub AWC asset
+- Sponsor `awc_sponsor` passes use the standard club logo and `{issuer name} Sponsor`
 - Generates a cached padded PNG variant of the club logo for Google Wallet to avoid crest clipping in the compact wallet card
 - Uses full object `update` to replace legacy object styling when a pass object already exists
 - Sets `subheader` to member type label (`Bondslid`/`Verenigingslid`/`Sponsor`) above the member name
