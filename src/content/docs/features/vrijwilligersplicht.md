@@ -175,6 +175,37 @@ This manager action removes the signup timestamp and reopens a full shift. The b
 Administrator, Rondo Vrijwilligers, Rondo Bestuur and Rondo IVA Goedkeurder roles currently carry
 the required capability; administrators can assign it to other roles in the capability matrix.
 
+### Cancelling an entire shift
+
+A shift with assignees is never hard-deleted. A manager with `manage_options` or `vrijwilligers`
+uses:
+
+`POST /rondo/v1/shifts/{shift_id}/cancellation`
+
+The optional JSON field `reason` is included in the notification email. The backend calculates the
+policy variant from the WordPress timezone and the shift start; the manager cannot override it:
+
+| Notice before `start_datetime` | Variant | Counts as completed | Member action |
+|---|---|---|---|
+| 48 hours or more | `early` | No | Choose a replacement shift |
+| Less than 48 hours | `last_minute` | Yes | No replacement needed |
+
+Exactly 48 hours is the early variant. Cancellation sets the shift status to `geannuleerd` and
+stores the timestamp, acting user, policy variant, credit decision, notice duration and optional
+reason as post meta. The `assigned_persons` array is deliberately retained for audit history and
+credit attribution. The operation uses the same per-shift write lock as signup changes and is
+idempotent.
+
+Every assignee with a valid primary or secondary email receives a personal HTML email immediately.
+Per-person send markers prevent duplicates; repeating the endpoint only retries recipients whose
+earlier `wp_mail()` call failed. The response reports sent, failed and missing-email counts.
+Cancelled shifts receive no reminders or surveys and disappear from the availability calendars.
+They remain under **Mijn diensten → Historie**, labelled **telt mee** or **telt niet mee**.
+
+Directly setting `status=geannuleerd`, modifying a cancelled shift, or hard-deleting a shift with
+assignees/cancellation history is blocked. This ensures notifications, credit and the audit trail
+cannot be bypassed through the standard WordPress REST or ACF editors.
+
 ## Reminder and survey emails
 
 `Rondo\Volunteer\ShiftEmailScheduler` runs hourly and sends individual, idempotent messages to the
@@ -188,9 +219,10 @@ primary valid email (`email_1`, falling back to `email_2`) of every current assi
 | Survey | 1 day after `end_datetime` |
 
 Each send is marked on the `dienst_shift` using a per-delivery, per-person post-meta key, so repeat
-cron runs cannot send duplicates. Failed sends remove their marker and can be retried. Cancelled
-assignees are no longer in `assigned_persons` and therefore receive no later messages. No-shows do
-not receive the post-shift survey.
+cron runs cannot send duplicates. Failed sends remove their marker and can be retried. Individually
+removed assignees are no longer in `assigned_persons`. Entirely cancelled shifts retain their
+assignees for history, but the scheduler skips the `geannuleerd` status. No-shows do not receive the
+post-shift survey.
 
 The `dienst_type` edit page stores `reminder_email_subject`, `reminder_email_body`,
 `survey_email_subject`, `survey_email_body`, and `survey_url`. Empty reminder fields use the built-in
