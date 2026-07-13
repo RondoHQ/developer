@@ -21,9 +21,9 @@ A person is eligible based on ACF field `type-lid`:
 
 - `Bondslid` (`Bondslid` tier)
 - `Verenigingslid` (`Verenigingslid` tier)
-- `person_type = sponsor` (`Sponsor` tier), onafhankelijk van `type-lid`
+- `person_type = sponsor` with `sponsor_pass_variant = businessclub` or `awc_sponsor` (`Sponsor` tier), onafhankelijk van `type-lid`
 
-If neither `type-lid` nor `person_type` matches an eligible tier, pass token and URL meta are removed.
+If neither `type-lid` nor the complete Sponsor configuration matches an eligible tier, pass token and URL meta are removed. Sponsor creation requires an explicit variant; no default is preselected.
 
 ## Lifecycle
 
@@ -71,7 +71,8 @@ Class: `Rondo\Passes\MembershipPassApple`
 - Uses configured pass identifiers and club branding
 - Uses tier-based primary label (`BONDSLID`, `VERENIGINGSLID`, or `SPONSOR`)
 - Shows KNVB ID field only for `Bondslid` tier
-- Sponsor passes use a white background with dark foreground and label text, show `Businessclub {organization name}` at the top, use the dedicated Businessclub AWC logo asset, and replace team/function fields with `BEDRIJF` and the person's `company_name`
+- Sponsor passes use a white background with dark foreground and label text and replace team/function fields with `BEDRIJF` and the person's `company_name`
+- `businessclub` shows `Businessclub {organization name}` with the dedicated Businessclub AWC logo asset; `awc_sponsor` shows `{organization name} Sponsor` with the standard club logo
 
 Config keys (stored via Finance settings):
 
@@ -92,7 +93,8 @@ Class: `Rondo\Passes\MembershipPassGoogle`
 - Redirects member to Google Save-to-Wallet URL
 - Uses uploaded service-account JSON attachment
 - Tier routing depends on `type-lid`, not KNVB ID presence
-- Uses the club logo as wallet `logo` (not `heroImage`) and sets `cardTitle` to issuer/club name to keep a standard Google Generic Pass layout; Sponsor passes use the dedicated Businessclub AWC logo asset and `Businessclub {issuer name}`
+- Uses the club logo as wallet `logo` (not `heroImage`) and sets `cardTitle` to issuer/club name to keep a standard Google Generic Pass layout
+- Sponsor `businessclub` passes use the dedicated Businessclub AWC logo and `Businessclub {issuer name}`; `awc_sponsor` passes use the standard club logo and `{issuer name} Sponsor`
 - Generates a cached padded PNG variant of the club logo for Google Wallet to avoid crest clipping in the compact wallet card
 - Uses full object `update` to replace legacy object styling when a pass object already exists
 - Sets `subheader` to member type label (`Bondslid`/`Verenigingslid`/`Sponsor`) above the member name

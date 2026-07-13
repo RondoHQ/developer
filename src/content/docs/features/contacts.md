@@ -4,7 +4,7 @@ title: "Externe contacten en sponsors"
 
 Rondo Club bewaart externe verenigingscontacten in hetzelfde WordPress `person`-posttype als leden en ouders. Daardoor kunnen contacten direct dezelfde adressen, onderlinge relaties, notities, taken en factuurkoppelingen gebruiken. Er is geen apart contactregister of aangepaste databasetabel.
 
-Businessclubleden en sponsoren gebruiken hetzelfde model met `person_type = sponsor`. Ook zij kunnen een persoonsnaam, bedrijfsnaam of beide hebben.
+Businessclubleden en sponsoren gebruiken hetzelfde model met `person_type = sponsor`. Ook zij kunnen een persoonsnaam, bedrijfsnaam of beide hebben. Het selectveld `sponsor_pass_variant` maakt onderscheid tussen `businessclub` en `awc_sponsor`.
 
 ## Contact toevoegen
 
@@ -54,9 +54,9 @@ De frontend gebruikt dit endpoint voor het filter **Persoonstype** op de relatie
 
 ## Sponsorbeheer
 
-Gebruikers met de ingebouwde rol **Rondo Sponsorbeheerder** kunnen via **Sponsor toevoegen** businessclubleden en sponsoren aanmaken. Ze kunnen uitsluitend sponsorrecords aanpassen en verwijderen; de server weigert pogingen om leden of gewone contacten te muteren en voorkomt dat een sponsor naar een ander persoonstype wordt omgezet.
+Gebruikers met de ingebouwde rol **Rondo Sponsorbeheerder** kunnen via **Sponsor toevoegen** businessclubleden en sponsoren aanmaken. De pasvariant **Businessclub AWC** of **AWC Sponsor** is daarbij verplicht; dit wordt zowel in het formulier als door de REST API afgedwongen. Ze kunnen uitsluitend sponsorrecords aanpassen en verwijderen; de server weigert pogingen om leden of gewone contacten te muteren en voorkomt dat een sponsor naar een ander persoonstype wordt omgezet.
 
-Een sponsor krijgt automatisch een publieke toegangspas-URL. De Apple Wallet- en Google Wallet-varianten gebruiken een witte achtergrond en tonen **Sponsor** als type. Zie [Membership Passes](./membership-passes.md) voor de technische pasopbouw.
+Een sponsor met gekozen pasvariant krijgt automatisch een publieke toegangspas-URL. Beide varianten gebruiken een witte achtergrond en tonen **Sponsor** als type. **Businessclub AWC** gebruikt het Businessclub-logo en de gelijknamige titel; **AWC Sponsor** gebruikt het gewone AWC-logo en de titel **AWC Sponsor**. De pasvariant kan later op de persoonspagina worden gewijzigd. Zie [Membership Passes](./membership-passes.md) voor de technische pasopbouw.
 
 ## Relaties
 
