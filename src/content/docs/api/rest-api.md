@@ -262,6 +262,7 @@ Returns paginated people with server-side filtering and sorting for the `/people
 - `birth_year_from`, `birth_year_to`
 - `birth_month` (1-12, filters people by birthday month)
 - `person_type` (`member` for members, parents, and legacy records; `contact` for explicitly marked external contacts)
+- `is_sponsor` (`1` for active sponsors, `0` for people without the sponsor role; overlaps either person type)
 - `include_former` (`1` to include former members)
 - `lid_tot_future` (`1` to show members with a future `lid-tot` date)
 - `spelend_lid` (`1` = playing members — `spelactiviteit` set and not `-`; `0` = non-playing members)

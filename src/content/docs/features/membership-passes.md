@@ -21,9 +21,9 @@ A person is eligible based on ACF field `type-lid`:
 
 - `Bondslid` (`Bondslid` tier)
 - `Verenigingslid` (`Verenigingslid` tier)
-- `person_type = sponsor` with `sponsor_pass_variant = businessclub` or `awc_sponsor` (`Sponsor` tier), onafhankelijk van `type-lid`
+- `is_sponsor = true` with `sponsor_pass_variant = businessclub` or `awc_sponsor` (`Sponsor` tier), onafhankelijk van `person_type` en `type-lid`
 
-If neither `type-lid` nor the complete Sponsor configuration matches an eligible tier, pass token and URL meta are removed. Sponsor creation requires an explicit variant; no default is preselected.
+The active sponsor role takes precedence over a member tier, so a member+sponsor receives the selected Sponsor pass. When `is_sponsor` becomes false, the pass falls back to the person's eligible `type-lid`. If neither `type-lid` nor the complete Sponsor configuration matches an eligible tier, pass token and URL meta are removed. Sponsor creation requires an explicit variant; no default is preselected.
 
 ## Lifecycle
 

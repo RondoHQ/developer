@@ -217,11 +217,13 @@ The base role carries only `read`. `UserRoles::sync_role_capabilities()` derives
 
 ### Sponsorbeheerder
 
-The built-in `rondo_sponsorbeheerder` role carries `sponsorbeheer`. This capability provides the person-CPT primitives required by WordPress REST, while record-level checks keep its mutation scope limited to `person_type = sponsor`:
+The built-in `rondo_sponsorbeheerder` role carries `sponsorbeheer`. This capability provides the person-CPT primitives required by WordPress REST, while record-level checks keep its mutation scope limited to people with `is_sponsor = true`:
 
-- create requests must explicitly submit `person_type = sponsor`;
-- existing members and contacts cannot be edited or deleted;
-- a sponsor cannot be converted to another person type by a sponsor-only manager;
+- create requests must explicitly submit `person_type = contact` and `is_sponsor = true`;
+- external contact+sponsor records can be managed normally;
+- on member+sponsor records, only `company_name`, `is_sponsor`, and `sponsor_pass_variant` may be changed;
+- member+sponsor records cannot be deleted by a sponsor-only manager;
+- a sponsor-only manager cannot remove the sponsor role or change the base person type;
 - full people managers and administrators keep their existing unrestricted person scope.
 
 The current-user response exposes `can_manage_sponsors`. The frontend uses it for the **Sponsor toevoegen** action and enables edit/delete affordances only on sponsor detail pages. `sponsorbeheer` is an age-group bypass capability because the manager must be able to find sponsor records in the club-wide people list; this does not widen their mutation scope.

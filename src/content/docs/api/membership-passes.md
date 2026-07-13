@@ -77,7 +77,8 @@ Logged-in approved users.
   "person": {
     "id": 123,
     "name": "Voornaam Achternaam",
-    "person_type": "sponsor",
+    "person_type": "member",
+    "is_sponsor": true,
     "company_name": "Sponsor BV",
     "thumbnail": "https://..."
   },
@@ -88,7 +89,7 @@ Logged-in approved users.
 }
 ```
 
-Scanner UIs use `person_type` to show `company_name` as **Bedrijf** for Sponsor passes. Other pass types continue to show the KNVB ID.
+Scanner UIs use `is_sponsor` to show `company_name` as **Bedrijf** for Sponsor passes. Other pass types continue to show the KNVB ID.
 
 ## Public Landing Page
 

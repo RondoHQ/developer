@@ -4,7 +4,7 @@ title: "Externe contacten en sponsors"
 
 Rondo Club bewaart externe verenigingscontacten in hetzelfde WordPress `person`-posttype als leden en ouders. Daardoor kunnen contacten direct dezelfde adressen, onderlinge relaties, notities, taken en factuurkoppelingen gebruiken. Er is geen apart contactregister of aangepaste databasetabel.
 
-Businessclubleden en sponsoren gebruiken hetzelfde model met `person_type = sponsor`. Ook zij kunnen een persoonsnaam, bedrijfsnaam of beide hebben. Het selectveld `sponsor_pass_variant` maakt onderscheid tussen `businessclub` en `awc_sponsor`.
+Sponsorschap is een onafhankelijke rol via `is_sponsor = true`. Daardoor kan één persoon tegelijk Sportlink-lid en sponsor zijn. Het basisveld `person_type` blijft `member` voor leden en ouders, of `contact` voor externe relaties. Het selectveld `sponsor_pass_variant` maakt onderscheid tussen `businessclub` en `awc_sponsor`.
 
 ## Contact toevoegen
 
@@ -26,35 +26,40 @@ Dezelfde aanmaakdialoog wordt gebruikt wanneer een onbekende vergaderdeelnemer a
 
 ## Persoonstypen
 
-Het ACF-selectveld `person_type` kent drie waarden:
+Het ACF-selectveld `person_type` kent twee waarden:
 
 | Waarde | Betekenis |
 | --- | --- |
 | `member` | Lid of ouder/verzorger |
 | `contact` | Extern verenigingscontact |
-| `sponsor` | Businessclublid of sponsor |
+
+Het losse true/false-veld `is_sponsor` geeft de sponsorrol aan. Een Sportlink-lid met `person_type = member` en `is_sponsor = true` is dus zowel lid als sponsor. Een sponsor zonder Sportlink-lidmaatschap gebruikt `person_type = contact` en `is_sponsor = true`.
+
+De Sponsit-sync bewaart de stabiele bronvelden `sponsit_contact_id` en `sponsit_person_id`. Daardoor worden vervolgruns op dezelfde Rondo-persoon toegepast en kan alleen een door Sponsit beheerde sponsorrol automatisch worden beëindigd; handmatig beheerde sponsors blijven ongemoeid.
 
 Het aanvullende tekstveld `company_name` bewaart de bedrijfsnaam. De bedrijfsnaam is ook opgenomen in de CSV-export van de personenlijst en kan op de persoonspagina worden bijgewerkt.
 
 Bestaande personen zonder opgeslagen `person_type` worden als lid/ouder behandeld. Daardoor is geen datamigratie nodig en blijven door Sportlink gesynchroniseerde personen compatibel.
 
-Bevoegde gebruikers kunnen het persoonstype op de persoonspagina wijzigen. Contacten en sponsors krijgen daar en in de personenlijst een herkenbaar label.
+Bevoegde gebruikers kunnen het persoonstype en de sponsorrol op de persoonspagina wijzigen. Contacten en sponsors krijgen daar en in de personenlijst een herkenbaar label.
 
-De kolom **Type** op de personenlijst vat het record samen als **Bondslid**, **Verenigingslid**, **Ouder**, **Contact** of **Sponsor**. Het expliciete persoonstype heeft voorrang, zodat handmatig beheerde records ook bij vervuilde historische Sportlink-velden correct zichtbaar blijven.
+De kolom **Type** op de personenlijst vat het basisrecord samen als **Bondslid**, **Verenigingslid**, **Ouder** of **Contact** en voegt bij een actieve sponsorrol **+ sponsor** toe.
 
 ## Filteren via REST
 
-`GET /wp-json/rondo/v1/people/filtered` accepteert `person_type=member`, `person_type=contact` of `person_type=sponsor`.
+`GET /wp-json/rondo/v1/people/filtered` accepteert `person_type=member` of `person_type=contact`, plus de onafhankelijke filter `is_sponsor=1|0`.
 
 - `contact` retourneert uitsluitend records met de expliciete waarde `contact`.
-- `sponsor` retourneert uitsluitend records met de expliciete waarde `sponsor`.
 - `member` retourneert records met `member` én bestaande records zonder waarde.
+- `is_sponsor=1` retourneert alle actieve sponsors, ongeacht hun persoonstype.
 
-De frontend gebruikt dit endpoint voor het filter **Persoonstype** op de relatieslijst.
+De frontend gebruikt dit endpoint voor afzonderlijke filters **Persoonstype** en **Sponsor** op de relatieslijst.
 
 ## Sponsorbeheer
 
-Gebruikers met de ingebouwde rol **Rondo Sponsorbeheerder** kunnen via **Sponsor toevoegen** businessclubleden en sponsoren aanmaken. De pasvariant **Businessclub AWC** of **AWC Sponsor** is daarbij verplicht; dit wordt zowel in het formulier als door de REST API afgedwongen. Ze kunnen uitsluitend sponsorrecords aanpassen en verwijderen; de server weigert pogingen om leden of gewone contacten te muteren en voorkomt dat een sponsor naar een ander persoonstype wordt omgezet.
+Gebruikers met de ingebouwde rol **Rondo Sponsorbeheerder** kunnen via **Sponsor toevoegen** externe sponsorcontacten aanmaken. Die krijgen `person_type = contact` en `is_sponsor = true`. De pasvariant **Businessclub AWC** of **AWC Sponsor** is verplicht; dit wordt zowel in het formulier als door de REST API afgedwongen.
+
+Bij een persoon die ook lid of ouder is, mag een sponsorbeheerder uitsluitend `company_name`, `is_sponsor` en `sponsor_pass_variant` wijzigen. De server blokkeert wijzigingen aan Sportlink-velden en voorkomt dat de sponsorbeheerder zo'n dubbelrolrecord verwijdert. Een extern contact+sponsor-record kan de sponsorbeheerder wel volledig beheren.
 
 Een sponsor met gekozen pasvariant krijgt automatisch een publieke toegangspas-URL. Beide varianten gebruiken een witte achtergrond en tonen **Sponsor** als type. **Businessclub AWC** gebruikt het Businessclub-logo en de gelijknamige titel; **AWC Sponsor** gebruikt het gewone AWC-logo en de titel **AWC Sponsor**. De pasvariant kan later op de persoonspagina worden gewijzigd. Zie [Membership Passes](./membership-passes.md) voor de technische pasopbouw.
 
