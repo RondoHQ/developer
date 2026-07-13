@@ -71,7 +71,7 @@ Class: `Rondo\Passes\MembershipPassApple`
 - Uses configured pass identifiers and club branding
 - Uses tier-based primary label (`BONDSLID`, `VERENIGINGSLID`, or `SPONSOR`)
 - Shows KNVB ID field only for `Bondslid` tier
-- Sponsor passes use a white background with dark foreground and label text, show `Businessclub {organization name}` at the top, and replace team/function fields with `BEDRIJF` and the person's `company_name`
+- Sponsor passes use a white background with dark foreground and label text, show `Businessclub {organization name}` at the top, use the dedicated Businessclub AWC logo asset, and replace team/function fields with `BEDRIJF` and the person's `company_name`
 
 Config keys (stored via Finance settings):
 
@@ -92,7 +92,7 @@ Class: `Rondo\Passes\MembershipPassGoogle`
 - Redirects member to Google Save-to-Wallet URL
 - Uses uploaded service-account JSON attachment
 - Tier routing depends on `type-lid`, not KNVB ID presence
-- Uses the club logo as wallet `logo` (not `heroImage`) and sets `cardTitle` to issuer/club name to keep a standard Google Generic Pass layout; Sponsor passes use `Businessclub {issuer name}`
+- Uses the club logo as wallet `logo` (not `heroImage`) and sets `cardTitle` to issuer/club name to keep a standard Google Generic Pass layout; Sponsor passes use the dedicated Businessclub AWC logo asset and `Businessclub {issuer name}`
 - Generates a cached padded PNG variant of the club logo for Google Wallet to avoid crest clipping in the compact wallet card
 - Uses full object `update` to replace legacy object styling when a pass object already exists
 - Sets `subheader` to member type label (`Bondslid`/`Verenigingslid`/`Sponsor`) above the member name
