@@ -29,7 +29,7 @@ User must be allowed to access the target person.
 
 **GET** `/rondo/v1/membership-passes/people/{person_id}/landing-url`
 
-Ensures token + URL post meta exist for a KNVB member and returns the landing URL.
+Ensures token + URL post meta exist for an eligible member or Sponsor and returns the landing URL.
 
 ### Permission
 
@@ -44,7 +44,7 @@ User must be allowed to access the target person.
 }
 ```
 
-If a person has no KNVB ID, `membership_pass_url` is `null`.
+If a person is not an eligible member or Sponsor, `membership_pass_url` is `null`.
 
 ## Verify Scanned QR Token
 
@@ -77,6 +77,8 @@ Logged-in approved users.
   "person": {
     "id": 123,
     "name": "Voornaam Achternaam",
+    "person_type": "sponsor",
+    "company_name": "Sponsor BV",
     "thumbnail": "https://..."
   },
   "membership": {
@@ -86,9 +88,11 @@ Logged-in approved users.
 }
 ```
 
+Scanner UIs use `person_type` to show `company_name` as **Bedrijf** for Sponsor passes. Other pass types continue to show the KNVB ID.
+
 ## Public Landing Page
 
-For each person with a KNVB ID, Rondo stores:
+For each eligible member or Sponsor, Rondo stores:
 
 - `_membership_pass_token` (person post meta)
 - `_membership_pass_url` (person post meta)

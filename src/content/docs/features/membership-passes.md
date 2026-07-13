@@ -125,5 +125,6 @@ The in-app scanner (`/lidpas-scanner`) uses a layered detection strategy:
 
 - `BarcodeDetector` when available
 - `jsQR` frame-decoding fallback when `BarcodeDetector` is not supported
+- Sponsor scans show `Bedrijf: {company_name}` instead of a KNVB ID
 
 This keeps camera scanning functional on browsers like iOS Chrome that do not expose `BarcodeDetector`.
