@@ -116,6 +116,18 @@ The selected post ID is stored in the `diensttype` URL parameter. For example,
 `/vrijwillig?diensttype=123` opens the page with diensttype post `123` selected. Removing the filter
 also removes the parameter; unrelated URL parameters are preserved.
 
+## Club-specific information block
+
+Administrators can add optional club-specific guidance to the member-facing `/vrijwillig` page in
+**Settings → Club → Informatie op vrijwilligerspagina**. The rich-text value is stored in the
+`rondo_volunteer_signup_info` WordPress option and supports links, lists, and basic formatting.
+Leaving the editor empty hides the block.
+
+`Rondo\Config\ClubConfig` sanitizes the HTML with `wp_kses_post()` on both write and read. The safe
+value is exposed as `volunteer_signup_info` by `GET /rondo/v1/config` and injected into the initial
+JavaScript config as `volunteerSignupInfo`, so rendering the block does not add another request to
+the member page.
+
 ## Shift coverage calendar
 
 Both `/vrijwilligers/diensten` and the member-facing `/vrijwillig` page use the shared
