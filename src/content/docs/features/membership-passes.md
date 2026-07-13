@@ -21,8 +21,9 @@ A person is eligible based on ACF field `type-lid`:
 
 - `Bondslid` (`Bondslid` tier)
 - `Verenigingslid` (`Verenigingslid` tier)
+- `person_type = sponsor` (`Sponsor` tier), onafhankelijk van `type-lid`
 
-If `type-lid` no longer matches one of these tiers, pass token and URL meta are removed.
+If neither `type-lid` nor `person_type` matches an eligible tier, pass token and URL meta are removed.
 
 ## Lifecycle
 
@@ -68,8 +69,9 @@ Class: `Rondo\Passes\MembershipPassApple`
 - Generates `.pkpass` with QR payload from signed membership JWT
 - Uses uploaded certificate attachment + stored certificate password
 - Uses configured pass identifiers and club branding
-- Uses tier-based primary label (`BONDSLID` or `VERENIGINGSLID`)
+- Uses tier-based primary label (`BONDSLID`, `VERENIGINGSLID`, or `SPONSOR`)
 - Shows KNVB ID field only for `Bondslid` tier
+- Sponsor passes use a white background with dark foreground and label text
 
 Config keys (stored via Finance settings):
 
@@ -93,9 +95,9 @@ Class: `Rondo\Passes\MembershipPassGoogle`
 - Uses the club logo as wallet `logo` (not `heroImage`) and sets `cardTitle` to issuer/club name to keep a standard Google Generic Pass layout
 - Generates a cached padded PNG variant of the club logo for Google Wallet to avoid crest clipping in the compact wallet card
 - Uses full object `update` to replace legacy object styling when a pass object already exists
-- Sets `subheader` to member type label (`Bondslid`/`Verenigingslid`) above the member name
+- Sets `subheader` to member type label (`Bondslid`/`Verenigingslid`/`Sponsor`) above the member name
 - Uses text modules for pass data (`FUNCTIE`, `TEAM`, optional `KNVB ID`, `SEIZOEN`)
-- Sets `hexBackgroundColor` from finance accent color (with fallback) and includes localized `logo.contentDescription`
+- Sets `hexBackgroundColor` from finance accent color (with fallback), except for Sponsor passes which always use `#ffffff`, and includes localized `logo.contentDescription`
 
 Config keys (stored via Finance settings):
 

@@ -213,7 +213,18 @@ The former `suppress_age_group` request bypass has been removed. The Kaderlijst 
 
 Rondo Club creates a custom user role called **"Rondo User"** (`rondo_user`) on theme activation.
 
-The base role carries only `read`. `UserRoles::sync_role_capabilities()` derives dedicated CPT capabilities from business capabilities such as `financieel`, `vog`, `fairplay`, `manage_clothing`, and `vrijwilligers`. It also removes legacy generic write and upload capabilities from non-administrators.
+The base role carries only `read`. `UserRoles::sync_role_capabilities()` derives dedicated CPT capabilities from business capabilities such as `financieel`, `vog`, `fairplay`, `manage_clothing`, `sponsorbeheer`, and `vrijwilligers`. It also removes legacy generic write and upload capabilities from non-administrators.
+
+### Sponsorbeheerder
+
+The built-in `rondo_sponsorbeheerder` role carries `sponsorbeheer`. This capability provides the person-CPT primitives required by WordPress REST, while record-level checks keep its mutation scope limited to `person_type = sponsor`:
+
+- create requests must explicitly submit `person_type = sponsor`;
+- existing members and contacts cannot be edited or deleted;
+- a sponsor cannot be converted to another person type by a sponsor-only manager;
+- full people managers and administrators keep their existing unrestricted person scope.
+
+The current-user response exposes `can_manage_sponsors`. The frontend uses it for the **Sponsor toevoegen** action and enables edit/delete affordances only on sponsor detail pages. `sponsorbeheer` is an age-group bypass capability because the manager must be able to find sponsor records in the club-wide people list; this does not widen their mutation scope.
 
 ## Sensitive REST data
 

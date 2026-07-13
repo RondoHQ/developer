@@ -1,8 +1,10 @@
 ---
-title: "Externe contacten"
+title: "Externe contacten en sponsors"
 ---
 
 Rondo Club bewaart externe verenigingscontacten in hetzelfde WordPress `person`-posttype als leden en ouders. Daardoor kunnen contacten direct dezelfde adressen, onderlinge relaties, notities, taken en factuurkoppelingen gebruiken. Er is geen apart contactregister of aangepaste databasetabel.
+
+Businessclubleden en sponsoren gebruiken hetzelfde model met `person_type = sponsor`. Ook zij kunnen een persoonsnaam, bedrijfsnaam of beide hebben.
 
 ## Contact toevoegen
 
@@ -24,29 +26,37 @@ Dezelfde aanmaakdialoog wordt gebruikt wanneer een onbekende vergaderdeelnemer a
 
 ## Persoonstypen
 
-Het ACF-selectveld `person_type` kent twee waarden:
+Het ACF-selectveld `person_type` kent drie waarden:
 
 | Waarde | Betekenis |
 | --- | --- |
 | `member` | Lid of ouder/verzorger |
 | `contact` | Extern verenigingscontact |
+| `sponsor` | Businessclublid of sponsor |
 
 Het aanvullende tekstveld `company_name` bewaart de bedrijfsnaam. De bedrijfsnaam is ook opgenomen in de CSV-export van de personenlijst en kan op de persoonspagina worden bijgewerkt.
 
 Bestaande personen zonder opgeslagen `person_type` worden als lid/ouder behandeld. Daardoor is geen datamigratie nodig en blijven door Sportlink gesynchroniseerde personen compatibel.
 
-Bevoegde gebruikers kunnen het persoonstype op de persoonspagina wijzigen. Contacten krijgen daar en in de personenlijst een **Contact**-label.
+Bevoegde gebruikers kunnen het persoonstype op de persoonspagina wijzigen. Contacten en sponsors krijgen daar en in de personenlijst een herkenbaar label.
 
-De kolom **Type** op de personenlijst vat het record samen als **Bondslid**, **Verenigingslid**, **Ouder** of **Contact**. Het expliciete persoonstype heeft voorrang, zodat een contact ook bij vervuilde historische Sportlink-velden als **Contact** zichtbaar blijft.
+De kolom **Type** op de personenlijst vat het record samen als **Bondslid**, **Verenigingslid**, **Ouder**, **Contact** of **Sponsor**. Het expliciete persoonstype heeft voorrang, zodat handmatig beheerde records ook bij vervuilde historische Sportlink-velden correct zichtbaar blijven.
 
 ## Filteren via REST
 
-`GET /wp-json/rondo/v1/people/filtered` accepteert `person_type=member` of `person_type=contact`.
+`GET /wp-json/rondo/v1/people/filtered` accepteert `person_type=member`, `person_type=contact` of `person_type=sponsor`.
 
 - `contact` retourneert uitsluitend records met de expliciete waarde `contact`.
+- `sponsor` retourneert uitsluitend records met de expliciete waarde `sponsor`.
 - `member` retourneert records met `member` én bestaande records zonder waarde.
 
 De frontend gebruikt dit endpoint voor het filter **Persoonstype** op de relatieslijst.
+
+## Sponsorbeheer
+
+Gebruikers met de ingebouwde rol **Rondo Sponsorbeheerder** kunnen via **Sponsor toevoegen** businessclubleden en sponsoren aanmaken. Ze kunnen uitsluitend sponsorrecords aanpassen en verwijderen; de server weigert pogingen om leden of gewone contacten te muteren en voorkomt dat een sponsor naar een ander persoonstype wordt omgezet.
+
+Een sponsor krijgt automatisch een publieke toegangspas-URL. De Apple Wallet- en Google Wallet-varianten gebruiken een witte achtergrond en tonen **Sponsor** als type. Zie [Membership Passes](./membership-passes.md) voor de technische pasopbouw.
 
 ## Relaties
 
