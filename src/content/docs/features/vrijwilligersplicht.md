@@ -75,6 +75,10 @@ The total is floored: a gezin with 2 youth children owes `floor(2 + 1.5) = 3`, w
 Scaling is applied **after** all children are merged into the unit, never per child — otherwise a
 parent of three would see one dienst instead of four.
 
+The admin dashboard at `/vrijwilligers` shows **Diensten vereist** by summing `required_count`
+across all units. Do not use the number of units as the total workload: a multi-child gezin remains
+one unit but can require three or more diensten.
+
 ## Owing versus being allowed
 
 These are different questions, and conflating them turns willing helpers away.
