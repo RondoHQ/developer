@@ -202,6 +202,13 @@ earlier `wp_mail()` call failed. The response reports sent, failed and missing-e
 Cancelled shifts receive no reminders or surveys and disappear from the availability calendars.
 They remain under **Mijn diensten → Historie**, labelled **telt mee** or **telt niet mee**.
 
+Both cancellation variants are editable per `dienst_type` at
+`/vrijwilligers/diensttypes/{dienst_type_id}`. The early variant uses
+`cancellation_early_email_subject` and `cancellation_early_email_body`; the last-minute variant uses
+`cancellation_last_minute_email_subject` and `cancellation_last_minute_email_body`. Empty values fall
+back to the built-in Dutch policy texts. The optional cancellation reason is appended after the
+configured body.
+
 Directly setting `status=geannuleerd`, modifying a cancelled shift, or hard-deleting a shift with
 assignees/cancellation history is blocked. This ensures notifications, credit and the audit trail
 cannot be bypassed through the standard WordPress REST or ACF editors.
@@ -224,11 +231,11 @@ removed assignees are no longer in `assigned_persons`. Entirely cancelled shifts
 assignees for history, but the scheduler skips the `geannuleerd` status. No-shows do not receive the
 post-shift survey.
 
-The `dienst_type` edit page stores `reminder_email_subject`, `reminder_email_body`,
-`survey_email_subject`, `survey_email_body`, and `survey_url`. Empty reminder fields use the built-in
-Dutch defaults. The survey is disabled until a valid Google Forms URL is configured. Subjects and
-bodies support `{naam}`, `{dienst}`, `{datum}`, `{tijd}`, `{eindtijd}`, and
-`{medevrijwilligers}`. The survey URL is rendered as a branded **Vul de enquête in** button.
+The `dienst_type` edit page stores the reminder, cancellation and survey subjects and bodies, plus
+`survey_url`. Empty reminder and cancellation fields use the built-in Dutch defaults. The survey is
+disabled until a valid Google Forms URL is configured. Subjects and bodies support `{naam}`,
+`{dienst}`, `{datum}`, `{tijd}`, `{eindtijd}`, and `{medevrijwilligers}`. The survey URL is rendered
+as a branded **Vul de enquête in** button.
 
 ## Progress and status
 
