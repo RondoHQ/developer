@@ -131,7 +131,8 @@ the member page.
 ## Shift coverage calendar
 
 Both `/vrijwilligers/diensten` and the member-facing `/vrijwillig` page use the shared
-`ShiftCoverageCalendar` component. It shows the current calendar month and the next two months:
+`ShiftCoverageCalendar` component. The manager view shows the current calendar month and the next
+five months; the member view shows the current month and the next two months:
 
 - **Green** means every relevant `dienst_shift` on that date has reached its capacity.
 - **Red** means at least one relevant shift still has an open place.
@@ -149,7 +150,7 @@ Calendar data comes from:
 
 `GET /rondo/v1/shifts/calendar?view=manage|signup&from=YYYY-MM-DD&to=YYYY-MM-DD&dienst_type_id=123`
 
-The requested range is limited to 100 days and interpreted in the WordPress timezone. `view=manage`
+The requested range is limited to 190 days and interpreted in the WordPress timezone. `view=manage`
 requires `manage_options` or `vrijwilligers`. `view=signup` resolves the current user to their linked
 person and applies the same VOG, IVA and required-pool gates as the signup endpoint. Full shifts stay
 visible so members can understand green dates, but they have `can_signup: false`. Person IDs and
