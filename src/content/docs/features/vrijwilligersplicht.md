@@ -141,6 +141,10 @@ The user interface calls both `dienst_type` definitions and scheduled `dienst_sh
 **inschrijftaken**. This is a presentation-only terminology choice: post type names, REST routes,
 query parameters and template variables such as `{dienst}` keep their existing technical names.
 
+The admin detail screen resolves every ID in `assigned_persons` through the people REST endpoint and
+shows the person's post title. It only falls back to `Persoon {id}` when the linked person cannot be
+resolved.
+
 Both `/vrijwilligers/diensten` and the member-facing `/vrijwillig` page use the shared
 `ShiftCoverageCalendar` component. Both views show the current calendar month and the next five
 months:
