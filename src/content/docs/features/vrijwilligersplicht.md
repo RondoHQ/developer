@@ -79,6 +79,13 @@ The admin dashboard at `/vrijwilligers` shows **Inschrijftaken vereist** by summ
 across all units. Do not use the number of units as the total workload: a multi-child gezin remains
 one unit but can require three or more diensten.
 
+The two adjacent planning cards count capacity slots instead of shift posts. **Inschrijftaken totaal**
+sums each non-cancelled shift's capacity in the selected sports season, so a shift with capacity four
+counts four times. **Inschrijftaken ingeroosterd** sums the assigned person count on those same shifts.
+Completed shifts remain in the season totals; cancelled shifts and shifts outside the season do not.
+Both values come back as `shift_capacity.total_slots` and `shift_capacity.assigned_slots` in
+`GET /rondo/v1/volunteer-eligibility`.
+
 ## Owing versus being allowed
 
 These are different questions, and conflating them turns willing helpers away.
