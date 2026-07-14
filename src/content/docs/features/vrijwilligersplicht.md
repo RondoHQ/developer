@@ -158,6 +158,13 @@ contact details are never returned by the calendar endpoint.
 The template expander keeps 93 days of concrete shifts available. This covers every possible
 three-calendar-month view, including three consecutive 31-day months.
 
+The daily cron and saving a `shift_template` both keep using that rolling 93-day window. A manager
+can also click **Uitrollen** on `/vrijwilligers/sjablonen`. That manual action requires an end date
+and calls `POST /rondo/v1/shift-templates/expand` with `{ "until": "YYYY-MM-DD" }`. The selected date
+is inclusive and cannot be before today. Expansion remains idempotent: an existing shift with the
+same `template_id` and `start_datetime` is not created again. Each template's `active_from` and
+optional `active_until` dates still limit its generated shifts.
+
 ## Cancellation policy
 
 Members can cancel their own signup until 21 days before `start_datetime`. A signup timestamp is
