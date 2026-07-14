@@ -75,7 +75,7 @@ The total is floored: a gezin with 2 youth children owes `floor(2 + 1.5) = 3`, w
 Scaling is applied **after** all children are merged into the unit, never per child — otherwise a
 parent of three would see one dienst instead of four.
 
-The admin dashboard at `/vrijwilligers` shows **Diensten vereist** by summing `required_count`
+The admin dashboard at `/vrijwilligers` shows **Inschrijftaken vereist** by summing `required_count`
 across all units. Do not use the number of units as the total workload: a multi-child gezin remains
 one unit but can require three or more diensten.
 
@@ -129,6 +129,10 @@ JavaScript config as `volunteerSignupInfo`, so rendering the block does not add 
 the member page.
 
 ## Shift coverage calendar
+
+The user interface calls both `dienst_type` definitions and scheduled `dienst_shift` records
+**inschrijftaken**. This is a presentation-only terminology choice: post type names, REST routes,
+query parameters and template variables such as `{dienst}` keep their existing technical names.
 
 Both `/vrijwilligers/diensten` and the member-facing `/vrijwillig` page use the shared
 `ShiftCoverageCalendar` component. Both views show the current calendar month and the next five
