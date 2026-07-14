@@ -131,8 +131,8 @@ the member page.
 ## Shift coverage calendar
 
 Both `/vrijwilligers/diensten` and the member-facing `/vrijwillig` page use the shared
-`ShiftCoverageCalendar` component. The manager view shows the current calendar month and the next
-five months; the member view shows the current month and the next two months:
+`ShiftCoverageCalendar` component. Both views show the current calendar month and the next five
+months:
 
 - **Green** means every relevant `dienst_shift` on that date has reached its capacity.
 - **Red** means at least one relevant shift still has an open place.
