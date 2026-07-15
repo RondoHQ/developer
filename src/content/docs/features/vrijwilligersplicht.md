@@ -184,6 +184,17 @@ is inclusive and cannot be before today. Expansion remains idempotent: an existi
 same `template_id` and `start_datetime` is not created again. Each template's `active_from` and
 optional `active_until` dates still limit its generated shifts.
 
+## IVA approval notification
+
+When `POST /rondo/v1/iva/{person_id}/approve` changes an unapproved certificate into a valid IVA
+status, Rondo emails the first valid `email_1` or `email_2` address. The message explains that the
+member can now sign up for IVA-restricted shifts and links to `/vrijwillig`. The sent message is
+logged on the person's timeline with template type `iva_approved`.
+
+Repeated approval of the same state does not send a duplicate. Revoking and later approving again
+does send a new notification. An expired or otherwise non-valid certificate is never sent the
+eligibility message, even if its approval flag is set.
+
 ## Cancellation policy
 
 Members can cancel their own signup until 21 days before `start_datetime`. A signup timestamp is
