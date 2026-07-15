@@ -240,6 +240,8 @@ IVA certificates are stored in `rondo-private/iva` above the WordPress document 
 
 That endpoint permits the linked member, a volunteer manager, an IVA approver, or an administrator. Responses use `Cache-Control: private, no-store` and `X-Content-Type-Options: nosniff`. Never return `wp_get_attachment_url()` for an IVA certificate.
 
+The React client must fetch this endpoint through the configured Axios instance with `responseType: 'blob'`, then open an object URL. Do not link directly to the REST URL: a browser navigation does not send the `X-WP-Nonce` header, so WordPress cookie authentication treats the request as anonymous.
+
 **What Rondo Users cannot do:**
 
 - Manage other users
