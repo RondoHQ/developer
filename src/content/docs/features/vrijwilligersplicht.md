@@ -191,6 +191,10 @@ status, Rondo emails the first valid `email_1` or `email_2` address. The message
 member can now sign up for IVA-restricted shifts and links to `/vrijwillig`. The sent message is
 logged on the person's timeline with template type `iva_approved`.
 
+Administrators can edit the subject and plain-text body under **Settings → Club → E-mail na
+IVA-goedkeuring**. The templates support `{first_name}`, `{full_name}` and `{club_name}`. Rondo
+always adds the CTA to `/vrijwillig`, so changing the message cannot remove the signup link.
+
 Repeated approval of the same state does not send a duplicate. Revoking and later approving again
 does send a new notification. An expired or otherwise non-valid certificate is never sent the
 eligibility message, even if its approval flag is set.
