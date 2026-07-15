@@ -154,8 +154,11 @@ months:
 - **Neutral** means no relevant shifts are scheduled on that date.
 
 Cancelled and completed shifts are excluded. Selecting a date reveals its individual shifts. The
-manager view links each shift to its edit screen; the signup view exposes the existing signup and
-cancellation actions. Colour is always accompanied by text, an icon and an accessible label.
+manager view keeps these details below the calendar and links each shift to its edit screen. On
+`/vrijwillig`, the details open in a viewport-aware popover beside the selected date; it can be
+closed with its close button, Escape, or a click outside. The signup view exposes the existing
+signup and cancellation actions. Colour is always accompanied by text, an icon and an accessible
+label.
 
 The `diensttype` URL parameter filters the calendar as well as the personal shifts list. With no
 filter, a date is green only when every diensttype on that date is full. With a filter, only shifts
