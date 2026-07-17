@@ -128,7 +128,7 @@ also removes the parameter; unrelated URL parameters are preserved.
 Administrators can add optional club-specific guidance to the member-facing `/vrijwillig` page in
 **Settings → Club → Informatie op vrijwilligerspagina**. The rich-text value is stored in the
 `rondo_volunteer_signup_info` WordPress option and supports links, lists, and basic formatting.
-Leaving the editor empty hides the block.
+Links in this block open in a new browser tab. Leaving the editor empty hides the block.
 
 `Rondo\Config\ClubConfig` sanitizes the HTML with `wp_kses_post()` on both write and read. The safe
 value is exposed as `volunteer_signup_info` by `GET /rondo/v1/config` and injected into the initial
