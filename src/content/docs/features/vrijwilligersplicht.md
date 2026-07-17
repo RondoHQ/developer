@@ -113,6 +113,10 @@ same shift.
 Neither response exposes person IDs, email addresses, raw phone fields, or other profile fields.
 Stale or invalid assignee references are omitted.
 
+The member-facing shift cards deliberately omit the diensttype colour marker because the task name
+already identifies the shift. The management list at `/vrijwilligers/diensten` retains that marker
+to make scanning and comparing different task types easier for coordinators.
+
 ## Filtering member shifts by diensttype
 
 The member page at `/vrijwillig` builds its diensttype filter from the `dienst_type_id` and
