@@ -108,13 +108,14 @@ Each type is stored as two WP options (`rondo_onboarding_lid_subject` / `…_bod
 
 ## Templates
 
-Three sub-tabs under **Instellingen → Beheer → Welkomstmail**:
+The onboarding templates are grouped with the other editable messages under **Instellingen → Beheer → E-mails**:
 
 | Sub-tab | Stored options | From address |
 |---------|---------------|--------------|
 | Account aanmaken | `rondo_welcome_email_subject` / `_body` / `rondo_welcome_from_email` / `_name` | Configurable |
 | Nieuw lid | `rondo_onboarding_lid_subject` / `_body` | WordPress default (`wp_mail()`) |
 | Nieuwe vrijwilliger | `rondo_onboarding_vrijwilliger_subject` / `_body` | WordPress default (`wp_mail()`) |
+| IVA-goedkeuring | `rondo_iva_approval_email_subject` / `_body` | WordPress default (`wp_mail()`) |
 
 The onboarding templates support these placeholders:
 
@@ -148,7 +149,7 @@ These are written by the server only — there is no UI to clear them. If you ne
 | `acf-json/group_person_fields.json` | The two `date_time_picker` fields |
 | `src/pages/People/PeopleOnboarding.jsx` | The screen |
 | `src/hooks/usePeople.js` | `useSendOnboardingEmail` mutation, new filter params in `buildFilteredPeopleParams` |
-| `src/pages/Settings/Settings.jsx` | Three-sub-tab `WelkomstmailTab` |
+| `src/pages/Settings/Settings.jsx` | Four-sub-tab `WelkomstmailTab` for editable email templates |
 
 Each successful send also writes a timeline entry on the person via `CommentTypes::create_email_log()`, so the person's history shows when they received the onboarding email and which template was used.
 

@@ -216,7 +216,7 @@ status, Rondo emails the first valid `email_1` or `email_2` address. The message
 member can now sign up for IVA-restricted shifts and links to `/vrijwillig`. The sent message is
 logged on the person's timeline with template type `iva_approved`.
 
-Administrators can edit the subject and plain-text body under **Settings → Club → E-mail na
+Administrators can edit the subject and plain-text body under **Settings → Beheer → E-mails →
 IVA-goedkeuring**. The templates support `{first_name}`, `{full_name}` and `{club_name}`. Rondo
 always adds the CTA to `/vrijwillig`, so changing the message cannot remove the signup link.
 
