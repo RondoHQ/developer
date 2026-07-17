@@ -368,5 +368,7 @@ Every drill-down page (`VrijwilligersDataQuality.jsx`) has an **Exporteer CSV** 
 ## Exemptions
 
 `VolunteerExemptionResolver` handles per-season exemptions. An exempt member sees an explanatory
-card instead of an obligation, and may still volunteer voluntarily. Contributie-vrijstelling is
-deliberately *not* an exemption ground here; that runs through the resolver or an honorary role.
+card instead of an obligation, and may still volunteer voluntarily. The member-facing copy for
+active club roles stays role-neutral, because committee work and team staff roles both count.
+Contributie-vrijstelling is deliberately *not* an exemption ground here; that runs through the
+resolver or an honorary role.
