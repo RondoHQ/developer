@@ -174,6 +174,11 @@ person and applies the same VOG, IVA and required-pool gates as the signup endpo
 visible so members can understand green dates, but they have `can_signup: false`. Person IDs and
 contact details are never returned by the calendar endpoint.
 
+Signup overlap detection compares parsed datetimes and treats each shift as a half-open interval:
+the start is included and the end is excluded. Two consecutive shifts can therefore share the same
+boundary minute, including when one stored value includes seconds and the other does not. A genuine
+overlap still returns the forceable `overlap_warning` response.
+
 The template expander keeps 93 days of concrete shifts available. This covers every possible
 three-calendar-month view, including three consecutive 31-day months.
 
