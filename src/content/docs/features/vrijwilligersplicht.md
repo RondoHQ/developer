@@ -189,6 +189,10 @@ attaches one `.ics` calendar containing a `VEVENT` for each shift. Datetimes are
 WordPress timezone to UTC in the calendar file for portable imports into Apple Calendar, Google
 Calendar, Outlook, and other iCalendar clients.
 
+All human-readable dates in signup confirmations, reminders, and cancellation messages use explicit
+Dutch weekday and month names. Their language therefore does not depend on the configured WordPress
+locale; calendar timestamps remain locale-neutral UTC values.
+
 Pending markers are removed when a member or manager cancels the signup, so a shift cancelled
 during the ten-minute collection window is not confirmed. A successful message records
 `_shift_email_confirmation_sent_{person_id}` on each included shift. Failed `wp_mail()` calls retain
