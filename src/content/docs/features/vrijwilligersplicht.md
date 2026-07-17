@@ -185,13 +185,14 @@ After a successful member signup, `ShiftEmailScheduler::queue_signup_confirmatio
 pending marker on the `dienst_shift` and schedules the single WP-Cron event
 `rondo_send_shift_signup_confirmation` for that person ten minutes later. Further signups within
 that window reuse the same event. When it runs, one HTML email lists every still-active signup and
-attaches one `.ics` calendar containing a `VEVENT` for each shift. Datetimes are converted from the
-WordPress timezone to UTC in the calendar file for portable imports into Apple Calendar, Google
-Calendar, Outlook, and other iCalendar clients.
+attaches one `.ics` calendar containing a `VEVENT` for each shift. Shift datetimes are stored as
+Dutch local wall-clock values. The calendar therefore uses `TZID=Europe/Amsterdam` plus an embedded
+`VTIMEZONE` definition with CET/CEST transitions, so Apple Calendar, Google Calendar, Outlook, and
+other iCalendar clients preserve the planned time throughout the year.
 
 All human-readable dates in signup confirmations, reminders, and cancellation messages use explicit
 Dutch weekday and month names. Their language therefore does not depend on the configured WordPress
-locale; calendar timestamps remain locale-neutral UTC values.
+locale; calendar event timestamps use the explicit Dutch timezone.
 
 Pending markers are removed when a member or manager cancels the signup, so a shift cancelled
 during the ten-minute collection window is not confirmed. A successful message records
