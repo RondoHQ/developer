@@ -179,6 +179,22 @@ the start is included and the end is excluded. Two consecutive shifts can theref
 boundary minute, including when one stored value includes seconds and the other does not. A genuine
 overlap still returns the forceable `overlap_warning` response.
 
+## Signup confirmations and calendar attachments
+
+After a successful member signup, `ShiftEmailScheduler::queue_signup_confirmation()` stores a
+pending marker on the `dienst_shift` and schedules the single WP-Cron event
+`rondo_send_shift_signup_confirmation` for that person ten minutes later. Further signups within
+that window reuse the same event. When it runs, one HTML email lists every still-active signup and
+attaches one `.ics` calendar containing a `VEVENT` for each shift. Datetimes are converted from the
+WordPress timezone to UTC in the calendar file for portable imports into Apple Calendar, Google
+Calendar, Outlook, and other iCalendar clients.
+
+Pending markers are removed when a member or manager cancels the signup, so a shift cancelled
+during the ten-minute collection window is not confirmed. A successful message records
+`_shift_email_confirmation_sent_{person_id}` on each included shift. Failed `wp_mail()` calls retain
+the pending markers and schedule one retry after fifteen minutes; members without a valid `email_1`
+or `email_2` address are skipped and their pending markers are cleared.
+
 The template expander keeps 93 days of concrete shifts available. This covers every possible
 three-calendar-month view, including three consecutive 31-day months.
 
