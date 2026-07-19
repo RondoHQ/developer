@@ -211,8 +211,31 @@ The daily cron and saving a `shift_template` both keep using that rolling 93-day
 can also click **Uitrollen** on `/vrijwilligers/sjablonen`. That manual action requires an end date
 and calls `POST /rondo/v1/shift-templates/expand` with `{ "until": "YYYY-MM-DD" }`. The selected date
 is inclusive and cannot be before today. Expansion remains idempotent: an existing shift with the
-same `template_id` and `start_datetime` is not created again. Each template's `active_from` and
-optional `active_until` dates still limit its generated shifts.
+same `template_id` and `start_datetime` is not created again. The idempotency check matches the start
+time in both `Y-m-d H:i` and `Y-m-d H:i:s` notation, so an admin edit that rewrites the value through
+ACF can never spawn a duplicate on the next run. Each template's `active_from` and optional
+`active_until` dates still limit its generated shifts.
+
+### Editing rolled-out shifts and detaching from a template
+
+A rolled-out `dienst_shift` is an independent post: editing a `shift_template` never propagates to
+shifts that already exist. Each generated shift carries a `template_id` pointer for provenance.
+
+The first time a manager edits a rolled-out shift through the admin editor (`POST /wp/v2/dienst-shifts/{id}`),
+the `rest_after_insert_dienst_shift` hook sets a `_shift_customized` meta flag. The shift keeps its
+`template_id` (so the editor still shows where it came from), but it is now excluded from re-rollout.
+Member signup and cancellation write meta straight through `rondo/v1` and the expander uses
+`wp_insert_post()` directly, so neither path trips this hook — only a genuine admin edit detaches a shift.
+
+The shift editor surfaces this state via a read-only `template_link` REST field
+(`{ id, title, customized }`, or `null` for a standalone shift).
+
+To push template changes to already-rolled-out shifts, a manager opens the sjabloon and clicks
+**Opnieuw uitrollen**, which calls `POST /rondo/v1/shift-templates/{id}/rerun`. This deletes the
+template's future, still-managed shifts and regenerates them over the rolling 93-day window from the
+template's current settings. Three categories are preserved untouched and reported back in the
+response (`deleted`, `created`, `kept`, `kept_signups`): shifts flagged `_shift_customized`, shifts
+that already have assignees, and cancelled shifts (kept for history).
 
 ## IVA approval notification
 
