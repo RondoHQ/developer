@@ -433,13 +433,15 @@ Two consequences worth knowing:
 | `gezinnen_with_parents` | gezin units keyed on a real `relationships` link |
 | `gezinnen_via_address` | keyed on the address fallback |
 | `gezinnen_orphan` | **no responsible adult at all** — nobody can fulfil the duty |
-| `skipped_no_leeftijdsgroep` | active members with no spelactiviteit; a Sportlink sync issue |
-| `skipped_former_members` | oud-leden, correctly excluded |
+| `skipped_no_leeftijdsgroep` | active playing members with `spelactiviteit` but no `leeftijdsgroep`; a Sportlink sync issue |
 
 Orphan gezinnen need a `relationships` entry before the obligation can ever be discharged. Current
 volunteers, honorary members (Donateur, Erelid, Lid van Verdienste, Verenigingslid voor het leven)
-and parents with a direct `Kind` relation are deliberately kept out of the
-`skipped_no_leeftijdsgroep` bucket — they are *supposed* to have no spelactiviteit.
+and every profile without `spelactiviteit` are deliberately kept out of the
+`skipped_no_leeftijdsgroep` bucket. This excludes non-playing parents, sponsor-only records and
+other contacts while still reporting a parent or sponsor who is also registered as a player.
+Former members are excluded from the eligibility calculation as normal business logic and are not
+reported as a data-quality problem.
 
 ### Drill-downs
 
@@ -452,8 +454,7 @@ behind it, so a beheerder can fix the underlying records. All drill-downs share 
 |---|---|
 | `orphan` | JO16- spelers zonder ouder-relatie én zonder volwassen huisgenoot |
 | `address_fallback` | spelers + ouders van een gezin dat alleen via adres-overeenkomst is afgeleid |
-| `missing_leeftijdsgroep` | actieve leden zonder `leeftijdsgroep`-meta |
-| `former_members` | als ex-lid gemarkeerde personen |
+| `missing_leeftijdsgroep` | actieve spelers met `spelactiviteit`, maar zonder `leeftijdsgroep`-meta |
 | `no_email` | actieve (niet-`former_member`) leden waarvan `email_1` én `email_2` leeg of ongeldig zijn |
 
 The `no_email` category is not derived from the eligibility view — it is a straight scan for members
