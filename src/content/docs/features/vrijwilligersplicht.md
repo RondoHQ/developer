@@ -222,7 +222,8 @@ contact details are never returned by the calendar endpoint.
 
 Below the manager calendar, **Recente aanmeldingen** lists at most 50 shifts ordered by their latest
 current self-service signup. Each row shows the shift moment, the names of the people who signed up,
-and the latest signup time; the shift name opens its editor. The data comes from
+and the latest signup time. The shift name opens its editor and each person's name opens their
+profile. The data comes from
 `GET /rondo/v1/shifts/recent-signups`, which requires `manage_options` or `vrijwilligers` and derives
 the ordering from the `_shift_signup_at_{person_id}` post-meta values. A person removed from
 `assigned_persons` is not returned, and manager-added assignees without a signup timestamp are not
