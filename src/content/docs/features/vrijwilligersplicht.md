@@ -97,6 +97,12 @@ These are different questions, and conflating them turns willing helpers away.
 A sponsor, a grandparent, or a parent whose children have aged out owes nothing and may still sign
 up. `GET /rondo/v1/my-shifts/available` only refuses oud-leden.
 
+The member page at `/vrijwillig` shows completed, scheduled, and still-unscheduled inschrijftaken
+separately. The number in **Plan nog … in** is `required_count - completed_count - pending_count`,
+clamped at zero. When completed and pending shifts together cover the obligation, the page confirms
+that all required shifts have been scheduled; pending shifts do not yet fill the completed-only
+progress bar.
+
 ## Seeing fellow volunteers
 
 Both `GET /rondo/v1/shifts/available` and `GET /rondo/v1/my-shifts` include a
