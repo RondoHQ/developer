@@ -100,6 +100,7 @@ pipelines/sync-people.js
    - Identified by email (no KNVB ID)
    - Linked to children via ACF `relationships` field
    - Deduplicated across multiple children's parent fields
+   - Exact email matching considers published and trashed people. Known children and siblings are excluded; when the remaining parent match is in trash, the existing person is restored before relationships are synchronized. A new parent is created only when no valid existing match remains.
 
 **Output:** `{ total, synced, created, updated, skipped, errors, parents: { ... } }`
 
