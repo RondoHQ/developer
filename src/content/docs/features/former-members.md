@@ -21,6 +21,10 @@ Former member status is stored in the `former_member` ACF field:
 
 This field is automatically synced from Sportlink Club via rondo-sync and should not be manually edited in the WordPress admin.
 
+### Family Relationships
+
+Parents in the current Sportlink feed only list active children. A manually linked former child is therefore absent from that feed even though the family relationship is still valid. When rondo-sync refreshes a parent, it replaces child links for people who are present in the current child set and preserves child links to former members outside that set. This keeps manually restored parent relationships bidirectional without retaining stale assignments for current members.
+
 ## Default Filtering Behavior
 
 Former members are excluded from default views to reduce clutter. This filtering is applied at the database query level for performance.
