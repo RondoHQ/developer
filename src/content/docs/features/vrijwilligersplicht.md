@@ -108,6 +108,18 @@ clamped at zero. When completed and pending shifts together cover the obligation
 that all required shifts have been scheduled; pending shifts do not yet fill the completed-only
 progress bar.
 
+## Inschrijftaken on person profiles
+
+The **Profiel** tab of a person detail page shows a read-only **Inschrijftaken** card. It lists every
+active future shift in chronological order and at most the two most recent shifts whose start time
+has passed. Cancelled future shifts are omitted; cancelled historical shifts remain visible with
+their status.
+
+The card uses `GET /rondo/v1/people/{person_id}/shifts`. Its permission callback delegates to the
+normal person visibility check, so age-group and relationship scoping stay aligned with the rest of
+the person detail page. The response contains `upcoming` and `recent` arrays with shift details, but
+never assignee person IDs, fellow-volunteer names, phone numbers, or WhatsApp links.
+
 ### Temporary parent identity on a child account
 
 A parent who is not yet a separate Sportlink person may temporarily use an account linked to their
