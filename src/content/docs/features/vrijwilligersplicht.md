@@ -220,6 +220,14 @@ person and applies the same VOG, IVA and required-pool gates as the signup endpo
 visible so members can understand green dates, but they have `can_signup: false`. Person IDs and
 contact details are never returned by the calendar endpoint.
 
+Below the manager calendar, **Recente aanmeldingen** lists at most 50 shifts ordered by their latest
+current self-service signup. Each row shows the shift moment, the names of the people who signed up,
+and the latest signup time; the shift name opens its editor. The data comes from
+`GET /rondo/v1/shifts/recent-signups`, which requires `manage_options` or `vrijwilligers` and derives
+the ordering from the `_shift_signup_at_{person_id}` post-meta values. A person removed from
+`assigned_persons` is not returned, and manager-added assignees without a signup timestamp are not
+treated as self-service signups.
+
 Signup overlap detection compares parsed datetimes and treats each shift as a half-open interval:
 the start is included and the end is excluded. Two consecutive shifts can therefore share the same
 boundary minute, including when one stored value includes seconds and the other does not. A genuine
