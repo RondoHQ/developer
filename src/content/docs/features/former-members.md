@@ -4,6 +4,8 @@ title: Former Members
 
 Former members are individuals who were previously active members of the club but are no longer active. The system tracks former member status and provides visibility controls to make them discoverable when needed.
 
+A person can simultaneously be a former member and have a current non-member role, such as parent or guardian of an active child. Rondo keeps this as one person record so identity, relationships, and history are not split across duplicates.
+
 ## Data Model
 
 ### ACF Field
@@ -43,6 +45,8 @@ Former members are excluded from default views to reduce clutter. This filtering
 
 2. **Person Detail Page**
    - Direct access via URL always works regardless of former member status
+   - A former member with a published, non-former child relationship is labelled **Oud-lid · ouder/verzorger**
+   - Historical membership fields remain read-only, while current parent contact and address data is refreshed from the child's Sportlink parent data
 
 3. **Dashboard Recent Contacts**
    - Activity tracking includes former members (to preserve historical context)
