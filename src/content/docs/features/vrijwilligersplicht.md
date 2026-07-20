@@ -86,6 +86,11 @@ Completed shifts remain in the season totals; cancelled shifts and shifts outsid
 Both values come back as `shift_capacity.total_slots` and `shift_capacity.assigned_slots` in
 `GET /rondo/v1/volunteer-eligibility`.
 
+The dashboard also shows **Accounts aangemaakt**. This is the number of WordPress users with a
+non-empty `rondo_linked_person_id`, matching the definition used by Rondo's account management.
+Administrators and service users without a linked person are not included. The value is returned as
+`rondo_account_count` by the same eligibility endpoint, so loading the card adds no extra request.
+
 ## Owing versus being allowed
 
 These are different questions, and conflating them turns willing helpers away.
