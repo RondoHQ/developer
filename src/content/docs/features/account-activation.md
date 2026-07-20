@@ -25,6 +25,23 @@ The public page publishes a 1200×630 Open Graph image from
 
 Logic lives in `Rondo\Users\ActivationService`; `ActivationPage` only routes and renders.
 
+## Parents activating through a child
+
+For every JO16- person in the identity picker, the activation page also offers **“Ik ben
+ouder/verzorger van …”**. The parent enters their own full name. Rondo then creates the normal
+account against the child and stores a temporary guardian claim on the WordPress user. This lets the
+parent continue immediately while membership administration adds the parent to Sportlink and syncs
+that person to Rondo.
+
+The claim sends a plain-text notification to `ledenadministratie@svawc.nl` and is also visible under
+**Settings → Beheer → Gebruikers**. An existing child-linked account can start the same flow from
+`/vrijwillig`; this covers parents who activated before the guardian picker existed.
+
+The account stays linked to the child until an administrator selects **Accountkoppeling wijzigen**.
+That action moves the user link to the synced parent, refreshes the user's name, KNVB ID and
+capabilities, and clears the temporary guardian claim. A target person that already has an account
+cannot be selected.
+
 ## Why email-only is safe
 
 Parents are not Sportlink members. They have no KNVB-ID and no birthdate on record, so an email

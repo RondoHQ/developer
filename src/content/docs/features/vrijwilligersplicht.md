@@ -108,6 +108,25 @@ clamped at zero. When completed and pending shifts together cover the obligation
 that all required shifts have been scheduled; pending shifts do not yet fill the completed-only
 progress bar.
 
+### Temporary parent identity on a child account
+
+A parent who is not yet a separate Sportlink person may temporarily use an account linked to their
+JO16- child. Once they identify themselves by name, `GET /rondo/v1/my-shifts` resolves the gezin
+unit triggered by that child instead of showing the child's empty personal obligation. Shift
+requirements such as VOG, IVA and pool access continue to be evaluated against the currently linked
+child until membership administration changes the account link.
+
+Every signup made in this phase stores the acting WordPress user alongside the normal person-based
+assignment. On **Accountkoppeling wijzigen**, only assignments attributed to that account move from
+the child to the newly synced parent. VOG and IVA fields—including the certificate attachment,
+approval and VOG process dates—move at the same moment. Existing, different VOG/IVA data on the
+target blocks the operation instead of being overwritten. Email confirmation, reminder, survey,
+cancellation and no-show markers follow the moved assignment.
+
+While the claim is pending, member-facing shift lists, fellow-volunteer details and manager shift
+editing show the parent's supplied name. The underlying person ID remains the child's until the
+relink operation succeeds.
+
 ## Seeing fellow volunteers
 
 Both `GET /rondo/v1/shifts/available` and `GET /rondo/v1/my-shifts` include a
