@@ -32,6 +32,18 @@ The core class that handles automatic inverse relationship synchronization.
 - `acf/update_value/name=relationships`: Captures old values before update
 - `acf/save_post`: Triggers sync after relationships are saved
 
+#### PersonDeletionGuard Class
+
+**File**: `includes/class-person-deletion-guard.php`
+
+Prevents a person from being trashed or permanently deleted while their ACF relationships repeater still points to another non-trashed person. The guard relies on the bidirectional relationship invariant, so it only needs to inspect the person being deleted rather than query every person in the club.
+
+**Hooks Used**:
+
+- `pre_trash_post`: Blocks moving a related person to the trash
+- `pre_delete_post`: Blocks permanent or programmatic deletion
+- `rest_pre_dispatch`: Returns a descriptive `409 rondo_person_has_relationships` error for REST clients
+
 **Data Flow**:
 
 ```
@@ -340,4 +352,3 @@ Potential improvements to the system:
 | [README](../README.md) | Project overview and quick start |
 | [AGENTS.md](../AGENTS.md) | AI agent guidance and development rules |
 | [CHANGELOG](../CHANGELOG.md) | Version history |
-

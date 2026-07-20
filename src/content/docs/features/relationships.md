@@ -100,6 +100,12 @@ When you edit a relationship:
 
 When you delete a relationship, the corresponding inverse relationship is automatically removed from the related person's record.
 
+## Deleting People
+
+A person cannot be moved to the trash or permanently deleted while their profile still contains a relationship to another active person. This guard applies to every relationship type and to both REST API deletions and direct WordPress deletion calls.
+
+Remove or correct the relationship first. Because normal relationships are mirrored automatically, removing it from either person's profile also removes the inverse entry and allows the person record to be deleted afterward. The REST API returns `409 rondo_person_has_relationships` and lists the related people when deletion is blocked.
+
 ## Edge Cases
 
 ### Missing Inverse Mapping
