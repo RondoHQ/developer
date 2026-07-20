@@ -101,6 +101,7 @@ pipelines/sync-people.js
    - Linked to children via ACF `relationships` field
    - Deduplicated across multiple children's parent fields
    - Exact email matching considers published and trashed people. Known children and siblings are excluded; when the remaining parent match is in trash, the existing person is restored before relationships are synchronized. A new parent is created only when no valid existing match remains.
+   - Historical parent mappings that point to one of the known children are forced through synchronization even when their source hash is unchanged. The invalid mapping is cleared before parent discovery runs, preventing a child from being written back as a parent of its siblings.
 
 **Output:** `{ total, synced, created, updated, skipped, errors, parents: { ... } }`
 
