@@ -108,6 +108,13 @@ clamped at zero. When completed and pending shifts together cover the obligation
 that all required shifts have been scheduled; pending shifts do not yet fill the completed-only
 progress bar.
 
+`VolunteerObligationCalculator` caches each unit-and-season tally for five minutes. Cache keys
+include the site-wide `rondo_vobligation_cache_generation` option. Every mutation that changes an
+assignment, completion, cancellation or no-show must call
+`VolunteerObligationCalculator::invalidate_cache()` after the write. Advancing the generation makes
+the next `GET /rondo/v1/my-shifts` recompute immediately and works with both database transients and
+persistent object caches; do not delete transient database rows directly.
+
 ## Inschrijftaken on person profiles
 
 The **Profiel** tab of a person detail page shows a read-only **Inschrijftaken** card. It lists every
