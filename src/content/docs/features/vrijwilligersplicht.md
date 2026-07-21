@@ -193,7 +193,9 @@ resolved.
 
 The standalone shift editor asks for one calendar date plus a separate start and end time. Both ACF
 datetime values are composed with that same date when saving, so managers never have to enter the
-date twice and a standalone shift cannot accidentally span two dates.
+date twice and a standalone shift cannot accidentally span two dates. The native date input has a
+maximum of `9999-12-31`; this keeps Chromium-based browsers to a four-digit year instead of their
+default six-digit year segment.
 
 Both `/vrijwilligers/diensten` and the member-facing `/vrijwillig` page use the shared
 `ShiftCoverageCalendar` component. Both views show the current calendar month and the next five
