@@ -47,13 +47,14 @@ De kolom **Type** op de personenlijst vat het basisrecord samen als **Bondslid**
 
 ## Filteren via REST
 
-`GET /wp-json/rondo/v1/people/filtered` accepteert `person_type=member` of `person_type=contact`, plus de onafhankelijke filter `is_sponsor=1|0`.
+`GET /wp-json/rondo/v1/people/filtered` accepteert `person_type=member` of `person_type=contact`, plus de onafhankelijke filters `is_sponsor=1|0` en `is_businessclub_member=1|0`.
 
 - `contact` retourneert uitsluitend records met de expliciete waarde `contact`.
 - `member` retourneert records met `member` én bestaande records zonder waarde.
 - `is_sponsor=1` retourneert alle actieve sponsors, ongeacht hun persoonstype.
+- `is_businessclub_member=1` retourneert uitsluitend actieve sponsors met pasvariant `businessclub`; `0` retourneert alle overige relaties.
 
-De frontend gebruikt dit endpoint voor afzonderlijke filters **Persoonstype** en **Sponsor** op de relatieslijst.
+De frontend gebruikt dit endpoint voor afzonderlijke filters **Persoonstype**, **Sponsor** en **BC-lid** op de relatieslijst.
 
 ## Sponsorbeheer
 
