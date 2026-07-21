@@ -37,6 +37,18 @@ Mac Mini launchd (every 30 min) → bin/get-feedback.sh --loop --optimize
 | `resolved` | Agent created a PR or the issue was fixed |
 | `declined` | Not actionable |
 
+### Resolution email
+
+When an administrator changes feedback from any non-resolved status to `resolved`, Rondo sends the
+feedback author a branded HTML email. The message contains the feedback title and a button linking
+to `/feedback/{id}`. Household accounts use `UserProvisioning::contact_email()` so mail is sent to
+the real shared address instead of a synthetic `@members.rondo.invalid` WordPress address.
+
+A successful delivery records `_feedback_resolution_email_sent_at` on the feedback post. This
+makes the notification one-time: submitting the same `resolved` status again, or reopening and
+resolving the same item later, does not send a duplicate. The update response includes a
+`resolution_email` result only on the transition that attempted delivery.
+
 ## REST API
 
 ### Feedback Comments
