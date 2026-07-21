@@ -390,9 +390,11 @@ export const APP_NAME = 'Rondo Club';
 
 All server data is managed via TanStack Query:
 - **Automatic caching** - 5 minute stale time by default
-- **Cache invalidation** - Mutations automatically invalidate related queries
+- **Cache invalidation** - Mutations explicitly invalidate or refresh related queries
 - **Background refetching** - Data stays fresh
 - **Loading/error states** - Handled consistently
+
+The global query client disables refetching when a cached query remounts. A mutation that changes data shown on another route must therefore refresh that inactive destination query before navigation. For volunteer calendars, use `refreshShiftCalendars(queryClient)` so every cached manager, signup, and task-filter variant is refreshed.
 
 ### Client State
 
