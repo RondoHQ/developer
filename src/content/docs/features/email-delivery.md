@@ -39,6 +39,7 @@ Hook: `pre_wp_mail`
 
 Behavior:
 - If Lettermint is not configured, the filter returns `null` and WordPress default mail flow continues
+- Headerless `wp_mail()` calls default to `text/plain`; the normalized value is also sent as string metadata to Lettermint
 - If configured, mail is sent through Lettermint with support for:
   - HTML/text content
   - `From`, `Cc`, `Bcc`, `Reply-To`

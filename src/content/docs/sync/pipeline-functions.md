@@ -79,6 +79,8 @@ pipelines/sync-functions.js
 4. Detects orphan commissies (in DB but not in current Sportlink data) and removes them
 5. Updates `last_synced_hash` on success
 
+The WordPress collection reader follows the `X-WP-TotalPages` response header and also stops on a partial page. It must not probe one page beyond the collection and use WordPress's `rest_post_invalid_page_number` response as pagination control flow.
+
 **Output:** `{ total, synced, created, updated, skipped, deleted, errors }`
 
 ### Step 3: Sync Commissie Work History

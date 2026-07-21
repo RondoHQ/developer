@@ -4,6 +4,16 @@ title: "Troubleshooting"
 
 Common issues and their solutions.
 
+## ACF Select Update Is Rejected
+
+**Symptom:** A Rondo Club PATCH fails with `rest_invalid_param` for the `acf` parameter even though clearing a field is intentional.
+
+**Cause:** ACF select, radio, and button-group REST schemas accept `null` for an empty value but reject an empty string when `""` is not one of the configured choices.
+
+**Fix:** Send `null`, not `""`, when clearing one of these fields. Keep the detailed `data.params` value from the WordPress error in the sync report so the offending field remains visible.
+
+---
+
 ## Duplicate Entries in Rondo Club
 
 **Symptom:** Hundreds of duplicate member posts appear in Rondo Club.
