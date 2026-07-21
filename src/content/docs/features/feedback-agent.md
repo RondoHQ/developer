@@ -49,6 +49,20 @@ makes the notification one-time: submitting the same `resolved` status again, or
 resolving the same item later, does not send a duplicate. The update response includes a
 `resolution_email` result only on the transition that attempted delivery.
 
+### Changing status with WP-CLI
+
+Use the status command for manual or operational changes instead of writing ACF post meta directly:
+
+```bash
+wp rondo feedback set-status 8496 resolved
+wp rondo feedback set-status 8496 needs_info
+```
+
+Allowed statuses are `new`, `approved`, `in_progress`, `in_review`, `resolved`, `declined`, and
+`needs_info`. The command delegates to the same `StatusService` as the REST update endpoint, so a
+transition to `resolved` sets `_feedback_resolved_at` and attempts the one-time styled email. A
+repeated command with the current status is a successful no-op.
+
 ## REST API
 
 ### Feedback Comments
