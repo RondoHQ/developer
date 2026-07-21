@@ -264,7 +264,10 @@ The requested range is limited to 190 days and interpreted in the WordPress time
 requires `manage_options` or `vrijwilligers`. `view=signup` resolves the current user to their linked
 person and applies the same VOG, IVA and required-pool gates as the signup endpoint. Full shifts stay
 visible so members can understand green dates, but they have `can_signup: false`. Person IDs and
-contact details are never returned by the calendar endpoint.
+contact details are never returned by the calendar endpoint. Its `block_reasons` only reports a
+missing VOG or IVA certificate when at least one shift in the requested range and selected diensttype
+is actually hidden for that reason. The signup endpoint still enforces the certificate requirement
+independently, including for direct requests.
 
 Below the manager calendar, **Recente aanmeldingen** lists at most 50 shifts ordered by their latest
 current self-service signup. Each row shows the shift moment, the names of the people who signed up,
