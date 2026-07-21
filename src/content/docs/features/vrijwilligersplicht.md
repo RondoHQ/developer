@@ -191,6 +191,10 @@ The admin detail screen resolves every ID in `assigned_persons` through the peop
 shows the person's post title. It only falls back to `Persoon {id}` when the linked person cannot be
 resolved.
 
+The standalone shift editor asks for one calendar date plus a separate start and end time. Both ACF
+datetime values are composed with that same date when saving, so managers never have to enter the
+date twice and a standalone shift cannot accidentally span two dates.
+
 Both `/vrijwilligers/diensten` and the member-facing `/vrijwillig` page use the shared
 `ShiftCoverageCalendar` component. Both views show the current calendar month and the next five
 months:
