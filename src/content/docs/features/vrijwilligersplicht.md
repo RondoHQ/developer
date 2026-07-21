@@ -108,6 +108,12 @@ clamped at zero. When completed and pending shifts together cover the obligation
 that all required shifts have been scheduled; pending shifts do not yet fill the completed-only
 progress bar.
 
+When a member selects a shift that overlaps an existing assignment, the signup endpoint returns an
+`overlap_warning` with the candidate `shift_id`, the conflicting `overlap_shift`, and
+`can_force: true`. The member may cancel or repeat the signup with `force_overlap: true`; the forced
+request skips only the overlap warning and still applies all eligibility, capacity, and status
+checks.
+
 `VolunteerObligationCalculator` caches each unit-and-season tally for five minutes. Cache keys
 include the site-wide `rondo_vobligation_cache_generation` option. Every mutation that changes an
 assignment, completion, cancellation or no-show must call
