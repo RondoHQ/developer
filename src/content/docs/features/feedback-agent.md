@@ -16,11 +16,16 @@ Mac Mini launchd (every 30 min) → bin/get-feedback.sh --loop --optimize
                                         Pipe to Claude Code --print
                                                     ↓
                             ┌────────────┬──────────┴──────────┐
-                         RESOLVED     NEEDS_INFO            DECLINED
+                         IN_REVIEW    NEEDS_INFO            DECLINED
                             ↓            ↓                     ↓
                      Create PR     Post comment          Set declined
-                     Set resolved  Set needs_info
+                     Store Dutch  Set needs_info
+                     resolution
                      Store PR URL
+                            ↓
+                     PR is merged
+                     Set resolved
+                     Send email
                                                     ↓
                                         When no feedback left:
                                         Run optimization review
@@ -39,10 +44,12 @@ Mac Mini launchd (every 30 min) → bin/get-feedback.sh --loop --optimize
 
 ### Resolution email
 
-When an administrator changes feedback from any non-resolved status to `resolved`, Rondo sends the
-feedback author a branded HTML email. The message contains the feedback title and a button linking
-to `/feedback/{id}`. Household accounts use `UserProvisioning::contact_email()` so mail is sent to
-the real shared address instead of a synthetic `@members.rondo.invalid` WordPress address.
+When an administrator changes feedback from any non-resolved status to `resolved`, a Dutch
+`resolution_summary` is required. Rondo stores it as `_feedback_resolution_summary` and sends the
+feedback author a branded HTML email. The message highlights the explanation under “Zo hebben we
+het opgelost”, contains the feedback title, and links to `/feedback/{id}`. Household accounts use
+`UserProvisioning::contact_email()` so mail is sent to the real shared address instead of a
+synthetic `@members.rondo.invalid` WordPress address.
 
 A successful delivery records `_feedback_resolution_email_sent_at` on the feedback post. This
 makes the notification one-time: submitting the same `resolved` status again, or reopening and
@@ -54,14 +61,16 @@ resolving the same item later, does not send a duplicate. The update response in
 Use the status command for manual or operational changes instead of writing ACF post meta directly:
 
 ```bash
-wp rondo feedback set-status 8496 resolved
+wp rondo feedback set-status 8496 resolved \
+  --message="Het formulier gebruikt nu één datum met aparte begin- en eindtijden."
 wp rondo feedback set-status 8496 needs_info
 ```
 
 Allowed statuses are `new`, `approved`, `in_progress`, `in_review`, `resolved`, `declined`, and
 `needs_info`. The command delegates to the same `StatusService` as the REST update endpoint, so a
 transition to `resolved` sets `_feedback_resolved_at` and attempts the one-time styled email. A
-repeated command with the current status is a successful no-op.
+new transition to `resolved` requires `--message` unless a resolution summary was stored earlier.
+A repeated command with the current status is a successful no-op.
 
 ## REST API
 
@@ -102,8 +111,12 @@ The feedback API includes two agent-specific fields in the `meta` response:
 
 - `pr_url` — URL of the GitHub PR created by the agent
 - `agent_branch` — Git branch name used by the agent
+- `resolution_summary` — Dutch user-facing explanation of how the feedback was fixed
 
-These are stored as post meta (`_feedback_pr_url`, `_feedback_agent_branch`) and can be set via the update endpoint.
+These are stored as post meta (`_feedback_pr_url`, `_feedback_agent_branch`, and
+`_feedback_resolution_summary`) and can be set via the update endpoint. Send
+`resolution_summary` together with `status: resolved`; the API rejects a new resolved transition
+when neither that request nor the post already contains an explanation.
 
 ## Script: `bin/get-feedback.sh`
 
@@ -133,7 +146,7 @@ The agent's instructions live at `.claude/agent-prompt.md`. Key rules:
 - Create branch `feedback/{id}-{slugified-title}`
 - Make changes, build, commit, push, create PR via `gh pr create`
 - Do NOT deploy — only create PRs
-- Output `STATUS: RESOLVED` + `PR_URL:` or `STATUS: NEEDS_INFO` + `QUESTION:`
+- Output `STATUS: IN_REVIEW` + `PR_URL:` + a one-line Dutch `RESOLUTION:`, or `STATUS: NEEDS_INFO` + `QUESTION:`
 
 ### Optimization Mode
 
