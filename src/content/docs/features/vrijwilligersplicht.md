@@ -339,6 +339,20 @@ that already have assignees, and cancelled shifts (kept for history).
 
 ## IVA approval notification
 
+After a successful `POST /rondo/v1/iva/upload`, Rondo sends a review request to every unique,
+deliverable address belonging to a user with `rondo_iva_approve` (administrators are included).
+The message links to `/vrijwilligers/iva?review={person_id}`. That deep link limits the IVA overview
+to the newly uploaded certificate, where the approver can open the private file and approve it. The
+certificate itself remains behind the authenticated REST endpoint; the email never contains a
+public file or approval token. Review-request emails are logged on the person's timeline with
+template type `iva_review_requested`. Shared contact addresses receive only one message.
+
+The upload succeeds even when there is no deliverable approver address or mail delivery fails. The
+upload response exposes the notification result as `notification.status`, plus the `sent` and
+`failed` counts.
+
+### Member notification after approval
+
 When `POST /rondo/v1/iva/{person_id}/approve` changes an unapproved certificate into a valid IVA
 status, Rondo emails the first valid `email_1` or `email_2` address. The message explains that the
 member can now sign up for IVA-restricted shifts and links to `/vrijwillig`. The sent message is
