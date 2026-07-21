@@ -70,7 +70,6 @@ The theme initializes on `after_setup_theme` and `plugins_loaded`, loading 65+ c
 
 | Class | Responsibility |
 |-------|---------------|
-| `CalendarMatcher` | Matches calendar events to people |
 | `GoogleOauth` / `GoogleSheetsConnection` | Google API integration |
 | `VogEmail` | VOG request email sending |
 | `VcardExport` | vCard contact export |
