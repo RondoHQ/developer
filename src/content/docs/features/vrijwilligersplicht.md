@@ -217,6 +217,30 @@ The `diensttype` URL parameter filters the calendar as well as the personal shif
 filter, a date is green only when every diensttype on that date is full. With a filter, only shifts
 of the selected type determine the date status.
 
+### Copying a complete planning day
+
+Volunteer managers can open a populated date in the unfiltered manager calendar and choose
+**Dagplanning kopiëren**. The confirmation dialog lists every active shift and its capacity before
+the manager selects a future target date. The action calls:
+
+`POST /rondo/v1/shifts/copy-day`
+
+with `{ "source_date": "YYYY-MM-DD", "target_date": "YYYY-MM-DD" }`. The endpoint requires
+`manage_options` or `vrijwilligers` and uses `dienst_shift` posts plus post meta; it does not use a
+separate table.
+
+Copied shifts are new standalone posts. The dienst type, local start and end times, capacity, IVA
+override and notes are retained. The status is reset to `open`, `assigned_persons` is empty, and
+template, signup, notification, cancellation and no-show state is never copied. Local wall-clock
+times are replaced onto the target date instead of adding a timestamp difference, so copying across
+a CET/CEST transition does not move a shift by one hour.
+
+The operation is idempotent. A target shift with the same dienst type and time window is skipped,
+as is a target row already carrying the source shift's `_copied_from_shift_id` provenance. Existing
+target rows are never overwritten. If an unexpected insert fails, only posts created by that
+request are rolled back. The response reports `source_count`, `created`, `created_ids`, `skipped`
+and `skipped_items` so the interface can distinguish a successful copy from a no-op repeat.
+
 Calendar data comes from:
 
 `GET /rondo/v1/shifts/calendar?view=manage|signup&from=YYYY-MM-DD&to=YYYY-MM-DD&dienst_type_id=123`
