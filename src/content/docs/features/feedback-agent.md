@@ -42,6 +42,19 @@ Mac Mini launchd (every 30 min) → bin/get-feedback.sh --loop --optimize
 | `resolved` | Agent created a PR or the issue was fixed |
 | `declined` | Not actionable |
 
+### New feedback email
+
+After the REST API has stored a new feedback item and all of its metadata, Rondo sends a branded
+HTML notification to the WordPress administration email (`admin_email`). The message contains the
+submitter, feedback type, project, priority, description, and a direct link to `/feedback/{id}`.
+This applies to every new feedback item, including administrator submissions that start with the
+`approved` status.
+
+A successful delivery records `_new_feedback_email_sent_at` on the feedback post, preventing
+duplicate notifications for the same item. Mail delivery is non-blocking: if `wp_mail()` fails or
+the administration address is invalid, the feedback REST request still succeeds and the item
+remains available in the queue.
+
 ### Resolution email
 
 When an administrator changes feedback from any non-resolved status to `resolved`, a Dutch
