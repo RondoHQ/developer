@@ -337,6 +337,34 @@ template's current settings. Three categories are preserved untouched and report
 response (`deleted`, `created`, `kept`, `kept_signups`): shifts flagged `_shift_customized`, shifts
 that already have assignees, and cancelled shifts (kept for history).
 
+## Automatic IVA verification
+
+Official IVA certificates from the VWS/NOC*NSF e-learning "Voor elkaar" are TCPDF-generated
+PDFs whose text layer contains only the personalized values (name, branche, user-id, e-learning
+name, completion date). On every PDF upload to `POST /rondo/v1/iva/upload`,
+`Rondo\Volunteer\IvaCertificateParser` (backed by `smalot/pdfparser`) extracts those fields.
+Parsing is pattern-based — a Dutch long-form date, the "Voor elkaar" marker, and the remaining
+text line as the name — because extraction order varies and values can be glued together.
+
+The certificate is **auto-approved** (`iva-approved = 1`, no review email) when both hold:
+
+- the name on the certificate matches the linked person — compared against the post title,
+  `first_name + last_name`, and `nickname + last_name`, case/diacritics-insensitively with a
+  small typo tolerance (Levenshtein ≤ 2, scaled down for short names), and
+- the completion date on the certificate is at most 2 years old and not in the future
+  (`IvaCertificateParser::AUTO_APPROVE_MAX_AGE_YEARS`; stricter than the 5-year validity —
+  older certificates always go through manual review).
+
+When parsing succeeds, the date printed on the certificate overrides the member-entered
+`datum_iva`. When parsing fails (image upload, non-official PDF, unrecognized layout) or the
+auto-approval conditions are not met, the upload falls back to the manual review flow below,
+unchanged. The upload response exposes the outcome as `auto_verified` (boolean); the member UI
+shows "automatisch geverifieerd" instead of the pending-review message.
+
+Note this is consistency checking, not cryptographic verification — the source PDFs carry no
+signature or verification URL, so a deliberately forged PDF can pass. The manual review path and
+the private certificate file remain the audit trail.
+
 ## IVA approval notification
 
 After a successful `POST /rondo/v1/iva/upload`, Rondo sends a review request to every unique,
