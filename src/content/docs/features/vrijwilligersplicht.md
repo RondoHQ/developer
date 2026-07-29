@@ -535,3 +535,7 @@ card instead of an obligation, and may still volunteer voluntarily. The member-f
 active club roles stays role-neutral, because committee work and team staff roles both count.
 Contributie-vrijstelling is deliberately *not* an exemption ground here; that runs through the
 resolver or an honorary role.
+
+The management page at `/vrijwilligers/vrijstellingen` offers filters for committee members, team
+staff, and manual exemptions. The resolver still recognizes the legacy `betaalde_vrijwilliger`
+field for existing data, but the page does not expose a separate paid-volunteer filter.
