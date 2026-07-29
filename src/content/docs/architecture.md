@@ -112,3 +112,4 @@ The theme auto-detects the Vite dev server when `WP_DEBUG` is enabled. In produc
 - **[Frontend Architecture](/architecture/frontend/)** — React app structure, hooks, routing
 - **[PHP Autoloading](/architecture/php-autoloading/)** — Class loading system
 - **[Relationship System](/architecture/relationship-system/)** — Bidirectional sync architecture
+- **[Production Deployment](/architecture/deployment/)** — GitHub Actions releases, verification, and rollback
