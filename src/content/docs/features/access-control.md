@@ -77,28 +77,7 @@ $permission = $access_control->get_user_permission( $post_id, $user_id );
 decisions. Both live in `AccessControl`, and conflating them is the mistake this
 section exists to prevent.
 
-### Axis A — which people
-
-Driven by `get_permitted_age_groups()`, with three outcomes:
-
-| Result | Who | Sees |
-|---|---|---|
-| `null` | holds a capability in `AGE_GROUP_BYPASS_CAPS` | everyone |
-| non-empty array | role has an entry in `rondo_age_group_access` | those age groups |
-| `[]` | everyone else | themselves and their minor children |
-
-`AGE_GROUP_BYPASS_CAPS` is a **view** bypass. None of its members implies edit rights:
-`can_edit_people()` is a separate, shorter list. `vrijwilligers` is in the bypass list
-because diensten are staffed from the whole club — a coördinator scoped to one age
-group cannot see most of the people they have to roster.
-
-`can_view_person()` is the single authority here. Every visibility decision — the REST
-collection filter, the single-item filter, the raw-SQL people endpoint,
-`user_can_access_post()` — must route through it rather than re-deriving the rule.
-
-The admin capability matrix clears a role's age-group configuration when the role gains
-a bypass capability. It reads the list from `AccessControl::get_management_capabilities()`;
-do not reintroduce a copy in the frontend.
+**Axis A — which people** is documented under [Person visibility](#person-visibility) below.
 
 ### Axis B — which fields
 
@@ -182,6 +161,16 @@ Every enforcement point routes through it — the REST collection filter (`rest_
 single-item filter (`rest_prepare_person`), the raw-SQL `/rondo/v1/people/filtered` endpoint, and
 `user_can_access_post()`. **Do not re-derive the rule anywhere else.** The narrowing itself lives in
 one private helper, `person_scope()`, used by both the REST and `pre_get_posts` paths.
+
+`AGE_GROUP_BYPASS_CAPS` is a **view** bypass and nothing more: none of its members implies edit
+rights, which is why `can_edit_people()` is a separate, shorter list. `vrijwilligers` is in it
+because diensten are staffed from the whole club — a coördinator scoped to one age group cannot see
+most of the people they have to roster. What such a user may *read* on those people is decided
+separately by [Axis B](#axis-b--which-fields).
+
+The admin capability matrix clears a role's age-group configuration once the role gains a bypass
+capability. It reads that list from `AccessControl::get_management_capabilities()`; do not
+reintroduce a hand-maintained copy in the frontend, which is how it previously fell out of date.
 
 :::caution[The React router is navigation, not authorization]
 `KaderOrVrijwilligRedirect` in `router.jsx` decides what a user is *shown*. It decides nothing about
@@ -279,18 +268,23 @@ matters:
 
 | Return | Meaning | Who |
 |---|---|---|
-| `null` | No restriction — sees everyone | Users with a management capability (`manage_options`, `fairplay`, `vog`, `financieel`, `financieel_read`, `toegangscontrole`, `manage_clothing`, `ledenadministratie`) |
+| `null` | No restriction — sees everyone | Users with a management capability (`manage_options`, `fairplay`, `vog`, `financieel`, `financieel_read`, `toegangscontrole`, `manage_clothing`, `ledenadministratie`, `sponsorbeheer`, `vrijwilligers`) |
 | `[]` | Scoped to their own household | Any other user, including plain members |
 | `['Onder 11', …]` | Sees only these age groups | A role listed in the `rondo_age_group_access` option, e.g. a coordinator |
 
 Non-management users **default to deny**: an unconfigured role reaches no people beyond its own
 household.
 
-:::caution[Granting a coordinator `vog` or `fairplay` voids their age-group scoping]
-Both are in `AGE_GROUP_BYPASS_CAPS`, so `get_permitted_age_groups()` returns `null` and the
-coordinator sees every person in the club. Their `rondo_age_group_access` entry becomes dead
-configuration. Check the capability matrix before assuming a coordinator is scoped.
+:::caution[Granting a management capability voids a role's age-group scoping]
+Every capability in `AGE_GROUP_BYPASS_CAPS` — including `vog`, `fairplay`, `sponsorbeheer` and
+`vrijwilligers` — makes `get_permitted_age_groups()` return `null`, so the role sees every person in
+the club and its `rondo_age_group_access` entry becomes dead configuration. The capability matrix
+clears that entry for you when you grant one. Check it before assuming a coordinator is scoped.
 :::
+
+Read access to individual *fields* is a separate matter: see
+[Axis B](#axis-b--which-fields). A role that sees every person still does not see their finance,
+support or sponsor fields without the matching capability.
 
 The former `suppress_age_group` request bypass has been removed. The Kaderlijst now has a dedicated server-side scoped endpoint.
 
