@@ -71,6 +71,91 @@ $permission = $access_control->get_user_permission( $post_id, $user_id );
 // Returns: 'owner' (if user created the post), 'editor' (if logged in but not author), or false
 ```
 
+## Person access has two independent axes
+
+"Which people may I see" and "which of their fields may I read" are separate
+decisions. Both live in `AccessControl`, and conflating them is the mistake this
+section exists to prevent.
+
+### Axis A — which people
+
+Driven by `get_permitted_age_groups()`, with three outcomes:
+
+| Result | Who | Sees |
+|---|---|---|
+| `null` | holds a capability in `AGE_GROUP_BYPASS_CAPS` | everyone |
+| non-empty array | role has an entry in `rondo_age_group_access` | those age groups |
+| `[]` | everyone else | themselves and their minor children |
+
+`AGE_GROUP_BYPASS_CAPS` is a **view** bypass. None of its members implies edit rights:
+`can_edit_people()` is a separate, shorter list. `vrijwilligers` is in the bypass list
+because diensten are staffed from the whole club — a coördinator scoped to one age
+group cannot see most of the people they have to roster.
+
+`can_view_person()` is the single authority here. Every visibility decision — the REST
+collection filter, the single-item filter, the raw-SQL people endpoint,
+`user_can_access_post()` — must route through it rather than re-deriving the rule.
+
+The admin capability matrix clears a role's age-group configuration when the role gains
+a bypass capability. It reads the list from `AccessControl::get_management_capabilities()`;
+do not reintroduce a copy in the frontend.
+
+### Axis B — which fields
+
+`SENSITIVE_ACF_FIELD_GROUPS` gates individual person fields on capability predicates,
+independently of scope and for every caller:
+
+| Group | Fields | Requires |
+|---|---|---|
+| `finance` | `financiele-blokkade`, `nikki-contributie-status`, `_nikki_*` | `UserRoles::can_view_finances()` |
+| `support` | `freescout-id`, `onboarding-email-*` | `manage_options` or `ledenadministratie` |
+| `sponsor` | `sponsit_contact_id`, `sponsit_person_id` | `sponsorbeheer` |
+
+Apply `filter_sensitive_acf()` at **every** site that assembles a person ACF payload.
+Two exist today: `filter_rest_single_access()` (which covers collections too, because
+`rest_prepare_person` fires per item) and the hand-built response in
+`/rondo/v1/people/filtered`.
+
+Redacting the response body is not sufficient on its own. A list endpoint that still
+accepts `?financiele_blokkade=1`, or sorts by the field, leaks the value through result
+membership and result order — use `acf_field_is_hidden()` to drop such parameters.
+
+`wacht_op_overschrijving` is deliberately in no group: it looks like a finance field but
+is a KNVB transfer flag, i.e. membership administration.
+
+### Notes are a third surface
+
+Person notes, activities and the timeline carry free prose, which no field-level
+redaction can reach, and in practice that prose is exactly the finance and membership
+matter the groups above gate. `can_access_person_notes()` therefore restricts them to
+`ledenadministratie`, finance and admins — it is not inherited from being able to view
+the person.
+
+The `/timeline` route itself stays open to anyone who may see the person, because it
+also carries todos, which have their own author/assignee visibility. It simply omits
+notes, activities and logged e-mails for callers without the capability.
+
+## Field-scoped editing
+
+Two capabilities grant person **edit** without granting full people management:
+
+- `sponsorbeheer` — sponsor fields, and creating contact+sponsor records.
+- `vrijwilligers` — the contact fields in `AccessControl::CONTACT_WRITE_FIELDS`, plus
+  the profile photo.
+
+A role can hold both, so they are enforced by a single guard —
+`People::enforce_person_field_scope()` on `rest_pre_insert_person` — that computes the
+**union** of what the caller may write. Two independent guards would deadlock: each
+refuses what the other allows.
+
+The guard compares against stored values, so a client that round-trips the whole ACF
+object (which this app does) is judged on what it actually changes. It also rejects
+changes to core post fields, since `edit_post` would otherwise allow `post_status`
+alone to hide a member from every query in the app.
+
+`can_edit_people()` means "full people manager" and must stay that way; partial
+capabilities get their own predicates (`can_edit_person_contact()`).
+
 ## Bypassing Access Control
 
 Trusted internal system code can bypass query filtering using `suppress_filters`, but its caller must have an explicit capability-protected endpoint:
