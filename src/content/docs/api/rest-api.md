@@ -72,6 +72,12 @@ Returns summary statistics and recent activity for the dashboard.
 
 **Permission:** Logged in users only
 
+The response is cached for 15 minutes per user. Cache keys include the site-wide
+`rondo_dashboard_cache_generation` option. Saving a person, team, committee, todo,
+feedback item, or discipline case advances that generation, so the next request
+recomputes immediately even when WordPress uses a persistent object cache. Do not
+invalidate dashboard caches by deleting transient rows directly.
+
 **Response:**
 ```json
 {
