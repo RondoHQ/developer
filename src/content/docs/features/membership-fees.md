@@ -704,6 +704,8 @@ Applied to youth members only (categories with `is_youth: true`):
 
 Family grouping: Postal code + house number from addresses field
 
+Only active youth members participate in family grouping. Former members are excluded even when they still owe a fee for the selected season, and changing a member's former-member status invalidates the stored fee and family position for the entire household.
+
 #### Configurable Discount Percentages (v21.1+)
 
 **Introduced:** Phase 160 (v21.1.0)
