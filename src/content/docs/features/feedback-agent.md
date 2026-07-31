@@ -69,6 +69,23 @@ makes the notification one-time: submitting the same `resolved` status again, or
 resolving the same item later, does not send a duplicate. The update response includes a
 `resolution_email` result only on the transition that attempted delivery.
 
+### Decline email
+
+Declining works the same way in mirror image. Changing feedback from any non-declined status to
+`declined` requires a Dutch `decline_reason`, stored as `_feedback_decline_reason`, and sends the
+author a branded HTML email that highlights the explanation under “Waarom we dit niet doen”. It
+closes by inviting the submitter to send new feedback, so a decline does not read as a dead end.
+
+Delivery records `_feedback_decline_email_sent_at`, making this one-time in exactly the way the
+resolution email is: reopening a declined item and declining it again does not mail the author
+twice. The update response includes a `decline_email` result only on the transition that attempted
+delivery, and `_feedback_declined_at` is cleared when an item moves back out of `declined`.
+
+In the UI both outcomes share one dialog, `FeedbackOutcomeModal`, parameterised by variant —
+picking `resolved` or `declined` from the feedback list opens it and blocks the change until an
+explanation is written. The edit modal shows the matching field inline when an administrator
+selects either status.
+
 ### Changing status with WP-CLI
 
 Use the status command for manual or operational changes instead of writing ACF post meta directly:
@@ -76,14 +93,17 @@ Use the status command for manual or operational changes instead of writing ACF 
 ```bash
 wp rondo feedback set-status 8496 resolved \
   --message="Het formulier gebruikt nu één datum met aparte begin- en eindtijden."
+wp rondo feedback set-status 8496 declined \
+  --reason="Dit kan al via de knop rechtsboven op het dashboard."
 wp rondo feedback set-status 8496 needs_info
 ```
 
 Allowed statuses are `new`, `approved`, `in_progress`, `in_review`, `resolved`, `declined`, and
 `needs_info`. The command delegates to the same `StatusService` as the REST update endpoint, so a
 transition to `resolved` sets `_feedback_resolved_at` and attempts the one-time styled email. A
-new transition to `resolved` requires `--message` unless a resolution summary was stored earlier.
-A repeated command with the current status is a successful no-op.
+new transition to `resolved` requires `--message` unless a resolution summary was stored earlier,
+and a new transition to `declined` requires `--reason` on the same terms. A repeated command with
+the current status is a successful no-op.
 
 ## REST API
 
@@ -125,11 +145,14 @@ The feedback API includes two agent-specific fields in the `meta` response:
 - `pr_url` — URL of the GitHub PR created by the agent
 - `agent_branch` — Git branch name used by the agent
 - `resolution_summary` — Dutch user-facing explanation of how the feedback was fixed
+- `decline_reason` — Dutch user-facing explanation of why the feedback was declined
 
-These are stored as post meta (`_feedback_pr_url`, `_feedback_agent_branch`, and
-`_feedback_resolution_summary`) and can be set via the update endpoint. Send
-`resolution_summary` together with `status: resolved`; the API rejects a new resolved transition
-when neither that request nor the post already contains an explanation.
+These are stored as post meta (`_feedback_pr_url`, `_feedback_agent_branch`,
+`_feedback_resolution_summary`, and `_feedback_decline_reason`) and can be set via the update
+endpoint. Send `resolution_summary` together with `status: resolved`; the API rejects a new
+resolved transition when neither that request nor the post already contains an explanation. Send
+`decline_reason` together with `status: declined` on the same terms. Both fields are
+administrator-only — a non-admin supplying either gets a 403.
 
 ## Script: `bin/get-feedback.sh`
 
