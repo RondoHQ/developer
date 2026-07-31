@@ -343,27 +343,35 @@ that already have assignees, and cancelled shifts (kept for history).
 
 ## Automatic IVA verification
 
-Official IVA certificates from the VWS/NOC*NSF e-learning "Voor elkaar" are TCPDF-generated
-PDFs whose text layer contains only the personalized values (name, branche, user-id, e-learning
-name, completion date). On every PDF upload to `POST /rondo/v1/iva/upload`,
-`Rondo\Volunteer\IvaCertificateParser` (backed by `smalot/pdfparser`) extracts those fields.
-Parsing is pattern-based — a Dutch long-form date, the "Voor elkaar" marker, and the remaining
-text line as the name — because extraction order varies and values can be glued together.
+Rondo recognizes two generations of official IVA PDF certificates:
+
+- the legacy VWS/NOC*NSF e-learning certificate, identified by the text marker `Voor elkaar`;
+- the newer VrijwilligerswerkNL certificate, identified by its `Certificaat IVA -
+  VrijwilligerswerkNL` title and TCPDF producer metadata.
+
+Both are TCPDF-generated PDFs whose text layer contains only personalized values. On every PDF
+upload to `POST /rondo/v1/iva/upload`, `Rondo\Volunteer\IvaCertificateParser` (backed by
+`smalot/pdfparser`) extracts the name and Dutch long-form completion date. Legacy extraction is
+pattern-based because values can be glued together and their order varies.
 
 The certificate is **auto-approved** (`iva-approved = 1`, no review email) when both hold:
 
 - the name on the certificate matches the linked person — compared against the post title,
   `first_name + last_name`, and `nickname + last_name`, case/diacritics-insensitively with a
-  small typo tolerance (Levenshtein ≤ 2, scaled down for short names), and
+  small typo tolerance (Levenshtein ≤ 2, scaled down for short names). VrijwilligerswerkNL's
+  embedded font map can expose only the final character of a given name; for that format only,
+  Rondo also accepts an exact multi-word surname from the linked person's title with at most two
+  unexplained leading characters. Single-word surname fallbacks remain manual, and
 - the completion date on the certificate is at most 2 years old and not in the future
   (`IvaCertificateParser::AUTO_APPROVE_MAX_AGE_YEARS`; stricter than the 5-year validity —
   older certificates always go through manual review).
 
 When parsing succeeds, the date printed on the certificate overrides the member-entered
-`datum_iva`. When parsing fails (image upload, non-official PDF, unrecognized layout) or the
-auto-approval conditions are not met, the upload falls back to the manual review flow below,
-unchanged. The upload response exposes the outcome as `auto_verified` (boolean); the member UI
-shows "automatisch geverifieerd" instead of the pending-review message.
+`datum_iva`. Images are deliberately not OCR'd: JPG/PNG uploads, screenshots, Sociale Hygiëne
+certificates, non-official PDFs and unrecognized layouts use the manual review flow below. The
+member UI therefore asks for the original PDF where possible. The upload response exposes the
+outcome as `auto_verified` (boolean); the member UI shows "automatisch geverifieerd" instead of
+the pending-review message.
 
 Note this is consistency checking, not cryptographic verification — the source PDFs carry no
 signature or verification URL, so a deliberately forged PDF can pass. The manual review path and
