@@ -266,30 +266,29 @@ This prevents former members from appearing in budget projections for future sea
 
 ### Family Discount Handling
 
-The family discount calculation (`build_family_groups()`) excludes ineligible former members:
+Family discounts describe the **current active household**, independently of whether a former member still owes a fee for the season. The family discount calculation (`build_family_groups()`) therefore excludes every former member:
 
 ```php
 // In build_family_groups()
-$is_former = ( get_field( 'former_member', $person_id ) == true );
-if ( $is_former && ! $this->is_former_member_in_season( $person_id, $season ) ) {
-    continue; // Skip former members not in this season
+if ( (bool) get_field( 'former_member', $person_id ) ) {
+    continue;
 }
 ```
 
 This ensures that:
-- Former members who left before the season don't incorrectly reduce family discounts
-- Only eligible former members (lid-sinds before season end) participate in family grouping
+- Former members never change the discount position of active youth members at their old address
+- A former member who still owes a historical season fee never receives a family discount
 
 ### Cache Invalidation
 
-The fee cache is automatically cleared when the `former_member` field changes:
+The fee cache and stored family position are cleared for the member and all active youth members at the same address when the `former_member` field changes:
 
 ```php
 // In includes/class-fee-cache-invalidator.php
-add_filter( 'acf/update_value/name=former_member', [ $this, 'invalidate_person_cache' ], 10, 3 );
+add_filter( 'acf/update_value/name=former_member', [ $this, 'invalidate_family_membership_cache' ], 10, 3 );
 ```
 
-This ensures that when rondo-sync marks a member as former, their fee is immediately recalculated with the new eligibility logic.
+ACF runs this filter before saving the new status, so invalidation happens immediately and recalculation is deliberately deferred until the next cache miss. That recalculation then sees the newly saved status and assigns positions using active members only.
 
 ### API Response Fields
 
