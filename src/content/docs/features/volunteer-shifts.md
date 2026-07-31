@@ -73,11 +73,12 @@ drift from the obligation calculator that shares the same season.
 
 Two properties worth preserving if you touch this:
 
-1. **Closed shifts stay visible.** The window is not part of
+1. **Closed shifts stay in the calendar response.** The window is not part of
    `member_shift_block_reason()`, whose callers all `continue` and thereby hide a
-   shift. Members see spring diensten with a "vanaf 1 november" badge; a calendar day
-   whose shifts are all closed gets the `locked` state rather than the red that means
-   "sign up here".
+   shift. A calendar day whose shifts are all closed gets the `locked` state rather
+   than the red that means "sign up here". The member interface hides the complete
+   signup period containing those locked days until that period opens; the manager
+   calendar continues to show the whole season.
 2. **Coordinators are not gated.** Planning is not racing for a slot, so
    `add_assignee()` ignores the window entirely.
 

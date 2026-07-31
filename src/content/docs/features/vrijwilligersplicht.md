@@ -211,8 +211,10 @@ maximum of `9999-12-31`; this keeps Chromium-based browsers to a four-digit year
 default six-digit year segment.
 
 Both `/vrijwilligers/diensten` and the member-facing `/vrijwillig` page use the shared
-`ShiftCoverageCalendar` component. Both views show the current calendar month and the next five
-months:
+`ShiftCoverageCalendar` component. The manager view shows the rest of the club year through 30
+June. The member view uses that same range, but hides a signup period in its entirety while that
+period is still closed. For example, January through June only appear after the configured opening
+date for the second season half:
 
 - **Green** means every relevant `dienst_shift` on that date has reached its capacity.
 - **Red** means at least one relevant shift still has an open place.
@@ -260,14 +262,16 @@ Calendar data comes from:
 
 `GET /rondo/v1/shifts/calendar?view=manage|signup&from=YYYY-MM-DD&to=YYYY-MM-DD&dienst_type_id=123`
 
-The requested range is limited to 190 days and interpreted in the WordPress timezone. `view=manage`
+The requested range is limited to 370 days and interpreted in the WordPress timezone. `view=manage`
 requires `manage_options` or `vrijwilligers`. `view=signup` resolves the current user to their linked
 person and applies the same VOG, IVA and required-pool gates as the signup endpoint. Full shifts stay
-visible so members can understand green dates, but they have `can_signup: false`. Person IDs and
-contact details are never returned by the calendar endpoint. Its `block_reasons` only reports a
-missing VOG or IVA certificate when at least one shift in the requested range and selected diensttype
-is actually hidden for that reason. The signup endpoint still enforces the certificate requirement
-independently, including for direct requests.
+visible so members can understand green dates, but they have `can_signup: false`. Window-closed
+shifts remain present in the REST response with `signup_opens_at` and a `locked` day state, while the
+member interface hides their complete signup period until it opens. Person IDs and contact details
+are never returned by the calendar endpoint. Its `block_reasons` only reports a missing VOG or IVA
+certificate when at least one shift in the requested range and selected diensttype is actually
+hidden for that reason. The signup endpoint still enforces the certificate requirement independently,
+including for direct requests.
 
 Below the manager calendar, **Recente aanmeldingen** lists at most 50 shifts ordered by their latest
 current self-service signup. Each row shows the shift moment, the names of the people who signed up,
