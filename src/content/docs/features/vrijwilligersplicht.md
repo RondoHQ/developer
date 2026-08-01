@@ -581,5 +581,17 @@ staff roles both count. Contributie-vrijstelling is deliberately *not* an exempt
 that runs through the resolver or an honorary role.
 
 The management page at `/vrijwilligers/vrijstellingen` offers filters for committee members, team
-staff, and manual exemptions. The resolver still recognizes the legacy `betaalde_vrijwilliger`
-field for existing data, but the page does not expose a separate paid-volunteer filter.
+staff, and manual exemptions. A user with the `vrijwilligers` capability can search for a person on
+that page and create, edit, or withdraw a manual exemption. For a family obligation the exemption
+must be assigned to a responsible parent or guardian, because triggering children are not inspected
+when adults are available. The season field accepts a consecutive `YYYY-YYYY` value; an empty value
+makes the exemption ongoing.
+
+The frontend reads and writes the narrowly scoped policy state through
+`GET|PUT /rondo/v1/volunteer-exemption/{person_id}`. The write route accepts `enabled`, `reason`, and
+`season`, requires `manage_options` or `vrijwilligers`, and does not grant access to any other person
+fields. It stores the native ACF fields `vrijgesteld_handmatig`, `vrijstelling_reden`, and
+`vrijstelling_seizoen`, then invalidates eligibility, relationship-quality, and obligation caches.
+
+The resolver still recognizes the legacy `betaalde_vrijwilliger` field for existing data, but the
+page does not expose a separate paid-volunteer filter.
