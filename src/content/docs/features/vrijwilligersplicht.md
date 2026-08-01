@@ -571,10 +571,13 @@ Every drill-down page (`VrijwilligersDataQuality.jsx`) has an **Exporteer CSV** 
 ## Exemptions
 
 `VolunteerExemptionResolver` handles per-season exemptions. An exempt member sees an explanatory
-card instead of an obligation, and may still volunteer voluntarily. The member-facing copy for
-active club roles stays role-neutral, because committee work and team staff roles both count.
-Contributie-vrijstelling is deliberately *not* an exemption ground here; that runs through the
-resolver or an honorary role.
+card instead of an obligation, and may still volunteer voluntarily. For a `gezin` unit,
+`resolve_unit()` checks all responsible parents or guardians: an exemption held by either adult
+exempts the shared family obligation. This also applies while a parent temporarily uses a child's
+account. Triggering children are only checked for orphan units where Rondo cannot resolve an adult.
+The member-facing copy for active club roles stays role-neutral, because committee work and team
+staff roles both count. Contributie-vrijstelling is deliberately *not* an exemption ground here;
+that runs through the resolver or an honorary role.
 
 The management page at `/vrijwilligers/vrijstellingen` offers filters for committee members, team
 staff, and manual exemptions. The resolver still recognizes the legacy `betaalde_vrijwilliger`
