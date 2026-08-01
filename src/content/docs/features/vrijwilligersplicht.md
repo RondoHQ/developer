@@ -123,15 +123,23 @@ persistent object caches; do not delete transient database rows directly.
 
 ## Inschrijftaken on person profiles
 
-The **Profiel** tab of a person detail page shows a read-only **Inschrijftaken** card. It lists every
-active future shift in chronological order and at most the two most recent shifts whose start time
-has passed. Cancelled future shifts are omitted; cancelled historical shifts remain visible with
-their status.
+The **Profiel** tab of a person detail page shows a read-only, single-column **Inschrijftaken** card.
+Above the shift list it shows the current season's personal and/or shared family obligation. The
+family row uses the same merged gezin unit and multi-child discount as the volunteer dashboard. On
+a JO16- player's profile, the card resolves the family duty triggered by that child; it does not
+incorrectly present that duty as a personal duty. Exempt units are labelled as exempt and contribute
+zero to the displayed effective total.
+
+Below the obligation summary, the card lists every active future shift in chronological order and at
+most the two most recent shifts whose start time has passed. Cancelled future shifts are omitted;
+cancelled historical shifts remain visible with their status.
 
 The card uses `GET /rondo/v1/people/{person_id}/shifts`. Its permission callback delegates to the
 normal person visibility check, so age-group and relationship scoping stay aligned with the rest of
-the person detail page. The response contains `upcoming` and `recent` arrays with shift details, but
-never assignee person IDs, fellow-volunteer names, phone numbers, or WhatsApp links.
+the person detail page. The response contains `season`, a privacy-trimmed `obligations` array, and
+`upcoming` and `recent` arrays with shift details. Obligation entries expose only their kind,
+required count, child count, and possible exemption. The response never contains unit membership
+IDs, assignee person IDs, fellow-volunteer names, phone numbers, or WhatsApp links.
 
 ### Temporary parent identity on a child account
 
