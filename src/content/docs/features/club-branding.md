@@ -23,6 +23,8 @@ consumed by every logged-out surface. The single source of truth is
 - **Login page** (`wp-login.php`) — `rondo_login_styles()` in `functions.php` renders the club
   logo and derives a full palette (dark and light shades, borders, backgrounds, shadows) from the
   accent colour. When no branding is configured it falls back to the Rondo logo and cyan palette.
+  The heading below the logo deliberately shows the **site title** (the application name, e.g.
+  "AWC Rondo"), not the club name from `branding()`.
 
 ## Colour derivation on the login page
 
