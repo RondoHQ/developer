@@ -56,6 +56,12 @@ member after the first would have an unrecoverable account.
 
 `is_synthetic_email()` tests for the placeholder domain.
 
+Members who use Magic Login may not know the random password created during provisioning. The
+profile therefore offers an authenticated `POST /rondo/v1/user/password-reset` action. It calls
+WordPress core's `retrieve_password()` for the current user's exact username and only confirms that
+the message was requested; the password can be changed only with the expiring key received by
+email. The existing `ContactEmailRouter` ensures this also reaches later members of a household.
+
 ## Signing in
 
 Members never see the username Rondo generated for them, and the second member of a household

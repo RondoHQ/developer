@@ -402,6 +402,34 @@ Change the current user's password. On success all sessions are destroyed, requi
 
 ---
 
+### Request Password Reset Link
+
+**POST** `/rondo/v1/user/password-reset`
+
+Send the current user a one-time WordPress password-reset link. This is the profile fallback for
+members who sign in through Magic Login and therefore do not know their generated account password.
+Household placeholder addresses are routed to the account's `rondo_contact_email` address.
+
+**Permission:** Logged in users only (demo user is blocked)
+
+**Success response (200):**
+```json
+{
+  "success": true,
+  "message": "Controleer je e-mail voor een link om je wachtwoord in te stellen."
+}
+```
+
+**Error responses:**
+
+| Status | Code | Meaning |
+|--------|------|---------|
+| 403 | `demo_user` | Password changes are disabled for the demo account. |
+| 422 | `no_contact_email` | The account has no deliverable contact address. |
+| 500 | `password_reset_email_failed` | WordPress could not send the reset message. |
+
+---
+
 ### Person Photo Upload
 
 **POST** `/rondo/v1/people/{person_id}/photo`
