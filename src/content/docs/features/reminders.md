@@ -387,6 +387,28 @@ Returns status of all user reminder cron jobs.
 
 Birthdays are detected from the `birthdate` field on person records. All birthdays are treated as recurring (yearly) events and are included in the daily digest if they occur within the next 7 days.
 
+#### Stored date shapes
+
+`birthdate` exists in the database in two shapes, and both must be handled:
+
+| Shape | Example | Origin |
+|-------|---------|--------|
+| Compact `Ymd` | `20110802` | Canonical. The field registry declares `storage_format => 'Ymd'`, so every write through `Rondo\Fields\Fields` — including the Sportlink sync — produces this. |
+| Dashed `Y-m-d` | `2011-08-02` | Legacy rows that predate the registry. Still present and still valid. |
+
+This is a tolerated condition, not corruption: `FieldFormatter::parse_date()` reads both by design and normalizes to `Ymd` on write. Normalizing the stored data in either direction is pointless — the formatter rewrites it on the next save.
+
+Any code reading `birthdate` directly must therefore accept both shapes. In SQL, strip the separators before slicing the month and day (`RIGHT(REPLACE(meta_value, '-', ''), 4)`) rather than assuming fixed offsets. In PHP, prefer the Fields layer, or `Rondo\Collaboration\Reminders::calculate_next_occurrence()`, which tries `Y-m-d` and falls back to `Ymd`. The two shapes never parse as each other, so shape dispatch is unambiguous.
+
+#### 29 February birthdays
+
+A leap-day birthday has no 29 February to land on in a common year. Rondo resolves it to **1 March**, in both the dashboard query and `calculate_next_occurrence()`. In leap years it stays on 29 February.
+
+Two traps when touching this logic:
+
+- **Do not widen the fallback.** It is scoped to the literal MMDD `0229`. A blanket "invalid date → 1 March" rule would turn genuinely malformed values such as `20080230` or `20081332` into real birthdays instead of discarding them.
+- **Do not roll over by adding a year to the resolved date.** `calculate_next_occurrence()` recomputes next year's occurrence from the original month and day. Adding a year to an already-overflowed 1 March would return 1 March even when the next year is a leap year, putting the digest one day off from the dashboard.
+
 ### Server Requirements
 
 - WordPress cron must be functioning
@@ -442,7 +464,9 @@ wp_mail('test@example.com', 'Test Subject', 'Test message');
 ### Wrong Reminder Dates
 
 1. **Check timezone** - Uses WordPress timezone (`wp_timezone()`)
-2. **Check date format** - Birthdates must be in Y-m-d format
+2. **Check date format** - Birthdates are stored as compact `Ymd` or legacy dashed `Y-m-d`; both are
+   valid. If people are missing from a birthday surface, check that the reading code accepts both
+   shapes rather than assuming one — see [Stored date shapes](#stored-date-shapes).
 
 ### Cron Not Running
 
