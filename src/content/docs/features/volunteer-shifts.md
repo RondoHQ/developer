@@ -22,6 +22,11 @@ A `dienst_shift` carries `dienst_type_id`, `template_id`, `capacity`, `start_dat
 `end_datetime`, `status` (`open` / `vol` / `voltooid` / `geannuleerd`), `notes` and
 `iva_waived`.
 
+The diensttype form labels `required_pool` as **Vereiste commissie** and lists all
+published commissies alphabetically. When selected, member-facing shift endpoints hide
+that type's shifts from everyone who has no current `work_history` entry for the commissie;
+coordinators retain visibility in the management calendar.
+
 ### Assignments are meta, not an entity
 
 There is no assignment post type. A shift's `assigned_persons` meta holds an array of
