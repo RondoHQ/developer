@@ -22,6 +22,12 @@ A `dienst_shift` carries `dienst_type_id`, `template_id`, `capacity`, `start_dat
 `end_datetime`, `status` (`open` / `vol` / `voltooid` / `geannuleerd`), `notes` and
 `iva_waived`.
 
+`open` is both the registered default and the value submitted by the ad-hoc shift form.
+The native field layer materializes an explicitly submitted scalar default as post meta,
+because `WP_Query` cannot filter a registry-only default. The member and management
+calendar queries also treat a missing status row as `open`, so older affected shifts stay
+visible.
+
 The diensttype form labels `required_pool` as **Vereiste commissie** and lists all
 published commissies alphabetically. When selected, member-facing shift endpoints hide
 that type's shifts from everyone who has no current `work_history` entry for the commissie;
