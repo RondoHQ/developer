@@ -41,20 +41,22 @@ Het aanvullende tekstveld `company_name` bewaart de bedrijfsnaam. De bedrijfsnaa
 
 Bestaande personen zonder opgeslagen `person_type` worden als lid/ouder behandeld. Daardoor is geen datamigratie nodig en blijven door Sportlink gesynchroniseerde personen compatibel.
 
-Bevoegde gebruikers kunnen het persoonstype en de sponsorrol op de persoonspagina wijzigen. Contacten en sponsors krijgen daar en in de personenlijst een herkenbaar label.
+Bevoegde gebruikers kunnen het persoonstype en de sponsorrol op de persoonspagina wijzigen. De personenlijst bundelt overlappende rollen in de standaardkolom **Kenmerken**.
 
 De kolom **Type** op de personenlijst vat het basisrecord samen als **Bondslid**, **Verenigingslid**, **Ouder** of **Contact** en voegt bij een actieve sponsorrol **+ sponsor** toe.
 
 ## Filteren via REST
 
-`GET /wp-json/rondo/v1/people/filtered` accepteert `person_type=member` of `person_type=contact`, plus de onafhankelijke filters `is_sponsor=1|0` en `is_businessclub_member=1|0`.
+`GET /wp-json/rondo/v1/people/filtered` accepteert `person_type=member` of `person_type=contact`, plus de onafhankelijke filters `is_sponsor=1|0`, `is_parent=1`, `knvb_bekend=1|0`, `spelend_lid=1|0` en `is_businessclub_member=1|0`.
 
 - `contact` retourneert uitsluitend records met de expliciete waarde `contact`.
 - `member` retourneert records met `member` én bestaande records zonder waarde.
 - `is_sponsor=1` retourneert alle actieve sponsors, ongeacht hun persoonstype.
+- `is_parent=1` wordt afgeleid uit een actuele relatie van het type `child`; de oude geïmporteerde oudervlag bepaalt dit filter niet.
+- `knvb_bekend` kijkt uitsluitend of een KNVB-ID aanwezig is.
 - `is_businessclub_member=1` retourneert uitsluitend actieve sponsors met pasvariant `businessclub`; `0` retourneert alle overige relaties.
 
-De frontend gebruikt dit endpoint voor afzonderlijke filters **Persoonstype**, **Sponsor** en **BC-lid** op de relatieslijst.
+De frontend toont lid- en KNVB-status en de rollen ouder/verzorger, vrijwilliger, sponsor en contact samen in de filtergroep **Kenmerken**. Rollen zijn niet exclusief: meerdere geselecteerde kenmerken worden met AND gecombineerd. **BC-lid** blijft een afzonderlijk, specifieker filter.
 
 ## Sponsorbeheer
 

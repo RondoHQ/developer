@@ -269,6 +269,8 @@ Returns paginated people with server-side filtering and sorting for the `/people
 - `birth_month` (1-12, filters people by birthday month)
 - `person_type` (`member` for members, parents, and legacy records; `contact` for explicitly marked external contacts)
 - `is_sponsor` (`1` for active sponsors, `0` for people without the sponsor role; overlaps either person type)
+- `knvb_bekend` (`1` when `knvb_id` has a value, `0` when it does not)
+- `is_parent` (`1` for people with a current `child` relationship to a published, non-former person)
 - `is_businessclub_member` (`1` for active sponsors with the `businessclub` pass variant, `0` for everyone else)
 - `include_former` (`1` to include former members)
 - `lid_tot_future` (`1` to show members with a future `lid-tot` date)
@@ -277,7 +279,19 @@ Returns paginated people with server-side filtering and sorting for the `/people
 **Response:**
 ```json
 {
-  "people": [],
+  "people": [
+    {
+      "id": 123,
+      "characteristics": {
+        "playing_member": true,
+        "knvb_known": true,
+        "parent": true,
+        "volunteer": true,
+        "sponsor": false,
+        "contact": false
+      }
+    }
+  ],
   "total": 0,
   "page": 1,
   "total_pages": 0
