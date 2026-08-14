@@ -96,7 +96,8 @@ pipelines/sync-people.js
    - **Has `rondo_club_id`**: `PUT /wp/v2/people/{rondo_club_id}` (update existing)
 5. Stores returned WordPress post ID as `rondo_club_id`
 6. Updates `last_synced_hash` on success
-7. Then processes **parent members** (from `rondo_club_parents` table):
+7. If a tracked WordPress ID was merged away, resolves `/rondo/v1/people/{id}/merge-target`, stores the surviving ID, and continues the update there instead of recreating the member
+8. Then processes **parent members** (from `rondo_club_parents` table):
    - Identified by email (no KNVB ID)
    - Linked to children via ACF `relationships` field
    - Deduplicated across multiple children's parent fields

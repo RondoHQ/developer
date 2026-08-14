@@ -80,6 +80,63 @@ It updates people via REST only (no WP-CLI dependency) and supports `fields`, `a
 | `POST` | `/rondo/v1/people/bulk-update` | Update multiple people |
 | `POST` | `/rondo/v1/people/{id}/photo` | Upload profile photo |
 | `POST` | `/rondo/v1/people/{id}/provision` | Provision WordPress user account (admin only) |
+| `GET` | `/rondo/v1/people/{primary_id}/merge-preview?duplicate_id={id}` | Preview a person merge (admin only) |
+| `POST` | `/rondo/v1/people/{primary_id}/merge` | Merge a duplicate person into the primary record (admin only) |
+| `GET` | `/rondo/v1/people/{id}/merge-target` | Resolve a merged source ID to its published survivor (admin/integration only) |
+
+---
+
+## Merge People
+
+Only administrators can preview or execute a merge. The primary person remains published; the duplicate is moved to the WordPress trash with `_rondo_merged_into_person_id`, `_rondo_merged_at`, and `_rondo_merged_by` audit metadata.
+
+### Preview
+
+```http
+GET /rondo/v1/people/209/merge-preview?duplicate_id=8010
+```
+
+The response contains both person summaries, automatically combined fields, scalar conflicts that require a choice, blocking conflicts, and counts of linked domain records. Different non-empty stable identifiers of the same kind, or two different linked WordPress accounts, block execution.
+
+### Execute
+
+```http
+POST /rondo/v1/people/209/merge
+Content-Type: application/json
+X-WP-Nonce: {nonce}
+```
+
+```json
+{
+  "duplicate_id": 8010,
+  "resolutions": {
+    "nickname": "primary",
+    "company_name": "duplicate"
+  },
+  "confirmed": true
+}
+```
+
+Every conflict returned by the preview must have a `primary` or `duplicate` resolution. The service automatically combines unique emails, phones, addresses, relationships, work history, gallery/list values, person and sponsor roles, and empty scalar fields.
+
+References in relationships, shifts, todos, discipline cases, invoices, clothing assignments, comments, attachments, and linked user accounts are moved to the primary person. Per-person shift metadata is renamed as part of the same operation. A successful merge returns the surviving `person_id`.
+
+### Resolve a previous person ID
+
+Trusted integrations that persist WordPress person IDs can resolve an ID that was merged away:
+
+```http
+GET /rondo/v1/people/8010/merge-target
+```
+
+```json
+{
+  "person_id": 8010,
+  "merged_into_person_id": 209
+}
+```
+
+The endpoint follows successive merge audit links until it finds the current published person. It returns `404` when the ID has not been merged or no published survivor exists. `rondo-sync` uses this response to repair its local Sportlink-to-WordPress mapping instead of recreating the duplicate.
 
 ---
 
