@@ -473,6 +473,8 @@ The service worker precaches only the app shell: the main stylesheet, entry scri
 
 This keeps first-install traffic predictable during a login wave. Do not broaden `globPatterns` to all JavaScript files: that would make every new user download the complete application, including rarely used finance, editor, and scanner screens.
 
+The generated worker remains in `dist/sw.js`, but WordPress serves it publicly at `/sw.js`. The root URL lets the worker control the complete application without relying on a hosting-provider-specific `Service-Worker-Allowed` header for a static theme file. Vite's PWA base and scope must therefore stay `/`; Workbox must remain inlined, and `modifyURLPrefix` must keep precached resources under `/wp-content/themes/rondo-club/dist/`.
+
 ### Dashboard preload
 
 WordPress starts the dashboard REST request from the HTML head so it can overlap with JavaScript startup. This preload only runs for an authenticated request to the site root. Direct links to another SPA route must not preload the dashboard, because the response would be discarded while still consuming PHP and database capacity.

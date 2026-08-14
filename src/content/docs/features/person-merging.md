@@ -3,7 +3,7 @@ title: "Personen samenvoegen"
 description: "Veilig dubbele persoonsprofielen combineren met behoud van gekoppelde gegevens"
 ---
 
-Beheerders kunnen op een persoonspagina **Samenvoegen** kiezen en vervolgens het dubbele profiel opzoeken. De dialoog laat eerst kiezen welk profiel blijft bestaan. Daarna toont hij welke gegevens automatisch worden gecombineerd, welke gekoppelde records meeverhuizen en voor welke afwijkende waarden een keuze nodig is.
+Beheerders kunnen op een persoonspagina **Samenvoegen** kiezen en vervolgens het dubbele profiel opzoeken op naam, e-mailadres, KNVB-ID of exact profielnummer. De zoekopdracht loopt via de server en laadt niet eerst de volledige personenlijst. De dialoog laat daarna kiezen welk profiel blijft bestaan en toont welke gegevens automatisch worden gecombineerd, welke gekoppelde records meeverhuizen en voor welke afwijkende waarden een keuze nodig is.
 
 ## Samenvoegregels
 
