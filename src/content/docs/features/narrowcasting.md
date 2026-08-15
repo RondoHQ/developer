@@ -6,9 +6,9 @@ Rondo Club includes the control plane and browser display for subscription-free
 club narrowcasting. A Raspberry Pi runs the separate Rondo Player agent behind
 each television.
 
-## Pilot scope
+## Implemented scope
 
-The first milestone provides:
+The technical pilot and matchday-parity milestones provide:
 
 - administrator-only player pairing and management at `/narrowcasting`;
 - an administrator-only browser preview at `/display?preview=1`, opened from
@@ -17,10 +17,30 @@ The first milestone provides:
   device token;
 - player configuration, heartbeat, status and predefined-command REST routes;
 - scheduled and manual HDMI-CEC wake and standby through Rondo Player;
-- locally cached display configuration when the network is temporarily down.
+- locally cached display configuration and matchday content when the network is
+  temporarily down;
+- server-side Sportlink Club.Data fetching and normalized feeds for today's
+  matches, pitches, dressing rooms, cancellations and recent results;
+- automatically rotating 16:9 scenes with stale-data and 24-hour expiry states.
 
-Match data, dressing-room assignments, sponsor playlists and announcements are
-subsequent milestones.
+Sponsor playlists and announcements are subsequent milestones.
+
+## Sportlink matchday adapter
+
+The Sportlink client ID is stored in the WordPress Options API and is never
+returned after it is saved. The administrator UI only receives a boolean and a
+masked placeholder. Club TV browsers call Rondo; they never call Sportlink.
+
+`SportlinkMatchday` requests `programma` and `afgelastingen` at most every five
+minutes and `uitslagen` at most every fifteen minutes. It normalizes external
+rows into a small public contract and stores only that normalized result as the
+last-known-good cache. Failed requests record a credential-free error while
+preserving the previous payload. Cached assignments remain playable with a
+stale marker for up to 24 hours.
+
+The cron refresh is supplemented by refresh-on-read. This keeps the feed current
+even on sites where WordPress cron traffic is intermittent, while a short lock
+prevents several players from refreshing Sportlink simultaneously.
 
 ## Data model
 
@@ -72,6 +92,10 @@ All routes use the `/wp-json/rondo/v1/narrowcasting` prefix.
 | `POST /devices/me/commands/ack` | Device token | Acknowledge command outcome |
 | `GET /displays` | Administrator | List displays and health |
 | `GET /preview` | Administrator | Return a credential-free sample display configuration |
+| `GET /settings` | Administrator | Read masked Sportlink configuration and feed health |
+| `POST /settings` | Administrator | Store the server-only client ID and club relation code |
+| `POST /refresh` | Administrator, rate-limited | Force a Club.Data refresh |
+| `GET /feeds/matchday` | Device token or administrator | Read normalized matchday content |
 | `POST /displays/claim` | Administrator | Approve an activation code |
 | `POST /displays/{id}/commands` | Administrator | Queue a predefined command |
 | `POST /displays/{id}/revoke` | Administrator | Invalidate a player credential |
@@ -92,3 +116,6 @@ passes the token again whenever Chromium is restarted.
 `tests/Wpunit/NarrowcastingTest.php` covers the complete registration, approval,
 claim, configuration, heartbeat, command, acknowledgement and revocation flow,
 as well as administrator and device-identity boundaries.
+`tests/Wpunit/NarrowcastingSportlinkTest.php` covers normalization, credential
+redaction, freshness metadata and last-known-good behavior after Club.Data
+failures.
