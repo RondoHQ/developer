@@ -11,6 +11,8 @@ each television.
 The first milestone provides:
 
 - administrator-only player pairing and management at `/narrowcasting`;
+- an administrator-only browser preview at `/display?preview=1`, opened from
+  the **Club TV** page without creating a player record or credential;
 - a public full-screen browser shell at `/display` that authenticates with a
   device token;
 - player configuration, heartbeat, status and predefined-command REST routes;
@@ -69,6 +71,7 @@ All routes use the `/wp-json/rondo/v1/narrowcasting` prefix.
 | `GET /devices/me/commands` | Device token | Poll one predefined command |
 | `POST /devices/me/commands/ack` | Device token | Acknowledge command outcome |
 | `GET /displays` | Administrator | List displays and health |
+| `GET /preview` | Administrator | Return a credential-free sample display configuration |
 | `POST /displays/claim` | Administrator | Approve an activation code |
 | `POST /displays/{id}/commands` | Administrator | Queue a predefined command |
 | `POST /displays/{id}/revoke` | Administrator | Invalidate a player credential |
