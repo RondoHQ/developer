@@ -29,6 +29,7 @@ Access control applies to every Rondo post type. Each type has its own primitive
 - `team` - Team/company records
 - `rondo_todo` - Todo items
 - `rondo_feedback` - Feedback
+- `rondo_display` - Private narrowcasting players (administrator only)
 - `rondo_clothing_item` / `rondo_clothing_txn` - Clothing
 - `discipline_case` / `rondo_invoice` - Fair play and finance
 - `dienst_type` / `shift_template` / `dienst_shift` / `taakuitleg` - Volunteer shifts
