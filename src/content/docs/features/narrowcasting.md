@@ -19,16 +19,19 @@ The technical pilot, matchday and content milestones provide:
 - scheduled and manual HDMI-CEC wake and standby through Rondo Player;
 - locally cached display configuration and matchday content when the network is
   temporarily down;
-- server-side Sportlink Club.Data fetching and normalized feeds for today's
-  matches, pitches, dressing rooms, cancellations and recent results;
+- server-side Sportlink Club.Data fetching and normalized feeds for the selected
+  matchday's matches, pitches, dressing rooms, cancellations and recent results;
 - automatically rotating 16:9 scenes with stale-data and 24-hour expiry states.
 - announcements, sponsor cards, images, muted MP4 video and dynamic match scenes;
 - weighted playlists with per-item durations, date/day/time schedules, fallbacks
   and display assignments;
 - temporary full-screen overrides for every display or selected displays;
 - locally cached, resolved player manifests that contain no private sponsor data.
-- club-branded playback using the centrally configured club logo and accent colour;
-  match scenes use a typography-first layout because Sportlink's feed does not
+- club-branded playback using the centrally configured club logo, accent colour
+  and light background; individual items can explicitly opt into custom colours;
+- a browser preview that always selects the nearest Saturday (including the
+  current day when opened on Saturday), while paired players select today;
+- match scenes use a typography-first layout because Sportlink's feed does not
   provide dependable team-logo assets.
 
 The `narrowcasting` capability manages content, playlists and previews. A user
@@ -83,7 +86,9 @@ to 100 MB.
 The server resolves schedules, item weights, fallbacks and active overrides
 before returning a manifest. Players therefore do not receive private person
 records or scheduling internals. A sponsor scene contains only its public name
-and logo.
+and logo. New and existing items use the central club palette by default through
+`use_club_colors`; the stored background, text and accent colours are only sent
+to a player when an editor explicitly disables that setting.
 
 ## Pairing flow
 
@@ -126,7 +131,7 @@ All routes use the `/wp-json/rondo/v1/narrowcasting` prefix.
 | `GET /settings` | Administrator | Read masked Sportlink configuration and feed health |
 | `POST /settings` | Administrator | Store the server-only client ID and club relation code |
 | `POST /refresh` | Administrator, rate-limited | Force a Club.Data refresh |
-| `GET /feeds/matchday` | Device token or administrator | Read normalized matchday content |
+| `GET /feeds/matchday` | Device token or administrator | Read normalized matchday content; authenticated previews may request the nearest Saturday with `preview=1` |
 | `POST /displays/claim` | Administrator | Approve an activation code |
 | `POST /displays/{id}/commands` | Administrator | Queue a predefined command |
 | `POST /displays/{id}/revoke` | Administrator | Invalidate a player credential |
@@ -147,8 +152,8 @@ passes the token again whenever Chromium is restarted.
 `tests/Wpunit/NarrowcastingTest.php` covers the complete registration, approval,
 claim, configuration, heartbeat, command, acknowledgement and revocation flow,
 as well as administrator and device-identity boundaries.
-`tests/Wpunit/NarrowcastingSportlinkTest.php` covers normalization, credential
-redaction, freshness metadata and last-known-good behavior after Club.Data
-failures.
+`tests/Wpunit/NarrowcastingSportlinkTest.php` covers normalization, date
+selection, credential redaction, freshness metadata and last-known-good behavior
+after Club.Data failures.
 `tests/Wpunit/NarrowcastingContentTest.php` covers scheduling, weights,
 overrides, sponsor-role boundaries and the player-safe manifest.
