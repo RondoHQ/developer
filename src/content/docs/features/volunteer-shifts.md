@@ -109,6 +109,11 @@ remove them.
 
 ## Coordinators
 
+The capability also grants the full `dienst_shift` capability map. Coordinators can therefore edit
+a concrete shift regardless of which user originally created it. The standalone editor derives the
+stored post title from the selected diensttype and local start time on every save, so changing a
+shift time cannot leave the old time behind in its title.
+
 Holders of the `vrijwilligers` capability manage the programme. Beyond the CPTs, they can:
 
 | Endpoint | Purpose |
