@@ -97,6 +97,7 @@ Application shell behavior:
 - Uses dynamic viewport units (`dvh`) and subtracts a CSS admin-bar offset variable (`--rondo-admin-bar-offset`) so mobile pages can scroll to the real end even when the WordPress admin bar is visible.
 - Applies `min-h-0` on nested flex containers to prevent content clipping in long detail pages.
 - Applies extra mobile bottom padding on `<main>` (including `env(safe-area-inset-bottom)`) so pages with long content remain reachable above mobile browser chrome and fixed bottom UI elements.
+- Keeps member-facing links in a separate **Persoonlijk** group above the capability-filtered club navigation. The profile route is exposed through the linked name/avatar in the account area instead of as a duplicate navigation item.
 
 ## Routing
 
