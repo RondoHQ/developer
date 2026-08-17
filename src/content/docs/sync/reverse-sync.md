@@ -5,11 +5,11 @@ title: "Reverse Sync (Rondo Club → Sportlink)"
 
 Detects field changes made in Rondo Club and pushes them back to Sportlink Club via browser automation.
 
-**Status: active.** Runs hourly, syncing contact fields, address fields, and administrative fields back to Sportlink.
+**Status: active.** Runs every five minutes, syncing contact fields, address fields, administrative fields, and queued parent/guardian relationships back to Sportlink.
 
 ## Schedule
 
-When enabled: **hourly** via `scripts/sync.sh reverse`.
+**Every five minutes** via `scripts/sync.sh reverse`.
 
 ```bash
 scripts/sync.sh reverse                      # Production (with locking + email report)
@@ -19,7 +19,7 @@ node pipelines/reverse-sync.js --verbose               # Contact field sync only
 
 ## Architecture
 
-The reverse sync operates in two phases:
+The reverse sync operates in two independent tracks:
 
 ```
 Phase 1: Change Detection (hourly)
@@ -27,7 +27,20 @@ Phase 1: Change Detection (hourly)
 
 Phase 2: Sync to Sportlink (when unsynced changes exist)
     rondo_club_change_detections → lib/reverse-sync-sportlink.js → Sportlink Browser (Playwright)
+
+Parent-slot track:
+    Modified parent/child relationships → parent_slot_sync_jobs
+    → MemberParentalInfo editor → verified Sportlink parent slot
+    → status callback to Rondo Club
 ```
+
+## Parent/guardian slot synchronization
+
+Parent relationships use a separate incremental cursor and durable SQLite queue. A parent change can affect multiple children, so this track does not use the flat-field `sync_origin` shortcut.
+
+Immediately before writing, the browser reads the child's current `MemberParentalInfo`. It matches a slot by normalized e-mail address first; otherwise it uses only a slot whose name, e-mail and phone are all empty. A partially occupied slot is never overwritten. The browser fills `NameParent1/2`, `EmailAddressParent1/2`, and `TelephoneParent1/2`, saves through the Sportlink SPA, reads the record again, and only then marks the job synchronized.
+
+Jobs retry transient failures with bounded backoff. Two occupied slots become a visible blocked/error status in Rondo. Relationship removal cancels pending work but does not clear an already written Sportlink slot in version 1.
 
 ## Tracked Fields
 

@@ -11,7 +11,7 @@ The system includes a bidirectional relationship system that automatically synch
 
 ### Storage
 
-Relationships are stored as an ACF (Advanced Custom Fields) repeater field on each Person post. Each relationship entry contains:
+Relationships are stored as a native numbered post-meta repeater on each Person post. Each relationship entry contains:
 
 - **Related Person**: The ID of the person this relationship refers to
 - **Relationship Type**: A taxonomy term ID indicating the type of relationship (Parent, Child, or Sibling)
@@ -62,6 +62,17 @@ Users can add custom relationship types via Settings > Relationship Types. Each 
 - Leave the inverse empty for one-way relationships
 
 ## Creating Relationships
+
+### Adding a Sportlink parent/guardian
+
+Membership administrators and administrators get a guided choice when they click the plus button on a Sportlink-backed person's relationship card:
+
+- **Existing person** links an existing Rondo person as `parent`.
+- **New parent/guardian** creates a person from name, e-mail address and an optional phone number, then links that person as `parent`.
+
+The child must have a KNVB ID and may have at most two parents/guardians, matching Sportlink's two available slots. A new parent e-mail address may not already belong to another Rondo person; the existing-person path must be used instead. The inverse `child` relationship is created through the normal relationship service.
+
+The relationship card shows `Wacht op Sportlink`, the verified Sportlink field number, or the last synchronization error. Removing the relationship cancels pending work, but version 1 deliberately does not clear an already populated Sportlink parent field.
 
 ### Via Frontend
 

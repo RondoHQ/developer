@@ -1169,6 +1169,37 @@ The `GET /rondo/v1/membership-fees/settings` response includes installment plan 
 
 These can be updated via `POST /rondo/v1/membership-fees/settings` by including `installment_plan_3_enabled` and/or `installment_plan_8_enabled` boolean parameters.
 
+### Add a parent/guardian
+
+**POST** `/rondo/v1/people/{person_id}/parents`
+
+Requires `ledenadministratie` or administrator access. The child must be an active person with a KNVB ID and fewer than two parent relationships.
+
+Link an existing person:
+
+```json
+{ "mode": "existing", "parent_id": 456 }
+```
+
+Create and link a new parent/guardian:
+
+```json
+{
+  "mode": "new",
+  "name": "Noor van Dijk",
+  "email": "noor@example.org",
+  "phone": "06 12345678"
+}
+```
+
+The response includes `child_id`, `parent_id`, `created`, and `status: "pending"`.
+
+### Update parent synchronization status
+
+**POST** `/rondo/v1/people/{person_id}/parent-sync-status`
+
+Administrator-only integration callback used by `rondo-sync` after a verified Sportlink write. Payload fields are `parent_id`, `state` (`pending`, `synced`, or `error`), optional `slot` (`1` or `2`), and optional `message`. Person responses expose the resulting list as top-level `parent_sync_statuses`.
+
 ### Person Relationships Expansion
 
 The `rest_prepare_person` filter automatically expands relationship data in person responses:
