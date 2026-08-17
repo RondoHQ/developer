@@ -84,7 +84,9 @@ delivery, and `_feedback_declined_at` is cleared when an item moves back out of 
 In the UI both outcomes share one dialog, `FeedbackOutcomeModal`, parameterised by variant —
 picking `resolved` or `declined` from the feedback list opens it and blocks the change until an
 explanation is written. The edit modal shows the matching field inline when an administrator
-selects either status.
+selects either status. Once saved, the feedback detail page shows the resolution summary or
+decline reason together with its outcome date, so both the submitter and administrators can see
+how the item was handled.
 
 ### Changing status with WP-CLI
 
