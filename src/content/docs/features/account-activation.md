@@ -28,19 +28,33 @@ Logic lives in `Rondo\Users\ActivationService`; `ActivationPage` only routes and
 ## Parents activating through a child
 
 For every JO16- person in the identity picker, the activation page also offers **“Ik ben
-ouder/verzorger van …”**. The parent enters their own full name. Rondo then creates the normal
-account against the child and stores a temporary guardian claim on the WordPress user. This lets the
-parent continue immediately while membership administration adds the parent to Sportlink and syncs
-that person to Rondo.
+ouder/verzorger van …”**. The parent enters their own full name. Rondo uses the address proven by
+the activation token and resolves the identity in this order:
+
+1. A parent already linked to the child with that e-mail address is used immediately. If multiple
+   linked parents share the address, the entered name disambiguates them.
+2. An existing person on the address whose name matches is linked as the parent, provided the child
+   still has a Sportlink parent slot.
+3. If no person matches and a slot is free, Rondo creates the parent person with the entered name and
+   proven e-mail address, links it to the child, and marks the Sportlink parent sync as pending.
+
+The WordPress account is provisioned directly against the resolved or newly created parent. If that
+parent already has a WordPress account, the activation link is exchanged for a one-time Magic Login
+URL instead. The child never receives the account in these successful automatic paths.
+
+When automatic parent linking is not safe or possible — for example because both parent slots are
+already occupied — Rondo preserves the previous fallback: it creates the account against the child
+and stores a temporary guardian claim. This lets the parent continue while membership administration
+resolves the identity manually.
 
 The claim sends a plain-text notification to `ledenadministratie@svawc.nl` and is also visible under
 **Settings → Beheer → Gebruikers**. An existing child-linked account can start the same flow from
 `/vrijwillig`; this covers parents who activated before the guardian picker existed.
 
-The account stays linked to the child until an administrator selects **Accountkoppeling wijzigen**.
-That action moves the user link to the synced parent, refreshes the user's name, KNVB ID and
-capabilities, and clears the temporary guardian claim. A target person that already has an account
-cannot be selected.
+For a fallback claim, the account stays linked to the child until an administrator selects
+**Accountkoppeling wijzigen**. That action moves the user link to the synced parent, refreshes the
+user's name, KNVB ID and capabilities, and clears the temporary guardian claim. A target person that
+already has an account cannot be selected.
 
 ## Why email-only is safe
 
