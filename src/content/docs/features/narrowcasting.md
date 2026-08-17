@@ -34,6 +34,10 @@ The technical pilot, matchday and content milestones provide:
 - match scenes use a typography-first layout because Sportlink's feed does not
   provide dependable team-logo assets; the schedule, pitch and dressing-room
   assignments are combined into one overview per group of matches.
+- the display header uses the current scene title beside the unframed club logo,
+  while the match date sits above the clock in the lower-right corner;
+- up to six active sponsor-company logos rotate per scene, with two slots in
+  the header and four in the footer.
 
 The `narrowcasting` capability manages content, playlists and previews. A user
 with only `sponsorbeheer` sees and manages sponsor items but cannot edit other
@@ -86,8 +90,9 @@ to 100 MB.
 
 The server resolves schedules, item weights, fallbacks and active overrides
 before returning a manifest. Players therefore do not receive private person
-records or scheduling internals. A sponsor scene contains only its public name
-and logo. New and existing items use the central club palette by default through
+records or scheduling internals. Sponsor scenes and rotating logo slots contain
+only the public company name and logo from active `rondo_sponsor` posts. New and
+existing items use the central club palette by default through
 `use_club_colors`; the stored background, text and accent colours are only sent
 to a player when an editor explicitly disables that setting.
 

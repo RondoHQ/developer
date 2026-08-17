@@ -21,9 +21,16 @@ A person is eligible based on ACF field `type-lid`:
 
 - `Bondslid` (`Bondslid` tier)
 - `Verenigingslid` (`Verenigingslid` tier)
-- `is_sponsor = true` with `sponsor_pass_variant = businessclub` or `awc_sponsor` (`Sponsor` tier), onafhankelijk van `person_type` en `type-lid`
+- an active sponsor-company relationship with `receives_pass=true`; the company
+  `sponsor_role` selects `businessclub` or `awc_sponsor` (`Sponsor` tier),
+  independently of `person_type` and `type-lid`
 
-The active sponsor role takes precedence over a member tier, so a member+sponsor receives the selected Sponsor pass. When `is_sponsor` becomes false, the pass falls back to the person's eligible `type-lid`. If neither `type-lid` nor the complete Sponsor configuration matches an eligible tier, pass token and URL meta are removed. Sponsor creation requires an explicit variant; no default is preselected.
+The active sponsor relation takes precedence over a member tier, so a
+member+sponsor receives the selected Sponsor pass. If several relationships
+grant a pass, one must be marked as the primary pass relation. Archiving or
+removing the final eligible relationship falls back to `type-lid`. Legacy
+`is_sponsor` and `sponsor_pass_variant` person fields remain a temporary
+migration fallback.
 
 ## Lifecycle
 
@@ -71,7 +78,7 @@ Class: `Rondo\Passes\MembershipPassApple`
 - Uses configured pass identifiers and club branding
 - Uses tier-based primary label (`BONDSLID`, `VERENIGINGSLID`, or `SPONSOR`)
 - Shows KNVB ID field only for `Bondslid` tier
-- Sponsor passes use a white background with dark foreground and label text and replace team/function fields with `BEDRIJF` and the person's `company_name`
+- Sponsor passes use a white background with dark foreground and label text and replace team/function fields with `BEDRIJF` and the selected sponsor company's title
 - `businessclub` shows `Businessclub {organization name}` with the separately configurable Businessclub logo; without an uploaded logo it falls back to the bundled Businessclub AWC asset
 - `awc_sponsor` shows `{organization name} Sponsor` with the standard club logo
 
