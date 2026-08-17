@@ -282,7 +282,7 @@ certificate when at least one shift in the requested range and selected dienstty
 hidden for that reason. The signup endpoint still enforces the certificate requirement independently,
 including for direct requests.
 
-Below the manager calendar, **Recente aanmeldingen** lists at most 50 shifts ordered by their latest
+Below the manager calendar, **Recente aanmeldingen** lists at most 10 shifts ordered by their latest
 current self-service signup. Each row shows the shift moment, the names of the people who signed up,
 and the latest signup time. The shift name opens its editor and each person's name opens their
 profile. The data comes from
@@ -290,6 +290,12 @@ profile. The data comes from
 the ordering from the `_shift_signup_at_{person_id}` post-meta values. A person removed from
 `assigned_persons` is not returned, and manager-added assignees without a signup timestamp are not
 treated as self-service signups.
+
+The **Alle aanmeldingen** link opens `/vrijwilligers/aanmeldingen`. That page lists every shift with
+current assignees, including legacy assignments without signup timestamps. Its default order shows
+the nearest upcoming shift first, followed by past shifts from newest to oldest. Coordinators can
+sort the table by task name or shift moment. Data comes from `GET /rondo/v1/shifts/signups`, which
+has the same `manage_options` or `vrijwilligers` permission requirement as the recent overview.
 
 Signup overlap detection compares parsed datetimes and treats each shift as a half-open interval:
 the start is included and the end is excluded. Two consecutive shifts can therefore share the same
