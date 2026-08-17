@@ -102,23 +102,37 @@ renders the normal confirmation — it does not announce that it was throttled.
 
 ## Existing accounts and Magic Login
 
-When every matching person already has an account, `ActivationService` asks the active Magic Login
-plugin to create its single-use token and emails the resulting link to the submitted address. A
-shared household address receives one branded email with a named button for every matching account.
-The plugin remains responsible for token creation, validity, and authentication; Rondo applies its
-stricter `/activeren` request limits and respects the plugin's per-user send failsafe.
+`MagicLoginActivation` turns the Magic Login email form into the normal entry point for both login
+and first-time activation. It intercepts the plugin only after its CAPTCHA, honeypot, and per-user
+send safeguards have passed, and then applies the activation service's stricter per-address and
+per-IP rate limits.
 
-If at least one person on the address still needs an account, the normal activation flow wins. If
-Magic Login is unavailable or cannot create a link, the old activation-token page remains the
-fallback and points existing users to account recovery.
+The email address determines the next step:
+
+| Matching records | Result |
+|---|---|
+| One non-youth person without an account | Provision the linked WordPress account and send a Magic Login link |
+| One youth person without an account | Send the activation link so the recipient can choose member or guardian |
+| Multiple people without accounts | Send the activation link and identity picker |
+| Existing accounts only | Send one branded email with a named Magic Login button per account |
+| Existing and unactivated people | Send one combined email with named login buttons and an activation button |
+| Unknown or former-member address | Send nothing |
+
+The plugin remains responsible for Magic Login token creation, validity, and authentication. Rondo
+never uses the plugin's generic registration feature because that would bypass person linking,
+household identities, guardian handling, and role provisioning.
+
+Every valid email submission receives the same neutral confirmation, including unknown and
+rate-limited addresses. This removes the old “account does not exist” membership oracle.
 
 ### Timing
 
 Identical HTML is not enough. Sending the mail costs an API round-trip, so a known address would
-answer measurably slower than an unknown one. `ActivationPage` therefore renders the confirmation
-and **flushes the response** (`fastcgi_finish_request()` under PHP-FPM) *before* dispatching the
-mail. Keep it that way: moving the `wp_mail()` call back above the render silently reopens the
-oracle.
+answer measurably slower than an unknown one. `ActivationPage` renders its confirmation and flushes
+the response before dispatching mail. `MagicLoginActivation` similarly queues the submitted address
+until WordPress shutdown, calls `fastcgi_finish_request()` under PHP-FPM, and only then performs the
+person lookup, provisioning, and mail work. Keep mail and conditional lookup after that response
+boundary: moving either above it silently reopens the oracle.
 
 ## What activation does not do
 
