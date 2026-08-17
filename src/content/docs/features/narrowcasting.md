@@ -32,7 +32,8 @@ The technical pilot, matchday and content milestones provide:
 - a browser preview that always selects the nearest Saturday (including the
   current day when opened on Saturday), while paired players select today;
 - match scenes use a typography-first layout because Sportlink's feed does not
-  provide dependable team-logo assets.
+  provide dependable team-logo assets; the schedule, pitch and dressing-room
+  assignments are combined into one overview per group of matches.
 
 The `narrowcasting` capability manages content, playlists and previews. A user
 with only `sponsorbeheer` sees and manages sponsor items but cannot edit other
