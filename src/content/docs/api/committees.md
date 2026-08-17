@@ -47,7 +47,7 @@ The nonce is available in `window.rondoConfig.nonce` when logged in to Rondo Clu
 
 ---
 
-**Access Control:** Users can only see and modify commissies they created themselves. Sharing and workspace visibility can extend access to other users.
+**Access Control:** Kader users can read commissies. Commissie identity and hierarchy are synced from Sportlink and remain read-only for non-administrators. Administrators and users with the `rondo_bestuur` role may update the Rondo-local information fields through the dedicated info endpoint.
 
 ---
 
@@ -61,6 +61,7 @@ The nonce is available in `window.rondoConfig.nonce` when logged in to Rondo Clu
 | `PUT` | `/wp/v2/commissies/{id}` | Update commissie |
 | `DELETE` | `/wp/v2/commissies/{id}` | Delete commissie |
 | `GET` | `/rondo/v1/commissies/{id}/people` | List current and former commissie members |
+| `POST` | `/rondo/v1/commissies/{id}/info` | Update Rondo-local commissie information (board/admin only) |
 
 ---
 
@@ -71,6 +72,32 @@ GET /rondo/v1/commissies/456/people
 ```
 
 The response groups members into `current` and `former`. Each member summary includes `id`, `name`, `thumbnail`, work-history details, and `email`. The `email` value is the first valid address from the person's `email_1` and `email_2` fields, or an empty string when neither field contains a valid address. The commissie detail page uses the current members' unique addresses for its **E-mail leden** mail link.
+
+## Update Local Commissie Information
+
+```http
+POST /rondo/v1/commissies/456/info
+Content-Type: application/json
+X-WP-Nonce: {nonce}
+```
+
+This endpoint is available to administrators and users with the `rondo_bestuur` role. It accepts only the seven Rondo-local information fields; attempts to change the name, parent, website, contact information, or another field are rejected.
+
+```json
+{
+  "fields": {
+    "lange_omschrijving": "Stimuleert sportief gedrag binnen de vereniging.",
+    "taakomschrijving": "Behandelt vragen en ondersteunt teams.",
+    "uren_aantal": 2.5,
+    "uren_periode": "week",
+    "dagen_flexibel": "Flexibel",
+    "max_leden": 8,
+    "max_wachtlijst": 3
+  }
+}
+```
+
+The response contains the commissie ID and the complete canonical `fields` object after the update.
 
 ---
 
@@ -85,26 +112,26 @@ The response groups members into `current` and `former`. Each member summary inc
 | `featured_media` | integer | Logo/image attachment ID |
 | `parent` | integer | Parent commissie ID (for hierarchical structure) |
 
-### ACF Fields
+### Canonical Fields
 
 | Field | Type | Description | Format |
 |-------|------|-------------|--------|
-| `acf.website` | string | Commissie website URL | Full URL |
-| `acf.contact_info` | array | Contact methods (repeater) | See below |
-| `acf.lange_omschrijving` | string | Uitgebreide omschrijving van de commissie | Plain multi-line text |
-| `acf.taakomschrijving` | string | Wat een lid van deze commissie doet | Plain multi-line text |
-| `acf.uren_aantal` | number\|null | Geschat aantal uren tijdsinvestering | Number, send `null` to clear |
-| `acf.uren_periode` | string\|null | Periode voor `uren_aantal` | `week`, `maand`, or `null` |
-| `acf.dagen_flexibel` | string | Vaste dagen of flexibel | Free text |
-| `acf.max_leden` | number\|null | Maximum aantal leden | Number, send `null` to clear |
-| `acf.max_wachtlijst` | number\|null | Maximum aantal op de wachtlijst | Number, send `null` to clear |
+| `fields.website` | string | Commissie website URL | Full URL |
+| `fields.contact_info` | array | Contact methods (repeater) | See below |
+| `fields.lange_omschrijving` | string | Uitgebreide omschrijving van de commissie | Plain multi-line text |
+| `fields.taakomschrijving` | string | Wat een lid van deze commissie doet | Plain multi-line text |
+| `fields.uren_aantal` | number\|null | Geschat aantal uren tijdsinvestering | Number, send `null` to clear |
+| `fields.uren_periode` | string\|null | Periode voor `uren_aantal` | `week`, `maand`, or `null` |
+| `fields.dagen_flexibel` | string | Vaste dagen of flexibel | Free text |
+| `fields.max_leden` | number\|null | Maximum aantal leden | Number, send `null` to clear |
+| `fields.max_wachtlijst` | number\|null | Maximum aantal op de wachtlijst | Number, send `null` to clear |
 
-> **Note:** These are Rondo-local fields — they are stored only in Rondo (not synced from Sportlink) and are editable via the "Commissie-informatie" card on the commissie detail page in the UI. Because ACF generates a strict REST schema, `uren_periode` rejects an empty string `""` — send `null` to clear it. The numeric fields likewise accept a number or `null`, never `""`.
+> **Note:** The seven fields from `lange_omschrijving` through `max_wachtlijst` are Rondo-local and are not synced from Sportlink. Administrators and board users edit them through `POST /rondo/v1/commissies/{id}/info`, with a body shaped as `{ "fields": { ... } }`. `uren_periode` accepts `week`, `maand`, or `null`; numeric fields accept a number or `null`.
 
 ### Contact Info (Repeater)
 
 ```json
-"acf": {
+"fields": {
   "contact_info": [
     {
       "contact_type": "email",
