@@ -17,6 +17,7 @@ All endpoints require `manage_clothing` (or admin).
 
 - `GET /clothing/assignments`
   - Optional query params: `person_id`, `item_id`, `season`
+  - Every assignment includes the backwards-compatible `person_name` plus `first_name`, `infix`, and `last_name` for sortable list columns.
 - `POST /clothing/assignments`
 
 `POST /clothing/assignments` body keys:
@@ -37,7 +38,7 @@ All endpoints require `manage_clothing` (or admin).
 
 - `GET /clothing/person/{person_id}/profile`
 - `GET /clothing/overview`
-- `GET /clothing/export` (CSV)
+- `GET /clothing/export` (CSV; separate `Voornaam` and `Achternaam` columns)
 
 ## Settings
 

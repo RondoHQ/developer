@@ -77,12 +77,26 @@ It updates people via REST only (no WP-CLI dependency) and supports `fields`, `a
 | `POST` | `/wp/v2/people` | Create new person |
 | `PUT` | `/wp/v2/people/{id}` | Update person |
 | `DELETE` | `/wp/v2/people/{id}` | Delete person |
+| `GET` | `/rondo/v1/people/filtered` | Paginated people list with server-side name filtering and sorting |
 | `POST` | `/rondo/v1/people/bulk-update` | Update multiple people |
 | `POST` | `/rondo/v1/people/{id}/photo` | Upload profile photo |
 | `POST` | `/rondo/v1/people/{id}/provision` | Provision WordPress user account (admin only) |
 | `GET` | `/rondo/v1/people/{primary_id}/merge-preview?duplicate_id={id}` | Preview a person merge (admin only) |
 | `POST` | `/rondo/v1/people/{primary_id}/merge` | Merge a duplicate person into the primary record (admin only) |
 | `GET` | `/rondo/v1/people/{id}/merge-target` | Resolve a merged source ID to its published survivor (admin/integration only) |
+
+---
+
+## Name fields in list responses
+
+Person summaries keep `name` as a backwards-compatible full display name and also expose the canonical parts `first_name`, `infix`, and `last_name`. List interfaces should render two data columns:
+
+- **Voornaam:** `first_name`
+- **Achternaam:** the displayed value is `infix` plus `last_name`
+
+Sort surname columns by `last_name`, not by the combined display value. This keeps a name such as `de Valk` under V rather than D. Use `first_name` as the secondary sort for equal surnames.
+
+`GET /rondo/v1/people/filtered` accepts `first_name` and `last_name` text filters. The `last_name` filter matches the displayed surname, including the infix. Both `first_name` and `last_name` are valid `orderby` values.
 
 ---
 

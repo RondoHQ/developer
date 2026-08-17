@@ -62,6 +62,11 @@ Shared visual styles are defined in `src/index.css` to keep page components cons
   - The floating scrollbar observes both the table size and the nested desktop `<main>` scroll container, and automatically disappears when the native scrollbar becomes visible.
   - Horizontal table containers use `data-horizontal-scroll="true"` for shared momentum scrolling and pull-to-refresh coordination.
   - Do not restrict these containers to `touch-action: pan-x`: mobile pages use document-level vertical scrolling, so a vertical gesture that starts on a table must remain available to the page.
+- **Person name columns**
+  - Person lists use separate `first_name` and `last_name` columns; do not introduce a combined `name` or `person_name` data column.
+  - Render the surname with `formatPersonSurname(infix, last_name)`, but sort it with `comparePersonNames(..., 'last_name')` so Dutch infixes do not determine the alphabetical position.
+  - Keep `name` only for compact display contexts and backwards-compatible API fallbacks, such as search results, cards, and selectors.
+  - CSV exports from person lists use separate `Voornaam` and `Achternaam` columns. The displayed surname includes the infix.
 
 ## Entry Points
 
