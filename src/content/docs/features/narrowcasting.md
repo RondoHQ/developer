@@ -27,6 +27,9 @@ The technical pilot, matchday and content milestones provide:
   and display assignments;
 - temporary full-screen overrides for every display or selected displays;
 - locally cached, resolved player manifests that contain no private sponsor data.
+- club-branded playback using the centrally configured club logo and accent colour;
+  match scenes use a typography-first layout because Sportlink's feed does not
+  provide dependable team-logo assets.
 
 The `narrowcasting` capability manages content, playlists and previews. A user
 with only `sponsorbeheer` sees and manages sponsor items but cannot edit other
