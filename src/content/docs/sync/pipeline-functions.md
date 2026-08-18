@@ -94,7 +94,7 @@ The WordPress collection reader follows the `X-WP-TotalPages` response header an
 4. For each member with changes:
    - Fetches current `work_history` ACF repeater from Rondo Club
    - Adds new commissie assignments
-   - Ends removed assignments (sets `is_current: false`)
+   - Ends removed assignments (sets `is_current: false`), using Sportlink's `relation_end` when present and the detection date otherwise
    - Only modifies sync-created entries (manual entries preserved)
 5. Sends `PUT /wp/v2/people/{rondo_club_id}` with updated `work_history`
 6. Updates or removes local tracking only after the Rondo write succeeds, so failed writes remain queued for retry
