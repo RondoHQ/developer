@@ -291,11 +291,16 @@ the ordering from the `_shift_signup_at_{person_id}` post-meta values. A person 
 `assigned_persons` is not returned, and manager-added assignees without a signup timestamp are not
 treated as self-service signups.
 
-The **Alle aanmeldingen** link opens `/vrijwilligers/aanmeldingen`. That page lists every shift with
-current assignees, including legacy assignments without signup timestamps. Its default order shows
-the nearest upcoming shift first, followed by past shifts from newest to oldest. Coordinators can
-sort the table by task name or shift moment. Data comes from `GET /rondo/v1/shifts/signups`, which
-has the same `manage_options` or `vrijwilligers` permission requirement as the recent overview.
+The **Alle aanmeldingen** link opens `/vrijwilligers/aanmeldingen`. That page lists shifts with
+current assignees, including legacy assignments without signup timestamps. Cancelled shifts and
+their assignments remain stored for audit history, but the page hides them by default and excludes
+them from its assignment and shift totals. A status filter can show only cancelled shifts or all
+statuses; cancelled rows are labelled explicitly. Its default order shows the nearest upcoming
+shift first, followed by past shifts from newest to oldest. Coordinators can sort the table by task
+name or shift moment. Data comes from `GET /rondo/v1/shifts/signups`, which accepts `status=active`
+(default), `status=cancelled`, or `status=all` and has the same `manage_options` or `vrijwilligers`
+permission requirement as the recent overview. The recent-signups endpoint also excludes cancelled
+shifts.
 
 Signup overlap detection compares parsed datetimes and treats each shift as a half-open interval:
 the start is included and the end is excluded. Two consecutive shifts can therefore share the same
