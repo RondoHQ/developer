@@ -96,14 +96,25 @@ sudo apt-get install -y libnss3 libnspr4 libatk1.0-0 libatk-bridge2.0-0 \
 Another people sync is running. Exiting.
 ```
 
-**Cause:** A previous sync was interrupted (e.g., server restart, OOM kill) and the flock lock file wasn't released.
+**Cause:** A previous sync process is still alive and holds the flock, possibly because a browser
+session survived an earlier login failure.
 
 **Fix:**
 ```bash
-rm /home/rondo/.sync-people.lock   # Or whichever sync type
+lsof /home/rondo/.sync-people.lock
+# Inspect the listed process and stop it only when it is confirmed stale.
 ```
 
-**Note:** This is safe because flock automatically releases on process termination. A stale lock file only persists if the process was killed in an unusual way.
+The empty lock file itself is harmless: `flock` releases automatically when the holder exits.
+Deleting a file that is still locked does not release the live flock and can let a second process
+lock a new inode, so never remove it as a substitute for stopping a confirmed stale process.
+
+If the dashboard says **Started** but no new run appears, inspect the corresponding file under
+`logs/dashboard-launch/`. A pipeline can be blocked by a process that still holds the flock even
+after its run summary was written. Sportlink browser sessions close themselves when initial login
+fails, and the dashboard checks for an immediate `sync.sh` exit before confirming a launch. On
+older deployments, verify the lock holder with `lsof .sync-<type>.lock` and stop only the confirmed
+stale process; deleting the lock file does not release a live flock.
 
 ---
 
