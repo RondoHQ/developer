@@ -21,6 +21,18 @@ Former member status is stored in the `former_member` ACF field:
 
 This field is automatically synced from Sportlink Club via rondo-sync and should not be manually edited in the WordPress admin.
 
+### Work History Lifecycle
+
+When `former_member` becomes `true`, Rondo closes every logically current `work_history` row after the complete canonical field payload has been saved. Each affected position is preserved as history with `is_current: false` and an end date:
+
+- `lid_tot` is used when it contains a valid date that is today or in the past.
+- The current WordPress date is used when `lid_tot` is missing, invalid, or in the future.
+- Historical rows that were already closed are left unchanged.
+- A later integration write cannot restore a current position while the person remains a former member; saving `work_history` re-applies the same invariant.
+- Changing `former_member` back to `false` does not create or reactivate positions automatically.
+
+The lifecycle is enforced centrally by `Rondo\Data\FormerMemberWorkHistory` on the `rondo_fields_saved_post` action. Running after the logical save matters when an integration submits `former_member` and `work_history` in one request: the service always evaluates and, when necessary, closes the final stored work-history payload.
+
 ### Family Relationships
 
 Parents in the current Sportlink feed only list active children. A manually linked former child is therefore absent from that feed even though the family relationship is still valid. When rondo-sync refreshes a parent, it replaces child links for people who are present in the current child set and preserves child links to former members outside that set. This keeps manually restored parent relationships bidirectional without retaining stale assignments for current members.
