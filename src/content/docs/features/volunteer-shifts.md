@@ -159,6 +159,13 @@ quick claims produce one mail), with an iCal attachment; reminders at 14, 7 and 
 cancellation notices; and a post-shift survey when the diensttype configures one.
 Templates live on the `dienst_type`.
 
+The **Mijn inschrijftaken** tab also links to
+`GET /rondo/v1/my-shifts/calendar`. This authenticated endpoint downloads
+`mijn-inschrijftaken.ics` with every active or completed assignment for the linked person;
+cancelled shifts are omitted. It reuses the signup-confirmation calendar builder, including
+`Europe/Amsterdam`, stable per-person event UIDs, and a description and URL back to
+`/vrijwillig` in every event.
+
 ## Obligation credit
 
 `VolunteerObligationCalculator` reads `assigned_persons` directly and does not care who
