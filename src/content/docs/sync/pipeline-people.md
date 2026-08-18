@@ -92,6 +92,7 @@ pipelines/sync-people.js
 2. Reads free fields from `sportlink_member_free_fields` table (FreeScout ID, VOG date, financial block)
 3. Builds WordPress API payload with ACF fields (see field mappings below)
 4. For each changed member:
+   - Before creating an untracked member, checks whether the same person already exists as a standalone parent. The parent post is reused only for one exact email plus normalized full-name match, when the incoming KNVB ID is not one of that parent's known children and the post is not already mapped to another member. Ambiguous matches block creation and surface an error instead of creating a duplicate.
    - **No `rondo_club_id`**: `POST /wp/v2/people` (create new person)
    - **Has `rondo_club_id`**: `PUT /wp/v2/people/{rondo_club_id}` (update existing)
 5. Stores returned WordPress post ID as `rondo_club_id`
