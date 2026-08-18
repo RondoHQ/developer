@@ -38,6 +38,8 @@ Parent-slot track:
 
 Parent relationships use a separate incremental cursor and durable SQLite queue. A parent change can affect multiple children, so this track does not use the flat-field `sync_origin` shortcut.
 
+This track also supports former members who still have a current parent/guardian role. Their historical member profile remains read-only, but Rondo accepts edits to the primary parent e-mail address and phone number. Modifying either field makes every current child a candidate; the desired parent-slot hash then queues the changed values for Sportlink. Parent addresses are not part of this track because `MemberParentalInfo` has no address fields.
+
 Immediately before writing, the browser reads the child's current `MemberParentalInfo`. It matches a slot by normalized e-mail address first; otherwise it uses only a slot whose name, e-mail and phone are all empty. A partially occupied slot is never overwritten. The browser fills `NameParent1/2`, `EmailAddressParent1/2`, and `TelephoneParent1/2`, saves through the Sportlink SPA, reads the record again, and only then marks the job synchronized.
 
 Jobs retry transient failures with bounded backoff. Two occupied slots become a visible blocked/error status in Rondo. Relationship removal cancels pending work but does not clear an already written Sportlink slot in version 1.

@@ -50,7 +50,9 @@ Former members are excluded from default views to reduce clutter. This filtering
 2. **Person Detail Page**
    - Direct access via URL always works regardless of former member status
    - A former member with a published, non-former child relationship is labelled **Oud-lid · ouder/verzorger**
-   - Historical membership fields remain read-only, while current parent contact and address data is refreshed from the child's Sportlink parent data
+   - Historical membership fields remain read-only
+   - A current parent can edit the primary parent e-mail address and phone number in Rondo; the parent-slot reverse sync writes those values to every current child's `MemberParentalInfo` record in Sportlink
+   - The address stays read-only on the parent profile because Sportlink has no separate parent-address slot; it is derived from the child's address and must be changed on the child
    - The same current-parent relationship allows account activation through the parent's own known e-mail address; former members without an active child remain excluded
 
 3. **Dashboard Recent Contacts**
