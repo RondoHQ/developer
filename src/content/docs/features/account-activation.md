@@ -25,6 +25,13 @@ The public page publishes a 1200×630 Open Graph image from
 
 Logic lives in `Rondo\Users\ActivationService`; `ActivationPage` only routes and renders.
 
+Former members are normally excluded from activation. The exception is a former member with a
+published, non-former child relationship: their membership record remains read-only, but their
+current parent or guardian role still needs an account. That parent can therefore activate through
+the e-mail address stored on their own person record, even when the child's address is different.
+`ParentRelationshipService::has_current_child()` is the shared eligibility check used by both
+activation and the `is_current_parent` person response field.
+
 ## Parents activating through a child
 
 For every JO16- person in the identity picker, the activation page also offers **“Ik ben
@@ -85,8 +92,9 @@ list of email addresses.
   new link — a deliberate trade of convenience for a smaller blast radius if a link is forwarded.
 
 `activate()` re-validates everything at the moment of use rather than trusting the picker page: the
-token must still be live, and the person must still match its address, still be active, and still
-lack an account. A token for one address cannot activate a person on another.
+token must still be live, and the person must still match its address, still be active or have a
+current parent role, and still lack an account. A token for one address cannot activate a person on
+another.
 
 ## Rate limiting
 
@@ -116,7 +124,7 @@ The email address determines the next step:
 | Multiple people without accounts | Send the activation link and identity picker |
 | Existing accounts only | Send one branded email with a named Magic Login button per account |
 | Existing and unactivated people | Send one combined email with named login buttons and an activation button |
-| Unknown or former-member address | Send nothing |
+| Unknown address, or former member without a current parent role | Send nothing |
 
 The plugin remains responsible for Magic Login token creation, validity, and authentication. Rondo
 never uses the plugin's generic registration feature because that would bypass person linking,
