@@ -123,6 +123,26 @@ Holders of the `vrijwilligers` capability manage the programme. Beyond the CPTs,
 | `DELETE /rondo/v1/shifts/{id}/assignees/{person_id}` | Remove an assignee after the member deadline. |
 | `POST /rondo/v1/shifts/{id}/cancellation` | Cancel the whole shift, with audited credit rules and notifications. |
 
+### Statistics dashboard
+
+The coordinator page at `/vrijwilligers/statistieken` provides one season-level overview without
+exposing person names. It combines five headline metrics with the assignment share and fill rate per
+task type, the cumulative signup trend, assignment distribution, obligation progress, and upcoming
+shifts with open spots. The season selector is stored in the `seizoen` URL parameter, so a filtered
+view can be bookmarked.
+
+The page uses one aggregated request:
+
+`GET /rondo/v1/volunteer-statistics?season=YYYY-YYYY`
+
+The endpoint requires `manage_options` or `vrijwilligers`. It queries published `dienst_shift`
+posts inside the selected 1 July–30 June season, excludes shifts whose status is `geannuleerd`, and
+counts only the person IDs still present in `assigned_persons`. Task-type colours and names come
+from the linked `dienst_type`. Signup trend dates prefer `_shift_signup_at_{person_id}` and fall back
+to `_shift_assigned_at_{person_id}`; assignments without either timestamp are reported separately.
+Upcoming shortages are limited to active shifts in the next 30 days. The response contains only
+counts and shift identifiers for drill-down, never names or contact details.
+
 An assignment made by a coordinator writes the same `_shift_signup_at_` timestamp a
 self-signup would, so the member keeps their normal cancellation rights — nobody is
 trapped in a dienst somebody else planned for them.
