@@ -75,9 +75,12 @@ The total is floored: a gezin with 2 youth children owes `floor(2 + 1.5) = 3`, w
 Scaling is applied **after** all children are merged into the unit, never per child — otherwise a
 parent of three would see one dienst instead of four.
 
-The admin dashboard at `/vrijwilligers` shows **Inschrijftaken vereist** by summing `required_count`
-across all units. Do not use the number of units as the total workload: a multi-child gezin remains
-one unit but can require three or more diensten.
+The admin dashboard at `/vrijwilligers` shows **Inschrijftaken vereist** as the net workload after
+committee, staff, paid-volunteer, and manual exemptions. The eligibility endpoint partitions the
+units through `VolunteerExemptionResolver::partition_units()` and returns
+`obligation_summary.required_count`; this keeps the dashboard and the statistics page on the same
+exemption policy without loading the heavier statistics endpoint. Do not use the number of units as
+the total workload: a multi-child gezin remains one unit but can require three or more diensten.
 
 The two adjacent planning cards count capacity slots instead of shift posts. **Inschrijftaken totaal**
 sums each non-cancelled shift's capacity in the selected sports season, so a shift with capacity four
