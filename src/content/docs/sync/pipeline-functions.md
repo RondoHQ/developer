@@ -56,15 +56,15 @@ pipelines/sync-functions.js
    - `sportlink_member_functions`: Club-level functions per member
    - `sportlink_member_committees`: Committee memberships per member
    - `sportlink_member_free_fields`: Free fields per member
-6. **Table handling** differs by mode:
-   - **Recent mode**: Upsert only (preserves existing data for members not in current run)
-   - **Full mode**: Clear + replace atomically (fresh snapshot of all data)
+6. Stores each successful function and committee endpoint response as a complete per-member snapshot:
+   - **Recent mode**: Replaces rows only for members whose endpoint returned successfully, including valid empty responses. Members outside the run and failed endpoints keep their previous rows.
+   - **Full mode**: Clears the complete table only when that endpoint succeeded for every processed member. A partial run falls back to per-member replacement so failed responses cannot cause false removals.
 
 **Output:** `{ success, total, functionsCount, committeesCount, errors }`
 
 **Rate limiting:** 500ms-1.5s random jitter between member scrapes.
 
-**Critical gotcha:** Never use clear+replace in recent mode. This was a bug that wiped data for members not in the current run, causing downstream hash mismatches. Fixed in commit `9d0136e`.
+**Critical gotcha:** A successful empty response is authoritative and must remove that member's old rows. A missing, timed-out, non-2xx, or unparseable endpoint response is not a snapshot and must preserve the previous rows.
 
 ### Step 2: Sync Commissies to Rondo Club
 
@@ -90,14 +90,15 @@ The WordPress collection reader follows the `X-WP-TotalPages` response header an
 
 1. Reads committee memberships from `sportlink_member_committees` joined with `rondo_club_commissies` and `rondo_club_members`
 2. Also reads club functions from `sportlink_member_functions` (mapped to "Verenigingsbreed" commissie)
-3. Compares against `rondo_club_commissie_work_history` table
+3. Compares against `rondo_club_commissie_work_history`, including tracked roles that no longer exist in the current Sportlink snapshot
 4. For each member with changes:
    - Fetches current `work_history` ACF repeater from Rondo Club
    - Adds new commissie assignments
    - Ends removed assignments (sets `is_current: false`)
    - Only modifies sync-created entries (manual entries preserved)
 5. Sends `PUT /wp/v2/people/{rondo_club_id}` with updated `work_history`
-6. Skips members without a `rondo_club_id`
+6. Updates or removes local tracking only after the Rondo write succeeds, so failed writes remain queued for retry
+7. Skips members without a `rondo_club_id`
 
 **Output:** `{ total, synced, created, ended, skipped, errors }`
 
@@ -155,8 +156,9 @@ Note: `MemberHeader` also returns `Photo.Url` and `Photo.PhotoDate`, which are s
 
 ## Error Handling
 
-- Individual member scrape failures don't stop the pipeline (error logged, member skipped)
+- Individual member scrape failures don't stop the pipeline (error logged, previous function/committee snapshot preserved)
 - Commissie sync failures don't prevent work history sync
+- Failed Rondo work-history writes retain their tracking state and retry on the next run
 - Members without a `rondo_club_id` are skipped for work history
 - All errors collected in summary report
 
