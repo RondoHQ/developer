@@ -599,6 +599,11 @@ The member-facing copy for active club roles stays role-neutral, because committ
 staff roles both count. Contributie-vrijstelling is deliberately *not* an exemption ground here;
 that runs through the resolver or an honorary role.
 
+Active committee and staff roles use `VolunteerStatus::is_position_current()` as their shared date
+policy. Work-history dates are normalized from either the compact `YYYYMMDD` storage format or the
+canonical `YYYY-MM-DD` wire format before comparison. A role whose end date is today is no longer
+current and therefore no longer grants an exemption or access to a committee-restricted shift pool.
+
 The management page at `/vrijwilligers/vrijstellingen` offers filters for committee members, team
 staff, and manual exemptions. A user with the `vrijwilligers` capability can search for a person on
 that page and create, edit, or withdraw a manual exemption. For a family obligation the exemption
