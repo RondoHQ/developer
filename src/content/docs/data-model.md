@@ -90,6 +90,11 @@ Years currently tracked: 2022, 2023, 2024, 2025.
 | `vog_justis_submitted_date` | string | Date VOG was submitted to Justis |
 | `vog_reminder_sent_date` | string | Date VOG reminder email was sent |
 
+VOG applicability is derived from active work-history roles by `VOGRequirement`. The
+`rondo_vog_exempt_roles` option stores role titles that remain volunteer work but do not require a
+VOG. Committee-wide exceptions remain in `rondo_vog_exempt_commissies`. A person needs a VOG when
+at least one active volunteer role is not covered by either exception.
+
 **Contributie Exclusion Meta** (registered in `class-post-types.php` via `register_post_meta`):
 
 | Field | Type | Description |

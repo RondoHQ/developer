@@ -18,6 +18,7 @@ To retrieve exactly the people shown on the VOG tab, use these parameters:
 | Name | Value | Description |
 |------|-------|-------------|
 | `huidig_vrijwilliger` | `1` | Only current volunteers |
+| `vog_required` | `1` | Only volunteers with at least one active role that requires a VOG |
 | `vog_missing` | `1` | People without VOG date |
 | `vog_older_than_years` | `3` | People whose VOG is older than 3 years |
 | `per_page` | `100` | Results per page (max 100) |
@@ -26,7 +27,7 @@ To retrieve exactly the people shown on the VOG tab, use these parameters:
 ### Example Request
 
 ```
-GET /wp-json/rondo/v1/people/filtered?huidig_vrijwilliger=1&vog_missing=1&vog_older_than_years=3&per_page=100&page=1
+GET /wp-json/rondo/v1/people/filtered?huidig_vrijwilliger=1&vog_required=1&vog_missing=1&vog_older_than_years=3&per_page=100&page=1
 ```
 
 The combination of `vog_missing=1` and `vog_older_than_years=3` creates an OR condition:
@@ -99,19 +100,19 @@ These additional filters narrow down the VOG list:
 ### Example: Only New Volunteers Needing VOG
 
 ```
-GET /wp-json/rondo/v1/people/filtered?huidig_vrijwilliger=1&vog_type=nieuw&per_page=100
+GET /wp-json/rondo/v1/people/filtered?huidig_vrijwilliger=1&vog_required=1&vog_type=nieuw&per_page=100
 ```
 
 ### Example: Only VOG Renewals
 
 ```
-GET /wp-json/rondo/v1/people/filtered?huidig_vrijwilliger=1&vog_type=vernieuwing&vog_older_than_years=3&per_page=100
+GET /wp-json/rondo/v1/people/filtered?huidig_vrijwilliger=1&vog_required=1&vog_type=vernieuwing&vog_older_than_years=3&per_page=100
 ```
 
 ### Example: Not Yet Emailed
 
 ```
-GET /wp-json/rondo/v1/people/filtered?huidig_vrijwilliger=1&vog_missing=1&vog_older_than_years=3&vog_email_status=not_sent&per_page=100
+GET /wp-json/rondo/v1/people/filtered?huidig_vrijwilliger=1&vog_required=1&vog_missing=1&vog_older_than_years=3&vog_email_status=not_sent&per_page=100
 ```
 
 ## Sorting
@@ -128,7 +129,7 @@ The VOG tab defaults to sorting by `custom_datum-vog` ascending (oldest/empty VO
 To get just the KNVB IDs from the response, extract `acf.knvb-id` from each person in the `people` array:
 
 ```javascript
-const response = await fetch('/wp-json/rondo/v1/people/filtered?huidig_vrijwilliger=1&vog_missing=1&vog_older_than_years=3&per_page=100');
+const response = await fetch('/wp-json/rondo/v1/people/filtered?huidig_vrijwilliger=1&vog_required=1&vog_missing=1&vog_older_than_years=3&per_page=100');
 const data = await response.json();
 
 const knvbIds = data.people
@@ -149,6 +150,20 @@ Honorary/membership roles (excluded):
 `Donateur`, `Erelid`, `Lid van Verdienste`, `Verenigingslid voor het leven (contributievrij)`
 
 Commissies listed in the `rondo_vog_exempt_commissies` option are also excluded from volunteer status.
+
+## VOG Requirement Logic
+
+`vog_required=1` is separate from current volunteer status. It includes a current volunteer only
+when at least one active staff or committee role requires a VOG. Administrators configure two
+types of exceptions under **Settings → VOG**:
+
+- `rondo_vog_exempt_commissies`: every role in the selected committee is exempt.
+- `rondo_vog_exempt_roles`: the selected role title is exempt everywhere.
+
+A role exemption does not remove the person's volunteer status. If the same person also holds
+another active, non-exempt volunteer role, they remain in the VOG results. The resolved person-ID
+list is cached for one hour and invalidated when person fields or either VOG exception setting
+changes.
 
 ## Related Documentation
 
