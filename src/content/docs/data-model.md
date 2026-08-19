@@ -35,7 +35,7 @@ Represents individual contacts in the CRM.
 | Addresses | `addresses` | repeater | Physical addresses (see below) |
 | Work History | `work_history` | repeater | Employment history (see below) |
 | Relationships | `relationships` | repeater | Connections to other people (see below) |
-| Vrijwilliger sinds | `vrijwilliger-sinds` | date_picker | Sportlink-synced volunteer start date |
+| Vrijwilliger sinds | `vrijwilliger-sinds` | date_picker | Volunteer start date; existing imported values are preserved, otherwise derived from the earliest active staff/committee position |
 
 **Native WordPress Meta Fields** (registered in `includes/class-post-types.php`):
 
@@ -100,7 +100,7 @@ Years currently tracked: 2022, 2023, 2024, 2025.
 
 | Field | Key | Type | Description |
 |-------|-----|------|-------------|
-| Huidig Vrijwilliger | `huidig-vrijwilliger` | true_false | Current volunteer status. Auto-calculated from work history: `1` if the person has an active staff/commissie position, `0` otherwise. See `class-volunteer-status.php`. |
+| Huidig Vrijwilliger | `huidig-vrijwilliger` | true_false | Current volunteer status. Auto-calculated from work history: `1` if the person has an active staff/commissie position, `0` otherwise. When this exposes a volunteer with no `vrijwilliger-sinds`, the earliest valid start date among active volunteer positions is stored without overwriting an existing date. See `class-volunteer-status.php`. |
 | is_deceased | — | boolean | Computed in REST response from `datum-overlijden` field. `true` if death date is set. See `class-rest-people.php`. |
 | birth_year | — | integer | Computed in REST response by extracting year from `birthdate` field. See `class-rest-people.php`. |
 

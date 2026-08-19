@@ -37,7 +37,7 @@ All times are **Europe/Amsterdam** timezone.
 |----------|----------|------|-------|
 | People | 4x daily | `0 8,11,14,17 * * *` | Members, parents, photos |
 | Nikki | Daily | `0 7 * * *` | Contributions to Rondo Club |
-| Functions (recent) | 4x daily | `30 7,10,13,16 * * *` | 30 min before each people sync; members updated in last 2 days + VOG-filtered volunteers |
+| Functions (recent) | 4x daily | `30 7,10,13,16 * * *` | 30 min before each people sync; recent/VOG members plus one-quarter daily coverage |
 | Functions (full) | Weekly Sunday | `0 1 * * 0` | All members with `--all` |
 | FreeScout | Daily | `0 8 * * *` | Rondo Club members to FreeScout customers |
 | Teams | Weekly Sunday | `0 6 * * 0` | Team creation + work history |
@@ -75,7 +75,7 @@ All pipelines use **hash-based change detection**. Each record gets a SHA-256 ha
 - Expensive work (API calls to Laposta/Rondo Club/FreeScout) only runs for actual changes
 - On a typical run with no changes, zero API calls are made
 
-The Functions pipeline takes this further: the daily run only scrapes data for members updated in Sportlink within the last 2 days (plus VOG-filtered volunteers), avoiding the need to scrape all ~1000+ members every day.
+The Functions pipeline prioritizes members updated in Sportlink within the last 2 days and VOG-filtered volunteers. Because Sportlink does not reliably change a member's `LastUpdate` when only a function or committee assignment changes, each scheduled run also checks a deterministic quarter of all active members. The four daily runs therefore cover everybody once per day without scraping all ~1000+ members four times daily.
 
 ### Rate Limiting and Delays
 

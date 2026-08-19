@@ -10,7 +10,7 @@ Runs on **two schedules**:
 
 | Mode | Schedule | Command | Members Processed |
 |------|----------|---------|-------------------|
-| Recent | 4x daily (7:30, 10:30, 13:30, 16:30) | `scripts/sync.sh functions` | Members with `LastUpdate` in last 2 days + VOG-filtered volunteers |
+| Recent | 4x daily (7:30, 10:30, 13:30, 16:30) | `scripts/sync.sh functions` | Members with `LastUpdate` in last 2 days + VOG-filtered volunteers + one-quarter daily coverage |
 | Full | Weekly Sunday 1:00 AM | `scripts/sync.sh functions --all` | All tracked members (~1000+) |
 
 The recent sync runs 30 minutes before each People sync to ensure fresh free fields are available.
@@ -43,7 +43,7 @@ pipelines/sync-functions.js
 1. Launches headless Chromium via Playwright
 2. Logs into Sportlink Club
 3. Determines which members to process:
-   - **Recent mode** (`recentOnly: true`, default): Members with `LastUpdate` within the last N days (default 2), plus VOG-filtered volunteers from Rondo Club API
+   - **Recent mode** (`recentOnly: true`, default): Members with `LastUpdate` within the last N days (default 2), plus VOG-filtered volunteers from Rondo Club API and a deterministic quarter of all active members. The four scheduled runs cover every member once per day because Sportlink does not reliably update `LastUpdate` after a function or committee assignment changes.
    - **Full mode** (`recentOnly: false`, `--all` flag): All tracked members from `rondo_club_members`
 4. For each member, scrapes two pages:
    - **`/functions` tab**: Extracts committee memberships and club-level functions
