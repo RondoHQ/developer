@@ -67,7 +67,12 @@ Former members are excluded from default views to reduce clutter. This filtering
    - The address stays read-only on the parent profile because Sportlink has no separate parent-address slot; it is derived from the child's address and must be changed on the child
    - The same current-parent relationship allows account activation through the parent's own known e-mail address; former members without an active child remain excluded
 
-3. **Dashboard Recent Contacts**
+3. **Member-facing volunteer shifts** (`/vrijwillig`)
+   - Every account linked to a published person can see and claim available shifts, regardless of whether that person has an individual obligation, an exemption, or former-member status
+   - A former member who remains a current parent of an active JO16- child still carries the shared family obligation and can fulfil it through the same signup flow
+   - VOG, IVA, required-pool, capacity, overlap, and signup-window rules continue to apply normally
+
+4. **Dashboard Recent Contacts**
    - Activity tracking includes former members (to preserve historical context)
 
 ## Visibility Controls

@@ -99,11 +99,14 @@ Administrators and service users without a linked person are not included. The v
 These are different questions, and conflating them turns willing helpers away.
 
 - `get_eligible_units_for_person()` answers **what is required of you**.
-- `may_volunteer()` answers **whether you may claim a shift at all**, and is true for any person who
-  is not a `former_member`.
+- `may_volunteer()` answers **whether the linked person record is valid for claiming a shift**, and
+  is true for every published person record. Obligation, exemption, and former-member status never
+  hide the task calendar.
 
 A sponsor, a grandparent, or a parent whose children have aged out owes nothing and may still sign
-up. `GET /rondo/v1/my-shifts/available` only refuses oud-leden.
+up. The same applies to a former member who remains a current parent of an active child: the family
+obligation still applies and that parent can see and claim available shifts. The availability and
+signup endpoints refuse only a missing, unpublished, or otherwise invalid linked person record.
 
 The member page at `/vrijwillig` shows completed, scheduled, and still-unscheduled inschrijftaken
 separately. The number in **Plan nog … in** is `required_count - completed_count - pending_count`,
