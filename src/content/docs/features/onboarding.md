@@ -16,7 +16,7 @@ Two cohorts, two templates, two stamps:
 
 A person can appear in both tabs and receive both emails — the timestamps are independent.
 
-`VolunteerStatus` derives a missing `vrijwilliger-sinds` value from the earliest start date among active staff and committee positions when work history makes someone a current volunteer. Existing volunteer-start dates are never overwritten. This keeps newly synchronized staff eligible for the 60-day onboarding cohort without treating an established volunteer's later role change as a new start.
+`VolunteerStatus` derives a missing `vrijwilliger-sinds` value from the earliest start date among active staff and committee positions when work history makes someone a current volunteer. Sportlink team rosters do not expose a role start date; on a genuine non-volunteer-to-volunteer transition, Rondo therefore falls back to the synchronization date. Existing volunteer-start dates are never overwritten, and an already-current volunteer without a source date is not assigned a new date. This keeps newly synchronized staff eligible for the 60-day onboarding cohort without treating an established volunteer's later role change as a new start.
 
 ## Access control
 

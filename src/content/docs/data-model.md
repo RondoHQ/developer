@@ -35,7 +35,7 @@ Represents individual contacts in the CRM.
 | Addresses | `addresses` | repeater | Physical addresses (see below) |
 | Work History | `work_history` | repeater | Employment history (see below) |
 | Relationships | `relationships` | repeater | Connections to other people (see below) |
-| Vrijwilliger sinds | `vrijwilliger-sinds` | date_picker | Volunteer start date; existing imported values are preserved, otherwise derived from the earliest active staff/committee position |
+| Vrijwilliger sinds | `vrijwilliger-sinds` | date_picker | Volunteer start date; existing imported values are preserved, otherwise derived from the earliest active staff/committee position or, for a new volunteer with no Sportlink role date, the synchronization date |
 
 **Native WordPress Meta Fields** (registered in `includes/class-post-types.php`):
 
@@ -105,7 +105,7 @@ at least one active volunteer role is not covered by either exception.
 
 | Field | Key | Type | Description |
 |-------|-----|------|-------------|
-| Huidig Vrijwilliger | `huidig-vrijwilliger` | true_false | Current volunteer status. Auto-calculated from work history: `1` if the person has an active staff/commissie position, `0` otherwise. When this exposes a volunteer with no `vrijwilliger-sinds`, the earliest valid start date among active volunteer positions is stored without overwriting an existing date. See `class-volunteer-status.php`. |
+| Huidig Vrijwilliger | `huidig-vrijwilliger` | true_false | Current volunteer status. Auto-calculated from work history: `1` if the person has an active staff/commissie position, `0` otherwise. When this exposes a volunteer with no `vrijwilliger-sinds`, the earliest valid start date among active volunteer positions is stored without overwriting an existing date. A genuine transition to volunteer status falls back to the synchronization date if Sportlink supplied no role date; recalculating an existing undated volunteer does not. See `class-volunteer-status.php`. |
 | is_deceased | — | boolean | Computed in REST response from `datum-overlijden` field. `true` if death date is set. See `class-rest-people.php`. |
 | birth_year | — | integer | Computed in REST response by extracting year from `birthdate` field. See `class-rest-people.php`. |
 
