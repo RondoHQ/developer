@@ -15,7 +15,7 @@ Rondo Club uses a least-privilege access model. Members can read their own house
 2. **Todo visibility is scoped** - Users only see todos they created or todos assigned to them
 3. **Trashed posts are hidden** - Posts in the trash are not accessible via the frontend
 4. **WP Admin is blocked** - Non-admin users are redirected away from wp-admin
-5. **Roles map from Sportlink** - Sportlink "functies" are mapped to Rondo permission roles via the Functie-Capability Map
+5. **Roles map from club positions** - Sportlink functies and current commissie memberships map to Rondo permission roles
 
 ## Implementation
 
@@ -357,9 +357,11 @@ The WordPress REST API is **not affected** by admin blocking. REST requests do n
 
 The blocking function is `rondo_block_wp_admin()` in `functions.php`, hooked to `admin_init`.
 
-## Functie-to-Role Mapping
+## Automatic Role Mapping
 
-Administrators can configure which Sportlink Functies (job titles from work history) automatically grant which Rondo WordPress roles. This configuration is used by Phase 206 (Capability Sync) during rondo-sync runs to grant or revoke roles.
+Administrators can configure which Sportlink Functies and current commissie memberships automatically grant which Rondo WordPress roles. Capability Sync reconciles both sources during scheduled and on-demand runs, granting missing roles and revoking roles whose source is no longer current.
+
+### Functie-to-Role Mapping
 
 ### Overview
 
@@ -433,6 +435,39 @@ The `FunctiesTab` component in `src/pages/Settings/Settings.jsx` renders the che
 ### Stale Functies
 
 When a Functie is removed from Sportlink (and no longer appears in work history), its row remains visible in the matrix with a `(niet meer actief)` label. This allows admins to review and clean up stale mappings. The mapping itself is preserved until the admin explicitly unchecks and saves.
+
+### Commissie-to-Role Mapping
+
+The same **Settings > Beheer > Functies** screen contains a commissie-to-role matrix. Its option
+uses commissie post IDs as keys:
+
+```php
+// Option key: rondo_commissie_capability_map
+[
+    '2668' => [ 'rondo_fairplay' => true ],
+    '2669' => [ 'rondo_financieel' => true ],
+]
+```
+
+`CommissieCapabilityMap::get_roles_for_commissie()` returns the truthy role slugs for a current
+commissie membership. Membership comes from current `work_history` rows; an ended row no longer
+contributes a role.
+
+### Sync entry points
+
+Every entry point ultimately calls `CapabilitySync::sync_user()` with both role sources:
+
+| Entry point | Functies | Commissie memberships |
+|---|---|---|
+| Scheduled `POST /rondo/v1/capability-sync` | Supplied by rondo-sync from Sportlink | Derived from the linked person's current work history |
+| Per-person `POST /rondo/v1/people/{id}/capability-sync` | Derived from current work history | Derived from current work history |
+| Full `POST /rondo/v1/capability-sync/all` | Supplied map when available, otherwise current work history | Derived from current work history |
+
+The scheduled path deliberately keeps Sportlink authoritative for functies. It derives only
+commissie IDs locally, after rondo-sync has updated commissie work history earlier in the same
+pipeline. Do not call `sync_user()` from a reconciliation path with an omitted role source: it is a
+full reconciler and will revoke any syncable role missing from the target set. Manual grants and
+revokes remain authoritative on every path, and administrator users remain untouched.
 
 ### Finance Settings Access
 

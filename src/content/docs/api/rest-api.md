@@ -1280,10 +1280,9 @@ Returns the current functie-to-role mapping.
 ```json
 {
   "map": {
-    "Voorzitter": ["admin"],
-    "Penningmeester": ["financieel"],
-    "Secretaris": ["admin"],
-    "Wedstrijdsecretaris": ["wedstrijdzaken"]
+    "Voorzitter": { "rondo_bestuur": true },
+    "Penningmeester": { "rondo_financieel": true },
+    "Wedstrijdsecretaris mDWF": { "rondo_wedstrijdzaken": true }
   }
 }
 ```
@@ -1300,8 +1299,8 @@ Update the functie-to-role mapping.
 ```json
 {
   "map": {
-    "Voorzitter": ["admin"],
-    "Penningmeester": ["financieel"]
+    "Voorzitter": { "rondo_bestuur": true },
+    "Penningmeester": { "rondo_financieel": true }
   }
 }
 ```
@@ -1313,6 +1312,33 @@ Update the functie-to-role mapping.
   "map": { ... }
 }
 ```
+
+---
+
+### Commissie-Capability Map (Admin Only)
+
+Manage the mapping between current commissie memberships and Rondo permission roles.
+
+**GET** `/rondo/v1/commissie-capability-map`
+
+Returns `{ map, commissies, roles }`. Map keys are commissie post IDs and values are objects of
+role slugs to booleans.
+
+**POST** `/rondo/v1/commissie-capability-map`
+
+Replaces the mapping. The body uses this shape:
+
+```json
+{
+  "map": {
+    "2668": { "rondo_fairplay": true },
+    "2669": { "rondo_financieel": true }
+  }
+}
+```
+
+Scheduled and on-demand capability syncs combine this mapping with the functie mapping. Ended
+commissie memberships no longer grant their mapped roles.
 
 ---
 
