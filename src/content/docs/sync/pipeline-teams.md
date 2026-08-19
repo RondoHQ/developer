@@ -3,7 +3,7 @@ title: "Teams Pipeline"
 ---
 
 
-Downloads team rosters from Sportlink, creates team posts in Rondo Club, and links members to teams via work history.
+Downloads team rosters from Sportlink, creates team posts in Rondo Club, and links members to teams via dated work history.
 
 ## Schedule
 
@@ -19,8 +19,9 @@ node pipelines/sync-teams.js --verbose    # Direct execution (verbose)
 ```
 pipelines/sync-teams.js
 ├── Step 1: steps/download-teams-from-sportlink.js   → data/rondo-sync.sqlite
-├── Step 2: steps/submit-rondo-club-teams.js            → Rondo Club API (teams)
-└── Step 3: steps/submit-rondo-club-work-history.js     → Rondo Club API (person work_history)
+├── Step 2: steps/submit-rondo-club-teams.js          → Rondo Club API (teams)
+├── Step 3: steps/submit-rondo-club-work-history.js   → Rondo Club API (quick work_history)
+└── Step 4: steps/submit-rondo-club-player-history.js → Sportlink details + Rondo Club API (dated work_history)
 ```
 
 ## Step-by-Step Details
@@ -83,6 +84,23 @@ pipelines/sync-teams.js
 
 **Important:** The work history sync only touches entries it previously created (tracked via `rondo_club_work_history` table). Manually added work history entries in Rondo Club are left untouched.
 
+### Step 4: Enrich Work History with Sportlink Dates
+
+**Script:** `steps/submit-rondo-club-player-history.js`
+**Function:** `runSync({ logger, verbose, force })`
+
+The fast team-roster response used in step 1 does not expose the start and end dates of a team relation. This step immediately follows the quick work-history sync and:
+
+1. Compares each member's current team signature with the last successful detail sync
+2. Skips members whose team data is unchanged
+3. Fetches changed memberships from Sportlink's member-details endpoint
+4. Maps `RelationStart` and `RelationEnd` to the corresponding work-history row
+5. Reconciles the existing row instead of creating a dated duplicate
+
+The standalone monthly player-history run remains a safety net, but new team assignments no longer wait for it before their dates appear in Rondo Club.
+
+**Output:** `{ total, downloaded, synced, created, reconciled, skippedUnchanged, skippedQuarantined, errors }`
+
 ## Field Mappings
 
 ### Sportlink → Rondo Club Teams
@@ -103,8 +121,8 @@ The ACF `work_history` is a repeater field on person posts:
 | `team` | `rondo_club_teams.rondo_club_id` | WordPress post ID of the team |
 | `job_title` | `role_description` or fallback | "Speler", "Keeper", "Trainer", "Staflid" |
 | `is_current` | Computed | `true` if currently on team |
-| `start_date` | Computed | Today for new assignments, empty for backfill |
-| `end_date` | Computed | Empty if current, today when removed |
+| `start_date` | `RelationStart` from member details | The quick roster step may temporarily use today; the detail pass immediately replaces it with Sportlink's date |
+| `end_date` | `RelationEnd` from member details | Empty while current |
 
 ## Database Tables Used
 
@@ -120,13 +138,14 @@ The ACF `work_history` is a repeater field on person posts:
 | Flag | Effect |
 |------|--------|
 | `--verbose` | Detailed per-team/per-member logging |
-| `--force` | Skip change detection, sync all teams and work history |
+| `--force` | Skip change detection, sync all teams and fetch player history for every member |
 
 ## Error Handling
 
 - Team download failure doesn't prevent team sync (uses cached data)
 - Individual team sync failures don't stop the pipeline
 - Work history sync skips members not yet in Rondo Club (counted as `skipped`)
+- Player-history detail sync skips unchanged members and reports quarantined or failed Sportlink detail records
 - All errors collected in summary report
 
 ## Source Files
@@ -137,6 +156,7 @@ The ACF `work_history` is a repeater field on person posts:
 | `steps/download-teams-from-sportlink.js` | Sportlink team scraping (Playwright) |
 | `steps/submit-rondo-club-teams.js` | Rondo Club team API sync |
 | `steps/submit-rondo-club-work-history.js` | Rondo Club work history API sync |
+| `steps/submit-rondo-club-player-history.js` | Sportlink relation-date enrichment and reconciliation |
 | `steps/prepare-rondo-club-teams.js` | Team data preparation |
 | `lib/rondo-club-db.js` | SQLite operations |
 | `lib/rondo-club-client.js` | Rondo Club HTTP client |
