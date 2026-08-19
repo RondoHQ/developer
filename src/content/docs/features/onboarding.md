@@ -11,10 +11,10 @@ Two cohorts, two templates, two stamps:
 
 | Cohort | Period | Required state | Sent-timestamp field |
 |--------|--------|----------------|----------------------|
-| Nieuwe leden | `lid-sinds` within last 30 days | not a former member | `onboarding-email-lid-sent` |
+| Nieuwe leden | `lid-sinds` within last 30 days | not a former member and not a new volunteer | `onboarding-email-lid-sent` |
 | Nieuwe vrijwilligers | `vrijwilliger-sinds` within last 60 days | `huidig-vrijwilliger = 1`, not a former member | `onboarding-email-vrijwilliger-sent` |
 
-A person can appear in both tabs and receive both emails — the timestamps are independent.
+The cohorts are mutually exclusive. A current volunteer whose `vrijwilliger-sinds` date falls inside the 60-day window appears only under **Nieuwe vrijwilligers**, even when that volunteer email has already been sent. This prevents the same person from receiving both welcome emails. A new member who has been a volunteer for longer than 60 days remains eligible for the member email.
 
 `VolunteerStatus` derives a missing `vrijwilliger-sinds` value from the earliest start date among active staff and committee positions when work history makes someone a current volunteer. Sportlink team rosters do not expose a role start date; on a genuine non-volunteer-to-volunteer transition, Rondo therefore falls back to the synchronization date. Existing volunteer-start dates are never overwritten, and an already-current volunteer without a source date is not assigned a new date. This keeps newly synchronized staff eligible for the 60-day onboarding cohort without treating an established volunteer's later role change as a new start.
 
@@ -51,7 +51,7 @@ The "E-mailteksten beheren" link in the header jumps to `/settings/admin/welkoms
 
 | Parameter | Meaning |
 |-----------|---------|
-| `onboarding_new_members=1` | lid-sinds ≤ 30 days ago AND onboarding-email-lid-sent is empty |
+| `onboarding_new_members=1` | lid-sinds ≤ 30 days ago AND onboarding-email-lid-sent is empty, excluding current volunteers whose vrijwilliger-sinds is within 60 days |
 | `onboarding_new_volunteers=1` | vrijwilliger-sinds ≤ 60 days ago AND huidig-vrijwilliger=1 AND onboarding-email-vrijwilliger-sent is empty |
 
 The default former-member exclusion still applies, so people who already left do not appear.
