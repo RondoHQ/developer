@@ -67,7 +67,7 @@ pipelines/sync-people.js
 - `GenderCode`: "Male" → "M", "Female" → "V"
 - `UnionTeams`: comma-separated team list
 - Parent entries: creates person entries with `oudervan` (child names) field
-- `vrijwilligersplicht`: empty when not applicable, `-1` when fully exempt, `0` when completed, otherwise the summed number of duties still to complete
+- `vrijwilligersplicht`: `-1` when exempt or not applicable, `0` when completed, otherwise the summed number of duties still to complete
 
 ### Step 3: Submit to Laposta
 
@@ -169,7 +169,7 @@ See `config/field-mapping.json` for the complete mapping. Key fields:
 | `team` | `UnionTeams` |
 | `geslacht` | `GenderCode` (Male→M, Female→V) |
 | `relatiecode` | `PublicPersonId` (KNVB ID) |
-| `vrijwilligersplicht` | Derived current-season Rondo obligation (`-1`, `0`, positive integer, or empty) |
+| `vrijwilligersplicht` | Derived current-season Rondo obligation (`-1`, `0`, or a positive integer) |
 
 ### Sportlink → Rondo Club Members
 

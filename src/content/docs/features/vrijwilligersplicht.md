@@ -103,8 +103,7 @@ The value is derived for the current sports season on every people sync:
 
 | Value | Meaning |
 |---|---|
-| empty | The person or family has no applicable obligation |
-| `-1` | Every applicable obligation unit is exempt |
+| `-1` | The person or family is exempt or has no applicable obligation |
 | `0` | Active obligations have been completed |
 | `1` or higher | Total number of duties still to complete across active units |
 
@@ -113,6 +112,10 @@ both an exempt and an active unit, the active unit wins and its remaining count 
 Laposta relations use their standalone Rondo person mapping when available and fall back to the
 child's gezin value while that mapping is unavailable. If Rondo's obligation endpoint cannot be
 read, Sync omits the custom field so Laposta retains its last known value.
+
+The field is always numeric. Laposta coerces an explicitly empty numeric value to `0`, so people
+without an applicable obligation also receive `-1`; otherwise they would be indistinguishable from
+people who completed their duties.
 
 ## Owing versus being allowed
 
