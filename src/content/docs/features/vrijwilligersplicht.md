@@ -94,6 +94,26 @@ non-empty `rondo_linked_person_id`, matching the definition used by Rondo's acco
 Administrators and service users without a linked person are not included. The value is returned as
 `rondo_account_count` by the same eligibility endpoint, so loading the card adds no extra request.
 
+## Laposta synchronization
+
+`GET /rondo/v1/volunteer-obligations` exposes `is_exempt` and `exemption` on every decorated unit.
+Rondo Sync joins each unit's `person_ids` to its local Sportlink-member and standalone-parent
+mappings and writes the numeric `vrijwilligersplicht` custom field to all configured member lists.
+The value is derived for the current sports season on every people sync:
+
+| Value | Meaning |
+|---|---|
+| empty | The person or family has no applicable obligation |
+| `-1` | Every applicable obligation unit is exempt |
+| `0` | Active obligations have been completed |
+| `1` or higher | Total number of duties still to complete across active units |
+
+When a person has both a speler and gezin unit, the remaining counts are added. If that person has
+both an exempt and an active unit, the active unit wins and its remaining count is sent. Parent
+Laposta relations use their standalone Rondo person mapping when available and fall back to the
+child's gezin value while that mapping is unavailable. If Rondo's obligation endpoint cannot be
+read, Sync omits the custom field so Laposta retains its last known value.
+
 ## Owing versus being allowed
 
 These are different questions, and conflating them turns willing helpers away.

@@ -54,10 +54,12 @@ pipelines/sync-people.js
 
 1. Reads latest Sportlink results from `data/laposta-sync.sqlite` → `sportlink_runs`
 2. Applies field mappings from `config/field-mapping.json` to transform Sportlink fields to Laposta custom fields
-3. Handles parent extraction: creates separate list entries for `EmailAddressParent1` / `EmailAddressParent2`
-4. Deduplicates parent entries across lists
-5. Computes `source_hash` for each member (SHA-256 of email + custom fields)
-6. Upserts into `data/laposta-sync.sqlite` → `members` table
+3. Reads the current-season obligation units from `GET /rondo/v1/volunteer-obligations`
+4. Maps each Rondo person ID to its tracked KNVB ID or standalone-parent email and adds the numeric `vrijwilligersplicht` field
+5. Handles parent extraction: creates separate list entries for `EmailAddressParent1` / `EmailAddressParent2`
+6. Deduplicates parent entries across lists
+7. Computes `source_hash` for each member (SHA-256 of email + custom fields)
+8. Upserts into `data/laposta-sync.sqlite` → `members` table
 
 **Output:** `{ success, lists: [{ total }], excluded }`
 
@@ -65,6 +67,7 @@ pipelines/sync-people.js
 - `GenderCode`: "Male" → "M", "Female" → "V"
 - `UnionTeams`: comma-separated team list
 - Parent entries: creates person entries with `oudervan` (child names) field
+- `vrijwilligersplicht`: empty when not applicable, `-1` when fully exempt, `0` when completed, otherwise the summed number of duties still to complete
 
 ### Step 3: Submit to Laposta
 
@@ -166,6 +169,7 @@ See `config/field-mapping.json` for the complete mapping. Key fields:
 | `team` | `UnionTeams` |
 | `geslacht` | `GenderCode` (Male→M, Female→V) |
 | `relatiecode` | `PublicPersonId` (KNVB ID) |
+| `vrijwilligersplicht` | Derived current-season Rondo obligation (`-1`, `0`, positive integer, or empty) |
 
 ### Sportlink → Rondo Club Members
 
@@ -232,5 +236,6 @@ See `config/field-mapping.json` for the complete mapping. Key fields:
 | `lib/laposta-db.js` | Laposta SQLite operations |
 | `lib/rondo-club-db.js` | Rondo Club SQLite operations |
 | `lib/rondo-club-client.js` | Rondo Club HTTP client |
+| `lib/volunteer-obligation-sync.js` | Converts Rondo obligation units to Laposta recipient values |
 | `lib/laposta-client.js` | Laposta HTTP client |
 | `lib/sportlink-login.js` | Sportlink authentication |
