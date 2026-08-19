@@ -37,7 +37,7 @@ The cap is exposed on `GET /rondo/v1/user/me` as `can_access_ledenadministratie`
 
 Two tabs (URL: `?tab=leden` or `?tab=vrijwilligers`). Each row shows the person, their start date, their email address, and a `Verstuur` button. A header checkbox plus row checkboxes feed a bulk `Verstuur geselecteerde` action.
 
-The `Voornaam`, `Achternaam`, and start-date columns are sortable. The date column uses `field_lid_sinds` on the member tab and `field_vrijwilliger_sinds` on the volunteer tab; its first click sorts descending so the newest people appear first. When the active date sort is selected, switching tabs carries that sort over to the corresponding date field.
+The `Voornaam`, `Achternaam`, and start-date columns are sortable. The date column uses `field_lid_sinds` on the member tab and `field_vrijwilliger_sinds` on the volunteer tab; its first click sorts descending so the newest people appear first. Server-side ordering normalizes both compact `YYYYMMDD` storage values and legacy `YYYY-MM-DD` values before comparing them. When the active date sort is selected, switching tabs carries that sort over to the corresponding date field.
 
 People without an email address show "Geen e-mailadres" inline and cannot be selected — the server reports them back in the response payload, but they are skipped without erroring the batch.
 
