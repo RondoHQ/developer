@@ -24,6 +24,7 @@ Rondo Club uses two API namespaces:
 |-----------|---------|
 | `/wp/v2/` | Standard WordPress REST API for CRUD operations on post types |
 | `/rondo/v1/` | Custom endpoints for dashboard, search, and specialized operations |
+| `/wp-abilities/v1/` | Typed, discoverable read operations for REST, MCP, and AI clients; see [Abilities API](./abilities/) |
 
 ---
 
