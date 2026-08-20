@@ -14,7 +14,7 @@ WordPress 7.1 or newer is required. Rondo abilities use the 7.1 `public` exposur
 | `rondo/get-record` | Read one accessible person, team, or committee with canonical fields |
 | `rondo/get-field-schema` | Inspect the client-safe canonical field contract for a record type |
 
-All three abilities are annotated as read-only, non-destructive, and idempotent. Mutating operations intentionally remain on Rondo's existing domain APIs until their write policies can be shared without bypassing business rules.
+All three abilities are annotated as read-only, non-destructive, and idempotent. They are exposed to both WordPress REST clients and the Novamira MCP adapter, but both transports require an authenticated WordPress user and every execution still runs the ability's Rondo permission callback. Mutating operations intentionally remain on Rondo's existing domain APIs until their write policies can be shared without bypassing business rules.
 
 ## Discovery
 
@@ -26,7 +26,7 @@ GET /wp-json/wp-abilities/v1/abilities?namespace=rondo
 
 The response includes the ability label, description, category, input and output JSON Schemas, annotations, and execution link.
 
-Setting `public: true` makes an ability discoverable to supported clients. It does not make the ability anonymous: every execution still runs its permission callback.
+Setting `public: true` enables WordPress REST exposure, while `mcp.public: true` enables MCP adapter exposure. Neither setting makes the ability anonymous: REST discovery requires the WordPress `read` capability and every REST or MCP execution still runs its permission callback.
 
 ## Search records
 
