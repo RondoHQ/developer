@@ -412,15 +412,21 @@ The certificate is **auto-approved** (`iva-approved = 1`, no review email) when 
   Rondo also accepts an exact multi-word surname from the linked person's title with at most two
   unexplained leading characters. Single-word surname fallbacks remain manual, and
 - the completion date on the certificate is at most 2 years old and not in the future
-  (`IvaCertificateParser::AUTO_APPROVE_MAX_AGE_YEARS`; stricter than the 5-year validity —
-  older certificates always go through manual review).
+  (`IvaCertificateParser::AUTO_APPROVE_MAX_AGE_YEARS`; older certificates always go through
+  manual review).
 
 When parsing succeeds, the date printed on the certificate overrides the member-entered
-`datum_iva`. Images are deliberately not OCR'd: JPG/PNG uploads, screenshots, Sociale Hygiëne
-certificates, non-official PDFs and unrecognized layouts use the manual review flow below. The
+`datum_iva`. Images are deliberately not OCR'd: JPG/PNG uploads, screenshots, Social Hygiene
+diplomas, non-official PDFs and unrecognized layouts use the manual review flow below. The
 member UI therefore asks for the original PDF where possible. The upload response exposes the
 outcome as `auto_verified` (boolean); the member UI shows "automatisch geverifieerd" instead of
 the pending-review message.
+
+Approved IVA certificates and Social Hygiene diplomas remain valid indefinitely. `IvaStatus`
+therefore returns `valid` for every approved proof with a completion date, regardless of age.
+The legacy REST response fields remain available for compatibility: `expires_at` and
+`validity_years` are `null`, while `needs_renewal_reminder` is `false`. The legacy `expired`
+constant still exists for code compatibility but is no longer emitted as a status.
 
 Note this is consistency checking, not cryptographic verification — the source PDFs carry no
 signature or verification URL, so a deliberately forged PDF can pass. The manual review path and
@@ -452,8 +458,8 @@ IVA-goedkeuring**. The templates support `{first_name}`, `{full_name}` and `{clu
 always adds the CTA to `/vrijwillig`, so changing the message cannot remove the signup link.
 
 Repeated approval of the same state does not send a duplicate. Revoking and later approving again
-does send a new notification. An expired or otherwise non-valid certificate is never sent the
-eligibility message, even if its approval flag is set.
+does send a new notification. Proof without a completion date remains pending and does not trigger
+the eligibility message, even if its approval flag is set.
 
 ## Cancellation policy
 
