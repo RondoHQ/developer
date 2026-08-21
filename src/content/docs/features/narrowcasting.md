@@ -142,9 +142,10 @@ All routes use the `/wp-json/rondo/v1/narrowcasting` prefix.
 | `POST /displays/{id}/commands` | Administrator | Queue a predefined command |
 | `POST /displays/{id}/revoke` | Administrator | Invalidate a player credential |
 
-The allowed commands are `reload`, `restart_browser`, `reboot`, `wake_tv`,
-`sleep_tv` and `cec_detect`. There is intentionally no arbitrary command or
-shell endpoint.
+The allowed commands are `reload`, `restart_browser`, `reboot`, `shutdown`,
+`wake_tv`, `sleep_tv` and `cec_detect`. Shutdown requires an explicit
+administrator confirmation in the UI and the Pi must be power-cycled before it
+can reconnect. There is intentionally no arbitrary command or shell endpoint.
 
 ## Browser credential handoff
 
