@@ -1083,9 +1083,10 @@ Start a bulk invoice creation job for all uninvoiced members.
 
 **Parameters:**
 
-| Name | Type | Default | Description |
-|------|------|---------|-------------|
-| `season` | string | current | Season key (e.g., `2025-2026`) |
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `season` | string | No | Season key (e.g., `2025-2026`); defaults to the current season |
+| `confirmed` | boolean | Yes | Must be `true`; unconfirmed bulk invoice requests return HTTP 400 |
 
 ---
 

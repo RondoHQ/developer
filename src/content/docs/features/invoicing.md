@@ -161,12 +161,15 @@ When `override_email` is passed in options, the email is sent to that address in
 
 Creates membership invoices for all members in a season via async WP-Cron batch processing.
 
+The `Maak facturen` action asks the financial administrator for confirmation before it starts. The REST request must also include `confirmed: true`; calls without explicit confirmation are rejected with HTTP 400.
+
 ### Flow
 
 1. **Start job** — `start_job($season)` queries all published `person` posts, saves job state to a WordPress option, and schedules the first cron batch
 2. **Batch processing** — Each batch processes 50 persons via `run_batch()`, then schedules the next batch 2 seconds later
 3. **Per-person logic** — `create_membership_invoice()` for each person:
-   - Gets fee via `MembershipFees::get_fee_for_person_cached()`
+   - Checks former-member eligibility before reading a cached fee
+   - Gets the fee via `FeeServices::fee_cache()->get_fee_for_person_cached()`
    - Skips if: no fee data, zero fee, former member not eligible, or invoice already exists (idempotent)
    - Creates `rondo_invoice` post with `rondo_draft` status
    - Generates invoice number with `C` prefix
@@ -197,6 +200,8 @@ Only one bulk job can run at a time. Starting a new job while one is running ret
 ### Idempotency
 
 Before creating an invoice, the system checks for an existing `rondo_invoice` with the same `person` + `_invoice_season` + `invoice_type=membership`. If found, the person is skipped.
+
+Former members are eligible only when valid `lid_sinds` and `lid_tot` dates prove that their membership interval overlaps the requested season. A missing or invalid end date is deliberately fail-closed: bulk and single-member automatic invoice creation skip that person.
 
 ## REST API
 

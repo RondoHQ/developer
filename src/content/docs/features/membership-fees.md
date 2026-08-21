@@ -485,6 +485,10 @@ The `categories` key provides display metadata for the frontend:
 
 **Note:** Full category configuration (including `amount` and `age_classes`) is available via the settings endpoint. The fee list endpoint returns only display-relevant fields.
 
+Former members appear only when valid `lid_sinds` and `lid_tot` dates show that their membership overlapped the requested season. Missing or invalid membership dates exclude them from the fee list and automatic invoicing.
+
+Cached fees are invalidated by relevant field writes and are also checked against dated `work_history` endings when read. This second check handles the passage of midnight: a position that was valid through its end date cannot keep an old fee category alive on later days.
+
 ## PHP Service Methods
 
 ### `MembershipFees` Class
