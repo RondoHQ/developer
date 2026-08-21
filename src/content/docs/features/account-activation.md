@@ -54,9 +54,9 @@ already occupied — Rondo preserves the previous fallback: it creates the accou
 and stores a temporary guardian claim. This lets the parent continue while membership administration
 resolves the identity manually.
 
-The claim sends a plain-text notification to `ledenadministratie@svawc.nl` and is also visible under
-**Settings → Beheer → Gebruikers**. An existing child-linked account can start the same flow from
-`/vrijwillig`; this covers parents who activated before the guardian picker existed.
+The claim is visible under **Settings → Beheer → Gebruikers**. It does not send a notification
+email. An existing child-linked account can start the same flow from `/vrijwillig`; this covers
+parents who activated before the guardian picker existed.
 
 For a fallback claim, the account stays linked to the child until an administrator selects
 **Accountkoppeling wijzigen**. That action moves the user link to the synced parent, refreshes the
