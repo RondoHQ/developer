@@ -98,6 +98,11 @@ Sort surname columns by `last_name`, not by the combined display value. This kee
 
 `GET /rondo/v1/people/filtered` accepts `first_name` and `last_name` text filters. The `last_name` filter matches the displayed surname, including the infix. Both `first_name` and `last_name` are valid `orderby` values.
 
+Deceased people are excluded from this endpoint by default, including CSV exports built from it.
+Pass `include_deceased=1` to include them; this automatically includes former members as well.
+Summary records expose a read-only `is_deceased` boolean. The standard single-person REST response
+also exposes `is_deceased`, computed from `fields.datum_overlijden`.
+
 ---
 
 ## Merge People
@@ -173,6 +178,7 @@ The endpoint follows successive merge audit links until it finds the current pub
 | `acf.gender` | string | Gender | `male`, `female`, `non_binary`, `other`, `prefer_not_to_say` |
 | `acf.pronouns` | string | Pronouns | e.g., "hij/hem", "zij/haar" |
 | `acf.birthdate` | string | Birthdate | `Y-m-d` format (e.g., "1982-02-06"). Read-only in UI, synced from Sportlink |
+| `fields.datum_overlijden` | string/null | Date of death | `Y-m-d` format. Synced from Sportlink's inactive-member data |
 
 ### Membership Status
 
@@ -181,6 +187,11 @@ The endpoint follows successive merge audit links until it finds the current pub
 | `acf.former_member` | boolean | Whether the person is a former member (oud-lid) | `true`, `false` (default) |
 
 **Note:** This field is managed by rondo-sync. When a member is no longer found in Sportlink data, they are automatically marked as a former member. The field defaults to `false` for all new and active members.
+
+When `datum_overlijden` is set, the person remains available as a read-only historical record.
+Rondo keeps the stored contact data, but central communication policy returns no recipient address
+for invoices, reminders, onboarding, VOG, IVA, shifts, account provisioning, and manual person-mail
+actions. Volunteer eligibility also treats the person as inactive.
 
 ### Contact Information
 

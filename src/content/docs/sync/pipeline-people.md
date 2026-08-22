@@ -18,12 +18,14 @@ node pipelines/sync-people.js --verbose   # Direct execution (verbose)
 ```
 pipelines/sync-people.js
 ├── Step 1: steps/download-data-from-sportlink.js    → data/laposta-sync.sqlite, data/rondo-sync.sqlite
+├── Step 1b: steps/download-inactive-members.js      → deceased-member safety input
 ├── Step 2: steps/prepare-laposta-members.js         → data/laposta-sync.sqlite (members table)
 ├── Step 3: steps/submit-laposta-list.js             → Laposta API
-├── Step 4: steps/submit-rondo-club-sync.js             → Rondo Club API (members + parents + birthdate)
+├── Step 3b: steps/sync-deceased-members.js          → Laposta unsubscribe reconciliation
+├── Step 4: steps/submit-rondo-club-sync.js          → Rondo Club API (members + parents + birthdate)
+├── Step 4b: steps/sync-deceased-members.js          → Rondo Club death dates
 ├── Step 5: steps/download-photos-from-api.js        → photos/ directory
-├── Step 6: steps/upload-photos-to-rondo-club.js        → Rondo Club API (media)
-└── Step 7: lib/reverse-sync-sportlink.js      → Sportlink Club
+└── Step 6: steps/upload-photos-to-rondo-club.js     → Rondo Club API (media)
 ```
 
 ## Step-by-Step Details
@@ -46,6 +48,10 @@ pipelines/sync-people.js
 **Databases written:**
 - `data/laposta-sync.sqlite`: `sportlink_runs` (full JSON dump)
 - `data/rondo-sync.sqlite`: `rondo_club_members` (per-member data with `source_hash`)
+
+The same authenticated browser session also runs an inactive-member search. This is intentionally
+separate from the active-member import: former members are not re-imported, but their
+`DateOfPassing` remains visible for death-date reconciliation.
 
 ### Step 2: Prepare Laposta Members
 
@@ -86,6 +92,12 @@ pipelines/sync-people.js
 **CLI flags:**
 - `--force`: Sync all members regardless of hash (ignores change detection)
 
+After the normal desired-state submission, `sync-deceased-members.js` checks active Laposta
+relations whose address belongs to a deceased person. It changes those relations to
+`unsubscribed`; it never deletes them. An address remains active when the freshly prepared local
+list still needs that same address for another, living relation. Parent email fields are not
+treated as the deceased person's own address.
+
 ### Step 4: Sync to Rondo Club
 
 **Script:** `steps/submit-rondo-club-sync.js`
@@ -114,6 +126,12 @@ pipelines/sync-people.js
 **Important:** `first_name` and `last_name` are required on every PUT request, even for partial ACF updates.
 
 **Birthday field:** As of v2.3, birthdate is synced as `acf.birthdate` (YYYY-MM-DD) on the person record during Step 4. Previous versions used a separate `important_date` post type which is now deprecated.
+
+After the regular active-member sync, the inactive snapshot is matched only against KNVB IDs that
+already have a tracked Rondo person ID. `DateOfPassing` is written to the canonical
+`datum_overlijden` field. This pass does not create people and does not refresh former-member
+contact or profile fields. A successfully verified date is stored in `date_of_passing`, so repeat
+runs are idempotent and a later Sportlink correction can be reconciled safely.
 
 ### Step 5: Photo Download
 
@@ -182,6 +200,7 @@ See `config/field-mapping.json` for the complete mapping. Key fields:
 | `gender` | `GenderCode` (Male→male, Female→female) |
 | `birth_year` | Year from `DateOfBirth` |
 | `birthdate` | `DateOfBirth` (YYYY-MM-DD format, v2.3+) |
+| `datum_overlijden` | `DateOfPassing` from the inactive-member safety pass |
 | `contact_info` (repeater) | `Email`, `Mobile`, `Telephone` |
 | `addresses` (repeater) | `StreetName` + `AddressNumber`, `ZipCode`, `City` |
 | `lid-sinds` | `MemberSince` |
@@ -226,6 +245,8 @@ See `config/field-mapping.json` for the complete mapping. Key fields:
 | `steps/download-data-from-sportlink.js` | Sportlink browser automation |
 | `steps/prepare-laposta-members.js` | Field transformation for Laposta |
 | `steps/submit-laposta-list.js` | Laposta API sync |
+| `steps/download-inactive-members.js` | Focused inactive-member Sportlink search |
+| `steps/sync-deceased-members.js` | Death-date and safe Laposta unsubscribe reconciliation |
 | `steps/submit-rondo-club-sync.js` | Rondo Club API sync (members + parents + birthdate) |
 | `steps/prepare-rondo-club-members.js` | Rondo Club member data preparation |
 | `steps/prepare-rondo-club-parents.js` | Parent extraction and dedup |

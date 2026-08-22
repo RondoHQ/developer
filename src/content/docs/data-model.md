@@ -66,6 +66,11 @@ Represents individual contacts in the CRM.
 | Lid tot | `lid-tot` | date_picker | Date membership ended |
 | Datum overlijden | `datum-overlijden` | date_picker | Date of death |
 
+`datum-overlijden` is synchronized from Sportlink's inactive-member search. A person with a death
+date is kept for historical context, shown read-only, excluded from people lists by default, and
+blocked by the central automated-communication policy. Contact fields are deliberately retained;
+they are not used as message recipients.
+
 **Werkfuncties** (synced from Sportlink via Rondo Sync, stored as serialized array in post meta):
 
 The `werkfuncties` field contains an array of Sportlink function strings (e.g., `["Donateur"]`, `["Trainer", "Bestuurslid"]`). Used by the fee calculation system for werkfunctie-based category matching.

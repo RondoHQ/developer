@@ -152,6 +152,7 @@ Primary member/person records synced to WordPress.
 | `photo_state_updated_at` | TEXT | When photo state last changed |
 | `photo_url` | TEXT | Photo download URL from MemberHeader API |
 | `photo_date` | TEXT | Photo date from MemberHeader API |
+| `date_of_passing` | TEXT | Last Sportlink death date successfully verified in Rondo Club; used for idempotent correction handling |
 | `sync_origin` | TEXT | Last edit source: `user_edit`, `sync_sportlink_to_rondo_club`, `sync_rondo_club_to_sportlink` |
 | `tracked_fields_hash` | TEXT | Hash of reverse-sync tracked fields (for change detection) |
 
