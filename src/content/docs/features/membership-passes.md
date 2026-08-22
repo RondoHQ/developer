@@ -32,6 +32,18 @@ removing the final eligible relationship falls back to `type-lid`. Legacy
 `is_sponsor` and `sponsor_pass_variant` person fields remain a temporary
 migration fallback.
 
+## Member access in Rondo
+
+Every user linked to a person can open **Mijn gegevens**, including users who
+also have a staff or management role. Each visible household card shows its
+eligible pass and links to the existing public `/lidpas/{token}` landing page.
+This includes passes for children under 18. Ineligible people receive no pass
+action.
+
+The household API returns only the public URL, pass type, and display label.
+Sponsor-company relationships and other sponsor-management data are not exposed
+on this personal surface.
+
 ## Lifecycle
 
 `Rondo\Passes\PublicMembershipPassPage` keeps URLs in sync:

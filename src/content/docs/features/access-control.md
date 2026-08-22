@@ -240,7 +240,9 @@ which backfills on `init`. Version 2 gave `financieel_read` to every role alread
 `GET /wp/v2/people` returns exactly what the caller may see, which for a scoped member is their own
 record plus their children under 18, with the ACF payload already reduced to the allowlist.
 `GET /rondo/v1/people/household` always returns that household scope, independent of management
-privileges, and is the only data source for "Mijn gegevens".
+privileges, and is the only data source for "Mijn gegevens". Each row also contains a minimal
+`membership_pass` summary (`url`, `type`, and `label`) or `null`; eligibility is calculated by the
+central membership-pass service and does not expose sponsor-company relationship data.
 
 A child falls out of their parent's view at 18. A person with no usable birthdate is treated as an
 adult: the check fails closed rather than exposing a record on a missing field. Note that ACF

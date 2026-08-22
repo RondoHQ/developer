@@ -46,6 +46,31 @@ User must be allowed to access the target person.
 
 If a person is not an eligible member or Sponsor, `membership_pass_url` is `null`.
 
+## Household pass summary
+
+**GET** `/rondo/v1/people/household`
+
+The personal household response includes a client-safe pass summary for every
+visible person. It does not expose sponsor-company relationships or other
+management fields.
+
+```json
+{
+  "id": 123,
+  "fields": {},
+  "membership_pass": {
+    "url": "https://example.com/lidpas/abcd...",
+    "type": "businessclub",
+    "label": "Businessclubpas"
+  }
+}
+```
+
+`membership_pass` is `null` when the person is not eligible. `type` is one of
+`bondslid`, `verenigingslid`, `businessclub`, or `awc_sponsor`. The endpoint
+remains limited to the linked person and their children under 18, including for
+users who also have management privileges.
+
 ## Verify Scanned QR Token
 
 **POST** `/rondo/v1/membership-passes/verify`
