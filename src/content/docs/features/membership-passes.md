@@ -45,8 +45,9 @@ default landing page. Sponsors who are also a current parent keep **Mijn
 inschrijftaken** as their default. If the linked person owns a pass from an active sponsor
 organization, their own card also shows that organization's current logo and an
 upload action to add or replace it. The personal card is labeled
-**Contactpersoon** and the organization block **Sponsor**, so the two roles are
-visually distinct. The action does not expose or unlock the general
+**Contactpersoon**, or **Contactpersoon en ouder** when the sponsor contact also
+has a current child relationship. The organization block is labeled **Sponsor**,
+so the roles are visually distinct. The action does not expose or unlock the general
 sponsor-management screens.
 
 The household API returns the public URL, pass type and display label. For the
