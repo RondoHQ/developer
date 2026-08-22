@@ -369,6 +369,8 @@ Get information about the currently logged in user.
   "email": "admin@example.com",
   "avatar_url": "https://...",
   "is_admin": true,
+  "is_sponsor": false,
+  "is_parent": true,
   "can_access_fairplay": false,
   "can_access_vog": false,
   "can_access_financieel": false,
@@ -380,7 +382,7 @@ Get information about the currently logged in user.
 }
 ```
 
-`linked_person_name` is `null` when the user has no linked person record. `active_functies` is an empty array when there are no current job titles.
+`linked_person_name` is `null` when the user has no linked person record. `active_functies` is an empty array when there are no current job titles. `is_parent` is derived from a current `child` relationship to a published, non-former person and controls whether a sponsor keeps **Mijn inschrijftaken** as their default landing page.
 
 ---
 

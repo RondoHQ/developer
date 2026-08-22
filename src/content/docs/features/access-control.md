@@ -178,9 +178,11 @@ reintroduce a hand-maintained copy in the frontend, which is how it previously f
 what they can *fetch*. Any new person-facing surface must be gated server-side as well.
 :::
 
-For accounts without a staff role, this redirect sends an active sponsor to
-`/mijn-gegevens` and other members to `/vrijwillig`. The current-user endpoint's
-`is_sponsor` flag is the single input for that sponsor branch.
+For accounts without a staff role, this redirect sends an active sponsor without
+a current parent role to `/mijn-gegevens`. Sponsors who are also a parent and all
+other members go to `/vrijwillig`. The current-user endpoint supplies both
+`is_sponsor` and `is_parent`; `is_parent` reuses
+`ParentRelationshipService::has_current_child()` rather than a legacy flag.
 
 ### Sponsor self-service logo
 
