@@ -16,6 +16,7 @@ The technical pilot, matchday and content milestones provide:
 - a public full-screen browser shell at `/display` that authenticates with a
   device token;
 - player configuration, heartbeat, status and predefined-command REST routes;
+- per-player stable, beta or disabled automatic-update channels;
 - scheduled and manual HDMI-CEC wake and standby through Rondo Player;
 - locally cached display configuration and matchday content when the network is
   temporarily down;
@@ -78,6 +79,7 @@ Important fields include:
 | `wake_time` / `sleep_time` | Local HDMI-CEC schedule |
 | `assigned_playlist_id` | Optional screen-specific playlist; otherwise the site default is used |
 | `pending_command*` | One bounded, short-lived remote command |
+| `update_channel` | `stable`, `beta` or `off`; selects an administrator-approved signed release |
 
 Online state is a three-minute transient so a heartbeat does not write post
 meta every minute. `last_seen_at` is persisted at most once every five minutes.
@@ -112,6 +114,30 @@ The activation-code registration endpoints are public by design and
 rate-limited by source address. Every management route requires
 `manage_options`.
 
+## Signed player updates
+
+Administrators approve one stable version and, optionally, one beta version in
+**Club TV → Players & koppelingen**. Each display selects `stable`, `beta` or
+`off`. The device configuration exposes only that channel and its target
+version; it never accepts a release URL from WordPress.
+
+Rondo Player maps the version to the fixed public
+`RondoHQ/rondo-player` GitHub release location. A release contains the player
+archive, a SHA-256 manifest and an Ed25519 signature. The embedded public key
+must validate the manifest before extraction, and every archive path and member
+type is checked before writing files.
+
+Installations use `~/.local/share/rondo-player/releases/<version>` with atomic
+`current` and `previous` symlinks. After activation, a separate transient
+systemd guard gives the new service two minutes to report healthy. A crash or
+startup failure switches `current` back to the previous release and restarts
+the player. The same failed target is retried no more than once per six hours.
+
+GitHub Actions publishes signed assets for `vX.Y.Z` tags. Its private Ed25519
+key exists only in the `RELEASE_SIGNING_KEY` repository secret; the repository
+and every player contain only `rondo_player/release-public.pem`. Key rotation
+requires a bridge release signed by the old key that embeds the new public key.
+
 ## REST API
 
 All routes use the `/wp-json/rondo/v1/narrowcasting` prefix.
@@ -134,8 +160,8 @@ All routes use the `/wp-json/rondo/v1/narrowcasting` prefix.
 | `POST`, `DELETE /playlists/{id}` | Club TV editor | Update or remove a playlist |
 | `POST /playlists/{id}/default` | Club TV editor | Set the site-wide default playlist |
 | `POST /displays/{id}/playlist` | Administrator | Assign a screen-specific playlist |
-| `GET /settings` | Administrator | Read masked Sportlink configuration and feed health |
-| `POST /settings` | Administrator | Store the server-only client ID and club relation code |
+| `GET /settings` | Administrator | Read masked Sportlink configuration, feed health and approved player versions |
+| `POST /settings` | Administrator | Store Sportlink configuration and/or approved stable and beta player versions |
 | `POST /refresh` | Administrator, rate-limited | Force a Club.Data refresh |
 | `GET /feeds/matchday` | Device token or administrator | Read normalized matchday content; authenticated previews may request the nearest Saturday with `preview=1` |
 | `POST /displays/claim` | Administrator | Approve an activation code |
