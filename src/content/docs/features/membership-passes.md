@@ -43,8 +43,10 @@ action.
 Sponsor accounts without a staff role use **Mijn gegevens** as their default
 landing page. If the linked person owns a pass from an active sponsor
 organization, their own card also shows that organization's current logo and an
-upload action to add or replace it. The action does not expose or unlock the
-general sponsor-management screens.
+upload action to add or replace it. The personal card is labeled
+**Contactpersoon** and the organization block **Sponsor**, so the two roles are
+visually distinct. The action does not expose or unlock the general
+sponsor-management screens.
 
 The household API returns the public URL, pass type and display label. For the
 organization behind a sponsor pass it additionally returns only the organization
