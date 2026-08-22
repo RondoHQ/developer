@@ -40,9 +40,16 @@ eligible pass and links to the existing public `/lidpas/{token}` landing page.
 This includes passes for children under 18. Ineligible people receive no pass
 action.
 
-The household API returns only the public URL, pass type, and display label.
-Sponsor-company relationships and other sponsor-management data are not exposed
-on this personal surface.
+Sponsor accounts without a staff role use **Mijn gegevens** as their default
+landing page. If the linked person owns a pass from an active sponsor
+organization, their own card also shows that organization's current logo and an
+upload action to add or replace it. The action does not expose or unlock the
+general sponsor-management screens.
+
+The household API returns the public URL, pass type and display label. For the
+organization behind a sponsor pass it additionally returns only the organization
+ID, display name, logo URL and an explicit `can_edit_logo` flag. Contacts,
+addresses and other sponsor-management data remain private.
 
 ## Lifecycle
 

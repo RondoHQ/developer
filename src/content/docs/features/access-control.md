@@ -178,6 +178,22 @@ reintroduce a hand-maintained copy in the frontend, which is how it previously f
 what they can *fetch*. Any new person-facing surface must be gated server-side as well.
 :::
 
+For accounts without a staff role, this redirect sends an active sponsor to
+`/mijn-gegevens` and other members to `/vrijwillig`. The current-user endpoint's
+`is_sponsor` flag is the single input for that sponsor branch.
+
+### Sponsor self-service logo
+
+`AccessControl::can_edit_sponsor_logo()` grants a regular account one narrowly
+scoped write: replacing the logo of the active organization that supplies the
+pass for its own `rondo_linked_person_id`. It resolves the canonical primary
+pass relationship through `Sponsors\Relations`; being another contact of the
+organization or holding a legacy sponsor flag is not sufficient.
+
+The permission is used only by
+`POST /rondo/v1/sponsors/{id}/logo/upload`. General sponsor reads, field updates,
+contact edits and archiving continue to require `sponsorbeheer`.
+
 ### `is_kader`
 
 The current-user endpoint returns `is_kader`: admin, **or** any staff capability, **or** any role

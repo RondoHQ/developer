@@ -62,6 +62,12 @@ management fields.
     "url": "https://example.com/lidpas/abcd...",
     "type": "businessclub",
     "label": "Businessclubpas"
+  },
+  "sponsor_organization": {
+    "id": 456,
+    "name": "Voorbeeld BV",
+    "logo_url": "https://example.com/uploads/sponsor-logo.png",
+    "can_edit_logo": true
   }
 }
 ```
@@ -70,6 +76,24 @@ management fields.
 `bondslid`, `verenigingslid`, `businessclub`, or `awc_sponsor`. The endpoint
 remains limited to the linked person and their children under 18, including for
 users who also have management privileges.
+
+`sponsor_organization` is present only when an active organization supplies the
+person's sponsor pass **and** the caller may edit that logo. For a regular
+account this means the record is its own linked person; a parent's response does
+not expose a child's sponsor organization. Sponsor managers retain their broad
+access.
+
+## Replace own sponsor organization logo
+
+**POST** `/rondo/v1/sponsors/{sponsor_id}/logo/upload`
+
+Send a multipart upload with field `logo`. JPEG, PNG, GIF, WebP and SVG are
+accepted up to 5 MB.
+
+Sponsor managers may use the endpoint for every sponsor record. A regular
+sponsor account may use it only for the active organization that supplies the
+pass of its own linked person. This narrow permission does not grant access to
+`GET` or `PATCH /rondo/v1/sponsors/{id}` or expose the sponsor contact list.
 
 ## Verify Scanned QR Token
 
