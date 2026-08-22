@@ -308,6 +308,8 @@ These fields relate to the [user provisioning](../features/user-provisioning.md)
 |-------|------|-------------|
 | `linked_user_id` | int\|null | WordPress user ID linked to this person |
 | `welcome_email_sent_at` | string\|null | ISO timestamp of when the welcome email was sent |
+| `linked_user_roles` | string[] | Role slugs on the linked account; only included for administrators |
+| `linked_user_role_labels` | object | Labels keyed by role slug; includes built-in and custom Rondo roles and is only included for administrators |
 
 ### Computed Fields (Read-Only)
 
