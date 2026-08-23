@@ -87,6 +87,7 @@ Class: `Rondo\Passes\MembershipPassApple`
 - Generates `.pkpass` with QR payload from signed membership JWT
 - Uses uploaded certificate attachment + stored certificate password
 - Uses configured pass identifiers and club branding
+- Uses `{club name} lidmaatschapspas` as the Apple Wallet description for member passes
 - Uses tier-based primary label (`BONDSLID`, `VERENIGINGSLID`, or `SPONSOR`)
 - Shows KNVB ID field only for `Bondslid` tier
 - Sponsor passes use a white background with dark foreground and label text and replace team/function fields with `BEDRIJF` and the selected sponsor company's title
