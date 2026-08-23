@@ -84,7 +84,7 @@ Jobs retry transient failures with bounded backoff. Two occupied slots become a 
 ### How It Works
 
 1. Read `last_detection_at` from `reverse_sync_state` table
-2. Query Rondo Club API for members modified since that timestamp: `GET /wp/v2/people?modified_after=...`
+2. Query Rondo Club API for members modified since that timestamp: `GET /wp/v2/people?modified_after=...`; transient 5xx, timeout, deadline, DNS, and connection-reset failures retry up to three times with 1s/2s/4s backoff, while permanent 4xx errors fail immediately
 3. For each modified member:
    - **Skip contacts** where `person_type == 'contact'`; contacts are local Rondo Club records and are never synced to Sportlink, even if stale data contains a KNVB ID
    - Look up local record in `rondo_club_members`
