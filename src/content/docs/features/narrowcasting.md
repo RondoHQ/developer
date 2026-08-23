@@ -35,8 +35,9 @@ The technical pilot, matchday and content milestones provide:
 - match scenes use a typography-first layout because Sportlink's feed does not
   provide dependable team-logo assets; the schedule, pitch and dressing-room
   assignments are combined into one overview per group of matches.
-- the display header uses the current scene title beside the unframed club logo,
-  while the match date sits above the clock in the lower-right corner;
+- the display header uses the current scene title beside the unframed club logo;
+  only match, cancellation and result scenes show the match date and clock in
+  the lower-right corner, while manually authored slides omit them;
 - up to six active sponsor-company logos rotate per scene, with two slots in
   the header and four in the footer.
 - an opt-in browser-presentation pilot: a paired display shows a six-digit code,
@@ -101,6 +102,11 @@ only the public company name and logo from active `rondo_sponsor` posts. New and
 existing items use the central club palette by default through
 `use_club_colors`; the stored background, text and accent colours are only sent
 to a player when an editor explicitly disables that setting.
+
+The display checks for a fresh manifest every ten seconds, but retains the
+current React state when the playlist ID, content version and override state are
+unchanged. This keeps slide-duration timers running while still applying real
+content changes on the next poll.
 
 ## Pairing flow
 
