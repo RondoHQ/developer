@@ -39,6 +39,9 @@ The technical pilot, matchday and content milestones provide:
   while the match date sits above the clock in the lower-right corner;
 - up to six active sponsor-company logos rotate per scene, with two slots in
   the header and four in the footer.
+- an opt-in browser-presentation pilot: a paired display shows a six-digit code,
+  and any signed-in Rondo user can share a browser tab, window or screen from
+  `/presenteren` without installing an application.
 
 The `narrowcasting` capability manages content, playlists and previews. A user
 with only `sponsorbeheer` sees and manages sponsor items but cannot edit other
@@ -80,6 +83,7 @@ Important fields include:
 | `assigned_playlist_id` | Optional screen-specific playlist; otherwise the site default is used |
 | `pending_command*` | One bounded, short-lived remote command |
 | `update_channel` | `stable`, `beta` or `off`; selects an administrator-approved signed release |
+| `presentation_enabled` | Enables the browser-presentation pilot for this display |
 
 Online state is a three-minute transient so a heartbeat does not write post
 meta every minute. `last_seen_at` is persisted at most once every five minutes.
@@ -151,6 +155,9 @@ All routes use the `/wp-json/rondo/v1/narrowcasting` prefix.
 | `POST /devices/me/heartbeat` | Device token | Report health and player version |
 | `GET /devices/me/commands` | Device token | Poll one predefined command |
 | `POST /devices/me/commands/ack` | Device token | Acknowledge command outcome |
+| `POST /devices/me/presentation/session` | Device token | Create a ten-minute presentation code and receiver token |
+| `POST /presentation/join` | Signed-in Rondo user, rate-limited | Exchange a visible code for a sender token |
+| `GET`, `POST /presentation/sessions/{id}/signal` | Short-lived participant token | Exchange the latest WebRTC offer, answer and ICE candidates |
 | `GET /displays` | Administrator | List displays and health |
 | `GET /preview` | Club TV access | Return a credential-free sample display configuration |
 | `GET /preview/playlist` | Club TV access | Resolve a playlist and include exclusion reasons |
@@ -173,6 +180,27 @@ The allowed commands are `reload`, `restart_browser`, `reboot`, `shutdown`,
 administrator confirmation in the UI and the Pi must be power-cycled before it
 can reconnect. There is intentionally no arbitrary command or shell endpoint.
 
+## Browser-presentation pilot
+
+Administrators enable **Browserpresentaties testen** per display. The display
+then creates a six-digit code that expires after ten minutes and shows it over
+the normal Club TV playlist. A signed-in user opens `/presenteren`, enters that
+code and explicitly chooses a browser tab, application window or full screen
+through the browser's native screen-sharing dialog.
+
+Rondo stores only short-lived session metadata, hashed participant tokens and
+the latest sanitized WebRTC signaling snapshots in WordPress transients. It
+does not proxy or record the media stream. Audio and video travel directly
+between the sender browser and the display browser. The display returns to Club
+TV when the sender stops, closes the page or loses the peer connection.
+
+The prototype has no room or reservation authorization yet. Any signed-in user
+who can see the current code may join, with a maximum of ten code attempts per
+minute. It currently relies on a direct WebRTC path and is intended for a
+laptop and player on the same network. A later production milestone needs TURN
+relay support for isolated guest networks and must replace the visible-code
+entitlement with the active room reservation.
+
 ## Browser credential handoff
 
 Rondo Player launches `/display#token=...`. The fragment is not sent in the
@@ -183,8 +211,9 @@ passes the token again whenever Chromium is restarted.
 ## Testing
 
 `tests/Wpunit/NarrowcastingTest.php` covers the complete registration, approval,
-claim, configuration, heartbeat, command, acknowledgement and revocation flow,
-as well as administrator and device-identity boundaries.
+claim, configuration, heartbeat, command, acknowledgement, browser-presentation
+signaling and revocation flow, as well as administrator and device-identity
+boundaries.
 `tests/Wpunit/NarrowcastingSportlinkTest.php` covers normalization, date
 selection, credential redaction, freshness metadata and last-known-good behavior
 after Club.Data failures.
