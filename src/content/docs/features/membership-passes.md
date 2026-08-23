@@ -56,6 +56,9 @@ action for Apple downloads and Google redirects. Every action checks:
 - current pass eligibility;
 - a valid role key when several current work roles exist.
 
+The app's wp-admin redirect guard exempts `admin-post.php`, because this endpoint
+serves authenticated frontend actions for regular members as well as administrators.
+
 With zero or one current role the wallet badge acts directly. With several
 roles, **Mijn gegevens** opens a popover and appends the selected role key to the
 action URL. The session-bound token remains valid for the life of that login
