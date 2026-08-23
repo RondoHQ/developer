@@ -157,6 +157,7 @@ When retrieving a person via the REST API, provisioning-related fields are inclu
 |-------|------|-------------|
 | `linked_user_id` | int\|null | WordPress user ID linked to this person |
 | `welcome_email_sent_at` | string\|null | ISO timestamp of when the welcome email was sent |
+| `linked_user_switch_url` | string | Nonce-secured User Switching URL; only included for administrators who may switch to the linked account |
 
 ### Users List
 
@@ -192,6 +193,7 @@ The **AccountCard** component is displayed on person detail pages for administra
 
 - Whether the person has a linked WordPress user account
 - The linked user's email and role
+- Link to switch to the linked account when the User Switching plugin is active and permits it
 - Button to provision a new account (if no linked user)
 - Button to send/resend the welcome email
 - Timestamp of when the welcome email was last sent
