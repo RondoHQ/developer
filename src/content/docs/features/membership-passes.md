@@ -15,12 +15,13 @@ A person is eligible based on native field `type_lid` (stored as `type-lid`):
   `sponsor_role` selects `businessclub` or `awc_sponsor` (`Sponsor` tier),
   independently of `person_type` and `type-lid`
 
-The active sponsor relation takes precedence over a member tier, so a
-member+sponsor receives the selected Sponsor pass. If several relationships
-grant a pass, one must be marked as the primary pass relation. Archiving or
-removing the final eligible relationship falls back to `type-lid`. Legacy
-`is_sponsor` and `sponsor_pass_variant` person fields remain a temporary
-migration fallback.
+The active sponsor relation remains the primary tier. When that person also has
+a `Bondslid` or `Verenigingslid` tier and at least one current work-history
+role, **Mijn gegevens** offers both the selected Sponsor pass and an AWC member
+pass for every current role. If several sponsor relationships grant a pass, one
+must be marked as the primary pass relation. Archiving or removing the final
+eligible relationship falls back to `type-lid`. Legacy `is_sponsor` and
+`sponsor_pass_variant` person fields remain a temporary migration fallback.
 
 ## Member access in Rondo
 
@@ -54,16 +55,19 @@ action for Apple downloads and Google redirects. Every action checks:
 - a signed token scoped to the user, login session, person and wallet type;
 - row-level access to the selected person;
 - current pass eligibility;
-- a valid role key when several current work roles exist.
+- a valid pass or role key when a choice is required.
 
 The app's wp-admin redirect guard exempts `admin-post.php`, because this endpoint
 serves authenticated frontend actions for regular members as well as administrators.
 
-With zero or one current role the wallet badge acts directly. With several
-roles, **Mijn gegevens** opens a popover and appends the selected role key to the
-action URL. The session-bound token remains valid for the life of that login
-session, including when a mobile browser or installed app keeps the page open.
-The UI uses the local Dutch badge assets:
+With zero or one available pass choice the wallet badge acts directly. With
+several choices, **Mijn gegevens** opens a popover and appends the selected key
+to the action URL. For a dual-role sponsor this includes the Businessclub or
+Sponsor pass plus one AWC pass per current work role. The backend maps the
+opaque key back to the validated sponsor or regular member tier before
+generating the pass. The session-bound token remains valid for the life of that
+login session, including when a mobile browser or installed app keeps the page
+open. The UI uses the local Dutch badge assets:
 
 - Apple: `public/icons/NL_Add_to_Apple_Wallet_RGB_101921.svg`
 - Google: `public/icons/nl_add_to_google_wallet_add-wallet-badge.svg`

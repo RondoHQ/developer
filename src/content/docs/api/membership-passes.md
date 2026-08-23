@@ -39,7 +39,7 @@ management fields.
   "fields": {},
   "membership_pass": {
     "type": "businessclub",
-    "label": "Businessclubpas",
+    "label": "Lidpassen",
     "wallets": {
       "apple": {
         "available": true,
@@ -51,8 +51,8 @@ management fields.
       }
     },
     "role_options": [
-      { "key": "a1b2c3d4e5f6g7h8", "label": "AWC 1 — Trainer" },
-      { "key": "b2c3d4e5f6g7h8i9", "label": "AWC 2 — Leider" }
+      { "key": "sponsor_pass", "label": "Businessclubpas" },
+      { "key": "a1b2c3d4e5f6g7h8", "label": "AWC-pas — AWC 1 — Trainer" }
     ],
     "requires_role": true
   },
@@ -72,8 +72,10 @@ users who also have management privileges.
 
 `wallets.*.available` reflects the current server configuration. The action URLs
 are signed for the current user and login session; they are not stable public links. When
-`requires_role` is true, append one returned role key as the `role` query
-parameter before navigating to the chosen wallet action.
+`requires_role` is true, append one returned option key as the `role` query
+parameter before navigating to the chosen wallet action. A person with an
+active Sponsor pass, a regular member tier and current work roles receives the
+Sponsor pass as the first option and one AWC member pass per current role.
 
 `sponsor_organization` is present only when an active organization supplies the
 person's sponsor pass **and** the caller may edit that logo. For a regular
