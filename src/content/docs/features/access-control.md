@@ -262,6 +262,10 @@ privileges, and is the only data source for "Mijn gegevens". Each row also conta
 `membership_pass` summary (`url`, `type`, and `label`) or `null`; eligibility is calculated by the
 central membership-pass service and does not expose sponsor-company relationship data.
 
+The personal card includes both configured email, mobile, and telephone slots (`email_1` and
+`email_2`, `mobile_1` and `mobile_2`, `telephone_1` and `telephone_2`). Empty secondary values are
+omitted by the frontend.
+
 A child falls out of their parent's view at 18. A person with no usable birthdate is treated as an
 adult: the check fails closed rather than exposing a record on a missing field. Note that ACF
 `date_picker` stores `Ymd`, not `Y-m-d`.
