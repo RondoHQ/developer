@@ -114,10 +114,11 @@ Change detection skips members where `sync_origin == 'sync_sportlink_to_rondo_cl
 
 ### How It Works
 
-1. Fetch unsynced changes from `rondo_club_change_detections` (where `synced_at IS NULL`)
-2. Group changes by member and by Sportlink page (general / other / financial)
-3. Launch headless Chromium and log into Sportlink
-4. For each member with changes:
+1. Fetch active changes from `rondo_club_change_detections` (where both `synced_at` and `superseded_at` are NULL)
+2. Re-read each pending Rondo person and mark queued values that no longer match the current canonical field as superseded
+3. Group the remaining changes by member and by Sportlink page (general / other / financial)
+4. Launch headless Chromium and log into Sportlink
+5. For each member with changes:
    - Navigate to the appropriate Sportlink page(s)
    - Enter edit mode
    - Fill each changed field (text input or checkbox)
@@ -126,7 +127,7 @@ Change detection skips members where `sync_origin == 'sync_sportlink_to_rondo_cl
    - Mark changes as synced (`UPDATE ... SET synced_at = ...`)
    - Update `{field}_sportlink_modified` timestamp in `rondo_club_members`
    - Set `sync_origin = 'sync_rondo_club_to_sportlink'`
-5. Wait 1-2 seconds between members (rate limiting with random jitter)
+6. Wait 1-2 seconds between members (rate limiting with random jitter)
 
 ### Retry Logic
 
@@ -188,6 +189,7 @@ Audit log of all detected changes.
 | `rondo_club_modified_gmt` | WordPress modification timestamp |
 | `detection_run_id` | ID of the detection run |
 | `synced_at` | When change was synced to Sportlink (NULL = not yet synced) |
+| `superseded_at` | When a newer Rondo edit made the queued value obsolete |
 
 ### reverse_sync_state
 

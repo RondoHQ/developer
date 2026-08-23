@@ -473,6 +473,7 @@ Tracks field changes detected in Rondo Club for reverse sync.
 | `rondo_club_modified_gmt` | TEXT | WordPress modification timestamp (GMT) |
 | `detection_run_id` | TEXT | ID of the detection run |
 | `synced_at` | TEXT | When change was synced back to Sportlink |
+| `superseded_at` | TEXT | When a newer Rondo value made this queued change obsolete |
 
 **Indexes:**
 - `idx_rondo_club_change_detections_knvb` on `(knvb_id)`
