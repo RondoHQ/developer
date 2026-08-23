@@ -42,9 +42,9 @@ The technical pilot, matchday and content milestones provide:
   content;
 - up to six active sponsor-company logos rotate per scene, with two slots in
   the header and four in the footer.
-- an opt-in browser-presentation pilot: a paired display shows a six-digit code,
-  and any signed-in Rondo user can share a browser tab, window or screen from
-  `/presenteren` without installing an application.
+- an opt-in browser-presentation flow: an unassigned display allows any signed-in
+  Rondo user, while a room-linked controlled display limits its six-digit code
+  and session to the active reservation holder and authorized presenters.
 
 The `narrowcasting` capability manages content, playlists and previews. A user
 with only `sponsorbeheer` sees and manages sponsor items but cannot edit other
@@ -163,8 +163,8 @@ All routes use the `/wp-json/rondo/v1/narrowcasting` prefix.
 | `POST /devices/me/heartbeat` | Device token | Report health and player version |
 | `GET /devices/me/commands` | Device token | Poll one predefined command |
 | `POST /devices/me/commands/ack` | Device token | Acknowledge command outcome |
-| `POST /devices/me/presentation/session` | Device token | Create a ten-minute presentation code and receiver token |
-| `POST /presentation/join` | Signed-in Rondo user, rate-limited | Exchange a visible code for a sender token |
+| `POST /devices/me/presentation/session` | Device token | Create a presentation code and receiver token, bounded by an active controlled-room booking when configured |
+| `POST /presentation/join` | Signed-in Rondo user, rate-limited | Exchange a visible code after any room-booking entitlement check |
 | `GET`, `POST /presentation/sessions/{id}/signal` | Short-lived participant token | Exchange the latest WebRTC offer, answer and ICE candidates |
 | `GET /displays` | Administrator | List displays and health |
 | `GET /preview` | Club TV access | Return a credential-free sample display configuration |
@@ -188,12 +188,14 @@ The allowed commands are `reload`, `restart_browser`, `reboot`, `shutdown`,
 administrator confirmation in the UI and the Pi must be power-cycled before it
 can reconnect. There is intentionally no arbitrary command or shell endpoint.
 
-## Browser-presentation pilot
+## Browser presentation
 
-Administrators enable **Browserpresentaties testen** per display. The display
-then creates a six-digit code that expires after ten minutes and shows it over
-the normal Club TV playlist. A signed-in user opens `/presenteren`, enters that
-code and explicitly chooses a browser tab, application window or full screen
+Administrators enable browser presentations per display. An unassigned display
+keeps the original pilot behavior for signed-in users. When an administrator
+links the display to a room and enables reservation-controlled presentation,
+the display creates a six-digit code only during the room's active access
+window. The holder or an explicitly authorized presenter opens `/presenteren`,
+enters that code and chooses a browser tab, application window or full screen
 through the browser's native screen-sharing dialog.
 
 Rondo stores only short-lived session metadata, hashed participant tokens and
@@ -202,12 +204,12 @@ does not proxy or record the media stream. Audio and video travel directly
 between the sender browser and the display browser. The display returns to Club
 TV when the sender stops, closes the page or loses the peer connection.
 
-The prototype has no room or reservation authorization yet. Any signed-in user
-who can see the current code may join, with a maximum of ten code attempts per
-minute. It currently relies on a direct WebRTC path and is intended for a
-laptop and player on the same network. A later production milestone needs TURN
-relay support for isolated guest networks and must replace the visible-code
-entitlement with the active room reservation.
+For a controlled room, Rondo rechecks display-room assignment, active booking,
+holder or presenter identity, and the effective booking end on every signaling
+request. Cancellation or expiry stops the transient session immediately; a
+locked successful booking extension moves the boundary. Codes remain
+rate-limited to ten attempts per user per minute. Media still uses a direct
+WebRTC path, so isolated guest networks may require TURN as a later milestone.
 
 ## Browser credential handoff
 
