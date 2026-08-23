@@ -38,6 +38,8 @@ The technical pilot, matchday and content milestones provide:
 - the display header uses the current scene title beside the unframed club logo;
   only match, cancellation and result scenes show the match date and clock in
   the lower-right corner, while manually authored slides omit them;
+- image slides scale up to fit the available stage without cropping their
+  content;
 - up to six active sponsor-company logos rotate per scene, with two slots in
   the header and four in the footer.
 - an opt-in browser-presentation pilot: a paired display shows a six-digit code,
