@@ -43,11 +43,11 @@ management fields.
     "wallets": {
       "apple": {
         "available": true,
-        "url": "https://example.com/wp-admin/admin-post.php?action=rondo_membership_pass_wallet&person_id=123&wallet=apple&_wpnonce=..."
+        "url": "https://example.com/wp-admin/admin-post.php?action=rondo_membership_pass_wallet&person_id=123&wallet=apple&_wallet_token=..."
       },
       "google": {
         "available": true,
-        "url": "https://example.com/wp-admin/admin-post.php?action=rondo_membership_pass_wallet&person_id=123&wallet=google&_wpnonce=..."
+        "url": "https://example.com/wp-admin/admin-post.php?action=rondo_membership_pass_wallet&person_id=123&wallet=google&_wallet_token=..."
       }
     },
     "role_options": [
@@ -71,7 +71,7 @@ remains limited to the linked person and their children under 18, including for
 users who also have management privileges.
 
 `wallets.*.available` reflects the current server configuration. The action URLs
-are session-bound and nonce-protected; they are not stable public links. When
+are signed for the current user and login session; they are not stable public links. When
 `requires_role` is true, append one returned role key as the `role` query
 parameter before navigating to the chosen wallet action.
 
@@ -142,7 +142,7 @@ Scanner UIs use `is_sponsor` to show `company_name` as **Bedrijf** for Sponsor p
 
 The household response supplies direct `admin-post.php` action URLs rather than
 a public landing URL. Apple actions return the `.pkpass` payload; Google actions
-redirect to the generated Google Save-to-Wallet URL. Both recheck the nonce,
+redirect to the generated Google Save-to-Wallet URL. Both recheck the session-bound token,
 logged-in user, person access and pass eligibility. A request for a person with
 several current roles must include one valid `role` key.
 

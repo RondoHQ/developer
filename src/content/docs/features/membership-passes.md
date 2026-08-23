@@ -40,7 +40,7 @@ so the roles are visually distinct. The action does not expose or unlock the gen
 sponsor-management screens.
 
 The household API returns the pass type, display label, wallet availability,
-nonce-protected action URLs and client-safe role labels. For the organization
+session-bound signed action URLs and client-safe role labels. For the organization
 behind a sponsor pass it additionally returns only the organization ID, display
 name, logo URL and an explicit `can_edit_logo` flag. Contacts, addresses and
 other sponsor-management data remain private.
@@ -51,14 +51,16 @@ other sponsor-management data remain private.
 action for Apple downloads and Google redirects. Every action checks:
 
 - the logged-in WordPress session;
-- a nonce scoped to the person and wallet type;
+- a signed token scoped to the user, login session, person and wallet type;
 - row-level access to the selected person;
 - current pass eligibility;
 - a valid role key when several current work roles exist.
 
 With zero or one current role the wallet badge acts directly. With several
 roles, **Mijn gegevens** opens a popover and appends the selected role key to the
-action URL. The UI uses the local Dutch badge assets:
+action URL. The session-bound token remains valid for the life of that login
+session, including when a mobile browser or installed app keeps the page open.
+The UI uses the local Dutch badge assets:
 
 - Apple: `public/icons/NL_Add_to_Apple_Wallet_RGB_101921.svg`
 - Google: `public/icons/nl_add_to_google_wallet_add-wallet-badge.svg`
