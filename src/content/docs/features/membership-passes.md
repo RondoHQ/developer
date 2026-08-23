@@ -2,22 +2,12 @@
 title: "Membership Passes"
 ---
 
-Membership passes provide a unique public landing page per eligible member where they can add their digital membership card to Apple Wallet or Google Wallet.
-
-## URL model
-
-Each eligible person gets:
-
-- `_membership_pass_token` (64-char hex token)
-- `_membership_pass_url` (public URL)
-
-Public route:
-
-- `/lidpas/{token}`
+Membership passes let authenticated members add their own card, or a minor
+child's card, to Apple Wallet or Google Wallet from **Mijn gegevens**.
 
 ## Eligibility
 
-A person is eligible based on ACF field `type-lid`:
+A person is eligible based on native field `type_lid` (stored as `type-lid`):
 
 - `Bondslid` (`Bondslid` tier)
 - `Verenigingslid` (`Verenigingslid` tier)
@@ -35,10 +25,9 @@ migration fallback.
 ## Member access in Rondo
 
 Every user linked to a person can open **Mijn gegevens**, including users who
-also have a staff or management role. Each visible household card shows its
-eligible pass and links to the existing public `/lidpas/{token}` landing page.
-This includes passes for children under 18. Ineligible people receive no pass
-action.
+also have a staff or management role. Each visible household card shows direct
+Apple Wallet and Google Wallet actions for its eligible pass. This includes
+passes for children under 18. Ineligible people receive no pass action.
 
 Sponsor accounts without a staff or parent role use **Mijn gegevens** as their
 default landing page. Sponsors who are also a current parent keep **Mijn
@@ -50,35 +39,34 @@ has a current child relationship. The organization block is labeled **Sponsor**,
 so the roles are visually distinct. The action does not expose or unlock the general
 sponsor-management screens.
 
-The household API returns the public URL, pass type and display label. For the
-organization behind a sponsor pass it additionally returns only the organization
-ID, display name, logo URL and an explicit `can_edit_logo` flag. Contacts,
-addresses and other sponsor-management data remain private.
+The household API returns the pass type, display label, wallet availability,
+nonce-protected action URLs and client-safe role labels. For the organization
+behind a sponsor pass it additionally returns only the organization ID, display
+name, logo URL and an explicit `can_edit_logo` flag. Contacts, addresses and
+other sponsor-management data remain private.
 
-## Lifecycle
+## Authenticated wallet actions
 
-`Rondo\Passes\PublicMembershipPassPage` keeps URLs in sync:
+`Rondo\Passes\MembershipPassService` registers an authenticated `admin-post.php`
+action for Apple downloads and Google redirects. Every action checks:
 
-- On person save (`save_post_person`)
-- On ACF save (`acf/save_post`)
-- One-time v2 backfill for existing eligible members (`rondo_membership_pass_backfill_v2_done` option)
+- the logged-in WordPress session;
+- a nonce scoped to the person and wallet type;
+- row-level access to the selected person;
+- current pass eligibility;
+- a valid role key when several current work roles exist.
 
-## Landing page behavior
+With zero or one current role the wallet badge acts directly. With several
+roles, **Mijn gegevens** opens a popover and appends the selected role key to the
+action URL. The UI uses the local Dutch badge assets:
 
-`GET /lidpas/{token}` renders a standalone public page (no React SPA) with:
+- Apple: `public/icons/NL_Add_to_Apple_Wallet_RGB_101921.svg`
+- Google: `public/icons/nl_add_to_google_wallet_add-wallet-badge.svg`
 
-- Member details (name, KNVB ID, current season)
-- `Add to Apple Wallet`
-- `Add to Google Wallet`
-
-Wallet actions:
-
-- Apple: `/lidpas/{token}?wallet=apple`
-- Google: `/lidpas/{token}?wallet=google`
-- If a person has multiple active work roles, the public page requires selecting exactly one role before wallet actions are enabled (no "all roles" wallet payload).
-- Public page uses local Dutch badge assets for both CTAs:
-  - Apple: `public/icons/NL_Add_to_Apple_Wallet_RGB_101921.svg`
-  - Google: `public/icons/nl_add_to_google_wallet_add-wallet-badge.svg`
+There is no public membership-pass page or stable public pass URL. The one-time
+`rondo_membership_pass_private_actions_v1_done` cleanup removes legacy
+`_membership_pass_token` and `_membership_pass_url` person meta and flushes the
+old rewrite rule.
 
 ## Settings location
 
@@ -145,13 +133,9 @@ Backward-compatible constants are still supported as fallback.
 
 ## REST exposure
 
-Person REST responses include:
+The household response exposes the client-safe wallet summary. Scanner
+endpoints remain:
 
-- `membership_pass_url`
-
-Endpoints:
-
-- `GET /rondo/v1/membership-passes/people/{person_id}/landing-url`
 - `GET /rondo/v1/membership-passes/people/{person_id}/qr-token`
 - `POST /rondo/v1/membership-passes/verify`
 

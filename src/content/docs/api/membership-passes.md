@@ -2,7 +2,7 @@
 title: "Membership Passes API"
 ---
 
-Membership pass endpoints provide signed QR token issuance, scanner-side verification, and landing URL retrieval per person.
+Membership pass endpoints provide signed QR token issuance, scanner-side verification, and authenticated household wallet actions.
 
 ## Authentication
 
@@ -25,27 +25,6 @@ User must be allowed to access the target person.
 | `season` | string | No | Season key (`YYYY-YYYY`). Defaults to current season. |
 | `ttl_days` | int | No | Token lifetime in days. Defaults to `365` (clamped 1-730). |
 
-## Get Landing URL
-
-**GET** `/rondo/v1/membership-passes/people/{person_id}/landing-url`
-
-Ensures token + URL post meta exist for an eligible member or Sponsor and returns the landing URL.
-
-### Permission
-
-User must be allowed to access the target person.
-
-### Response
-
-```json
-{
-  "person_id": 123,
-  "membership_pass_url": "https://example.com/lidpas/abcd..."
-}
-```
-
-If a person is not an eligible member or Sponsor, `membership_pass_url` is `null`.
-
 ## Household pass summary
 
 **GET** `/rondo/v1/people/household`
@@ -59,9 +38,23 @@ management fields.
   "id": 123,
   "fields": {},
   "membership_pass": {
-    "url": "https://example.com/lidpas/abcd...",
     "type": "businessclub",
-    "label": "Businessclubpas"
+    "label": "Businessclubpas",
+    "wallets": {
+      "apple": {
+        "available": true,
+        "url": "https://example.com/wp-admin/admin-post.php?action=rondo_membership_pass_wallet&person_id=123&wallet=apple&_wpnonce=..."
+      },
+      "google": {
+        "available": true,
+        "url": "https://example.com/wp-admin/admin-post.php?action=rondo_membership_pass_wallet&person_id=123&wallet=google&_wpnonce=..."
+      }
+    },
+    "role_options": [
+      { "key": "a1b2c3d4e5f6g7h8", "label": "AWC 1 — Trainer" },
+      { "key": "b2c3d4e5f6g7h8i9", "label": "AWC 2 — Leider" }
+    ],
+    "requires_role": true
   },
   "sponsor_organization": {
     "id": 456,
@@ -76,6 +69,11 @@ management fields.
 `bondslid`, `verenigingslid`, `businessclub`, or `awc_sponsor`. The endpoint
 remains limited to the linked person and their children under 18, including for
 users who also have management privileges.
+
+`wallets.*.available` reflects the current server configuration. The action URLs
+are session-bound and nonce-protected; they are not stable public links. When
+`requires_role` is true, append one returned role key as the `role` query
+parameter before navigating to the chosen wallet action.
 
 `sponsor_organization` is present only when an active organization supplies the
 person's sponsor pass **and** the caller may edit that logo. For a regular
@@ -140,21 +138,13 @@ Logged-in approved users.
 
 Scanner UIs use `is_sponsor` to show `company_name` as **Bedrijf** for Sponsor passes. Other pass types continue to show the KNVB ID.
 
-## Public Landing Page
+## Authenticated Wallet Actions
 
-For each eligible member or Sponsor, Rondo stores:
-
-- `_membership_pass_token` (person post meta)
-- `_membership_pass_url` (person post meta)
-
-Public landing page route:
-
-- `GET /lidpas/{token}`
-
-Wallet actions from the landing page:
-
-- Apple: `GET /lidpas/{token}?wallet=apple`
-- Google: `GET /lidpas/{token}?wallet=google`
+The household response supplies direct `admin-post.php` action URLs rather than
+a public landing URL. Apple actions return the `.pkpass` payload; Google actions
+redirect to the generated Google Save-to-Wallet URL. Both recheck the nonce,
+logged-in user, person access and pass eligibility. A request for a person with
+several current roles must include one valid `role` key.
 
 ## Status values
 

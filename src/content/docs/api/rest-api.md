@@ -1479,7 +1479,6 @@ When no option is set, hardcoded defaults from `VolunteerStatus` class are used.
 | Method | Endpoint | Description |
 |--------|----------|-------------|
 | GET | `/rondo/v1/membership-passes/people/{person_id}/qr-token` | Issue signed membership pass QR token |
-| GET | `/rondo/v1/membership-passes/people/{person_id}/landing-url` | Ensure and return person's public membership pass landing URL |
 | POST | `/rondo/v1/membership-passes/verify` | Validate scanned membership pass token |
 
 Detailed reference: `api/membership-passes.md`.
