@@ -18,6 +18,8 @@ Heeft een eigen minderjarig kind nog geen andere ouder/verzorger, dan biedt **Mi
 
 Na verificatie werkt Rondo het persoonsprofiel, het afleveradres van het WordPress-account en bij een primair adres ook het loginadres bij. Gekoppelde minderjarige kinderen worden alleen aangepast wanneer hun betreffende e-mailveld nog exact het oude gezinsadres bevat. Een afwijkend adres van een kind wordt nooit overschreven.
 
+Rondo waarschuwt in beide wijzigformulieren dat het tot een half uur kan duren voordat het nieuwe e-mailadres in Sportlink en Voetbal.nl is verwerkt.
+
 Een e-mailwijziging die de ouder rechtstreeks vanaf de kaart van een kind start, past uitsluitend dat kind aan. Het WordPress-account van de ouder en de gegevens van andere kinderen wijzigen dan niet.
 
 Het tweede e-mailadres kan zonder verificatie worden verwijderd. Het primaire e-mailadres kan alleen worden vervangen of worden gewisseld met het tweede adres.
