@@ -4,6 +4,10 @@ title: Clothing Management
 
 The clothing management module tracks which member has which club clothing item and when it was handed out or returned.
 
+The site-wide Kleding [feature toggle](./feature-toggles/) defaults to `on`. In `admin_only`, only
+administrators can configure and use the module; in `off`, its navigation, person tab, routes, and REST
+API are unavailable while stored clothing records remain intact.
+
 ## Capabilities
 
 - Uses capability `manage_clothing`.

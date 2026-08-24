@@ -6,6 +6,11 @@ Rondo Club includes the control plane and browser display for subscription-free
 club narrowcasting. A Raspberry Pi runs the separate Rondo Player agent behind
 each television.
 
+The site-wide Club TV [feature toggle](./feature-toggles/) defaults to `on`. `admin_only` limits the
+management UI, content API, and browser-presenter sender to administrators. `off` hides those human
+surfaces completely. Paired Raspberry Pi players continue fetching their existing configuration and
+playlists in every state, so disabling management does not blank active televisions.
+
 ## Implemented scope
 
 The technical pilot, matchday and content milestones provide:

@@ -6,18 +6,11 @@ Rondo Club stores rooms and reservations as private WordPress posts with native 
 meta. Members can inspect availability, but can reserve only for a commissie or year group for which
 their linked person currently has a qualifying volunteer position. Player positions do not qualify.
 
-## Feature flag
+## Feature toggle
 
-The complete feature is controlled by the site option `rondo_rooms_enabled` and defaults to disabled.
-When disabled, Rondo hides the navigation and page, does not register the room REST routes, and makes
-Club TV ignore reservation-controlled presentation links. Existing rooms and bookings remain stored.
-
-Enable or disable it with WP-CLI:
-
-```bash
-wp option update rondo_rooms_enabled 1
-wp option update rondo_rooms_enabled 0
-```
+Ruimtes uses the site-wide three-state feature toggle and defaults to `off`. `admin_only` lets
+administrators configure rooms while the navigation, pages, and REST routes remain unavailable to
+other users. Existing rooms and bookings remain stored in every state. See [Feature toggles](./feature-toggles/).
 
 ## Roles and permissions
 
