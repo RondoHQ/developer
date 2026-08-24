@@ -4,6 +4,8 @@ title: Zelf gegevens wijzigen
 
 Leden met een gekoppeld persoonsprofiel kunnen via **Mijn gegevens** hun e-mailadressen, telefoonnummers en gezinsadres beheren.
 
+Op de kaart van ieder eigen minderjarig kind staat eveneens **Wijzigen**. Daarmee kan de ouder de e-mailadressen en telefoonnummers van dat specifieke kind beheren. De server accepteert hiervoor alleen het gekoppelde profiel en kinderen binnen de persoonlijke household-scope; de andere ouder/verzorger en personen buiten het gezin blijven alleen-lezen.
+
 ## Gezin en andere ouder/verzorger
 
 De persoonlijke household-route toont het gekoppelde profiel, minderjarige kinderen en de andere ouder/verzorger die aan een van die kinderen is gekoppeld. Van die andere ouder worden alleen naam en contactgegevens teruggegeven; de kaart is volledig alleen-lezen en bevat geen ledenpas, sponsororganisatie, geboortedatum, KNVB-ID of VOG-gegevens.
@@ -16,11 +18,15 @@ Heeft een eigen minderjarig kind nog geen andere ouder/verzorger, dan biedt **Mi
 
 Na verificatie werkt Rondo het persoonsprofiel, het afleveradres van het WordPress-account en bij een primair adres ook het loginadres bij. Gekoppelde minderjarige kinderen worden alleen aangepast wanneer hun betreffende e-mailveld nog exact het oude gezinsadres bevat. Een afwijkend adres van een kind wordt nooit overschreven.
 
+Een e-mailwijziging die de ouder rechtstreeks vanaf de kaart van een kind start, past uitsluitend dat kind aan. Het WordPress-account van de ouder en de gegevens van andere kinderen wijzigen dan niet.
+
 Het tweede e-mailadres kan zonder verificatie worden verwijderd. Het primaire e-mailadres kan alleen worden vervangen of worden gewisseld met het tweede adres.
 
 ## Telefoon
 
 Leden kunnen `mobile_1`, `mobile_2`, `telephone_1` en `telephone_2` onafhankelijk toevoegen, wijzigen en leegmaken. De waarden worden als internationale telefoonnummers opgeslagen.
+
+Dezelfde vier velden zijn per minderjarig kind afzonderlijk te beheren vanaf de kaart van dat kind.
 
 `telephone_2` is Rondo-only. Dit veld wordt niet naar Sportlink gestuurd, omdat Sportlink geen betrouwbaar tweede vaste-telefoonveld ondersteunt. De andere drie telefoonslots gaan wel door de normale reverse-sync.
 
