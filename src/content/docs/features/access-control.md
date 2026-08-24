@@ -258,9 +258,16 @@ which backfills on `init`. Version 2 gave `financieel_read` to every role alread
 `GET /wp/v2/people` returns exactly what the caller may see, which for a scoped member is their own
 record plus their children under 18, with the ACF payload already reduced to the allowlist.
 `GET /rondo/v1/people/household` always returns that household scope, independent of management
-privileges, and is the only data source for "Mijn gegevens". Each row also contains a minimal
-`membership_pass` summary (`url`, `type`, and `label`) or `null`; eligibility is calculated by the
-central membership-pass service and does not expose sponsor-company relationship data.
+privileges, and is the only data source for "Mijn gegevens". It additionally returns other
+parents/guardians connected to a visible minor child, but limits those rows to name and contact
+fields and marks them `other_parent`; membership passes, sponsor data, birthdates, KNVB IDs, and
+VOG fields stay private. The linked person and child rows can contain a minimal `membership_pass`
+summary; eligibility is calculated by the central membership-pass service.
+
+`POST /rondo/v1/people/{child_id}/household-parent` is the deliberately narrow member write path.
+The child must be a minor in the current user's household, no other parent may already be linked,
+and only a new person can be created. Existing-person search and linking remain behind the
+membership-administration capability.
 
 The personal card includes both configured email, mobile, and telephone slots (`email_1` and
 `email_2`, `mobile_1` and `mobile_2`, `telephone_1` and `telephone_2`). Empty secondary values are
