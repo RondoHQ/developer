@@ -25,12 +25,14 @@ The public page publishes a 1200×630 Open Graph image from
 
 Logic lives in `Rondo\Users\ActivationService`; `ActivationPage` only routes and renders.
 
-Former members are normally excluded from activation. The exception is a former member with a
-published, non-former child relationship: their membership record remains read-only, but their
-current parent or guardian role still needs an account. That parent can therefore activate through
-the e-mail address stored on their own person record, even when the child's address is different.
-`ParentRelationshipService::has_current_child()` is the shared eligibility check used by both
-activation and the `is_current_parent` person response field.
+Former members are normally excluded from activation. There are two role-based exceptions:
+
+- a former member with a published, non-former child relationship;
+- a former member who is an active sponsor contact.
+
+Their membership record remains read-only, but their current parent, guardian, or sponsor role still
+needs an account. `ActivationService::is_person_activatable()` is the shared eligibility check for
+public activation and the administrator's provisionable-person picker.
 
 ## Parents activating through a child
 
@@ -90,11 +92,25 @@ list of email addresses.
 - Valid for two hours.
 - **Burned on use.** One link creates one account. A family activating a second member requests a
   new link — a deliberate trade of convenience for a smaller blast radius if a link is forwarded.
+- A second transient retains only the token hash, matched email, eligible person IDs, and consumed
+  state for seven days. This lets administrators diagnose a genuine expired or reused link without
+  storing the raw token. Random or guessed token URLs have no context and are never logged.
 
 `activate()` re-validates everything at the moment of use rather than trusting the picker page: the
 token must still be live, and the person must still match its address, still be active or have a
-current parent role, and still lack an account. A token for one address cannot activate a person on
-another.
+current parent or sponsor role, and still lack an account. A token for one address cannot activate a
+person on another.
+
+## Activation error log
+
+Administrators see the 50 most recent attributable failures under **Settings → Beheer → Gebruikers →
+Mislukte accountactivaties**. Entries contain the time, matched people, proven email address, stable
+error code, and operator-facing message. The underlying private `rondo_activation_log` posts are
+retained for 12 months.
+
+Failures include expired or reused genuine activation links, provisioning errors, invalid choices,
+and activation-email delivery failures. Repeated refreshes of the same token and error are deduplicated
+for one hour. Unknown token URLs are excluded to prevent bot traffic from filling the log.
 
 ## Rate limiting
 
@@ -124,7 +140,7 @@ The email address determines the next step:
 | Multiple people without accounts | Send the activation link and identity picker |
 | Existing accounts only | Send one branded email with a named Magic Login button per account |
 | Existing and unactivated people | Send one combined email with named login buttons and an activation button |
-| Unknown address, or former member without a current parent role | Send nothing |
+| Unknown address, or former member without a current parent or sponsor role | Send nothing |
 
 The plugin remains responsible for Magic Login token creation, validity, and authentication. Rondo
 never uses the plugin's generic registration feature because that would bypass person linking,
@@ -154,9 +170,10 @@ must exist.
 
 ## Who can activate
 
-Any published `person` who is not a `former_member` and does not already have an account. There is
-deliberately no requirement to owe a volunteer obligation: a sponsor or a grandparent who wants to
-help is not turned away. See [vrijwilligersplicht](/features/vrijwilligersplicht/) for the
+Any contactable published `person` who does not already have an account and is active, a current
+parent, or an active sponsor contact. Former-member profiles remain read-only after account creation.
+There is deliberately no requirement to owe a volunteer obligation: a sponsor or a grandparent who
+wants to help is not turned away. See [vrijwilligersplicht](/features/vrijwilligersplicht/) for the
 distinction between owing a duty and being allowed to volunteer.
 
 A person who already has an account is shown "je hebt al een account" with a link to password reset,

@@ -87,8 +87,9 @@ action fires inside `wp_signon()` — what `wp-login.php` calls. A test that dri
 
 ## Who can be provisioned
 
-`GET /rondo/v1/users/provisionable` requires only that the person is published, is not a
-`former_member`, has no account yet, and has a valid `email_1` or `email_2`.
+`GET /rondo/v1/users/provisionable` requires that the person is published, has no account yet, has a
+valid `email_1` or `email_2`, and passes `ActivationService::is_person_activatable()`. Active people,
+current parents, and active sponsor contacts are eligible; other former members are not.
 
 It deliberately does **not** require a `knvb-id`. The parents who carry the ouderplicht are not
 Sportlink members and have none — requiring it hid 269 of them from the picker.
