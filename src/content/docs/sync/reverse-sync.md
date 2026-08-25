@@ -132,7 +132,7 @@ Change detection skips members where `sync_origin == 'sync_sportlink_to_rondo_cl
 ### Retry Logic
 
 - Up to 3 attempts per member with exponential backoff (1s, 3s, 7s)
-- Session timeout detection: if redirected to Sportlink login page, re-authenticate and retry
+- Session timeout detection recognizes both Sportlink's legacy authentication path and the current `idm.sportlink.com` identity-provider host. If a silent token refresh lands on the dashboard instead of the requested member page, navigation retries that member page once before failing.
 - **Fail-fast for multi-page:** if any page fails, no timestamps are updated; all changes remain unsynced for retry on next run
 - A disabled Sportlink save button with a visible validation message is parked as **action required** for 24 hours. Rondo's change log receives the repair reason and the operator receives one action email. The five-minute pipeline remains successful, so the parked item does not send a failure email every run. A daily retry resumes automatically after the underlying Sportlink data is repaired.
 
