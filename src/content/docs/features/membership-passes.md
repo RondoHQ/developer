@@ -15,6 +15,10 @@ A person is eligible based on native field `type_lid` (stored as `type-lid`):
   `sponsor_role` selects `businessclub` or `awc_sponsor` (`Sponsor` tier),
   independently of `person_type` and `type-lid`
 
+Every eligible person must also be active: `former_member` must be false and
+`lid_tot` must be empty or today/future. The same centralized eligibility check
+is used by the household response, wallet generators and QR verification.
+
 The active sponsor relation remains the primary tier. When that person also has
 a `Bondslid` or `Verenigingslid` tier and at least one current work-history
 role, **Mijn gegevens** offers both the selected Sponsor pass and an AWC member
@@ -86,6 +90,10 @@ Uploads are stored as WordPress media attachments (no manual server paths):
 - Apple certificate `.p12` upload
 - Google service-account `.json` upload
 
+The Wallets tab reads the Apple certificate and shows its expiry date. It warns
+from 45 days before expiry and reports missing, expired or unreadable files
+without exposing the certificate path or password.
+
 Required uploads/extensions are enabled for financieel/admin users via `upload_mimes`.
 
 ## Apple Wallet generator
@@ -98,6 +106,7 @@ Class: `Rondo\Passes\MembershipPassApple`
 - Uses configured pass identifiers and club branding
 - Uses `{club name} lidmaatschapspas` as the Apple Wallet description for member passes
 - Uses tier-based primary label (`BONDSLID`, `VERENIGINGSLID`, or `SPONSOR`)
+- Has no season field; validity follows current pass rights instead of a season boundary
 - Shows KNVB ID field only for `Bondslid` tier
 - Sponsor passes use a white background with dark foreground and label text and replace team/function fields with `BEDRIJF` and the selected sponsor company's title
 - `businessclub` shows `Businessclub {organization name}` with the separately configurable Businessclub logo; without an uploaded logo it falls back to the bundled Businessclub AWC asset
@@ -130,7 +139,7 @@ Class: `Rondo\Passes\MembershipPassGoogle`
 - Generates a cached padded PNG variant of the club logo for Google Wallet to avoid crest clipping in the compact wallet card
 - Uses full object `update` to replace legacy object styling when a pass object already exists
 - Sets `subheader` to member type label (`Bondslid`/`Verenigingslid`/`Sponsor`) above the member name
-- Uses text modules for pass data (`FUNCTIE`, `TEAM`, optional `KNVB ID`, `SEIZOEN`); Sponsor passes instead show only `BEDRIJF` and `SEIZOEN`
+- Uses text modules for pass data (`FUNCTIE`, `TEAM`, optional `KNVB ID`); Sponsor passes instead show only `BEDRIJF`
 - Sets `hexBackgroundColor` from finance accent color (with fallback), except for Sponsor passes which always use `#ffffff`, and includes localized `logo.contentDescription`
 
 Config keys (stored via Finance settings):
@@ -156,5 +165,12 @@ The in-app scanner (`/lidpas-scanner`) uses a layered detection strategy:
 - `BarcodeDetector` when available
 - `jsQR` frame-decoding fallback when `BarcodeDetector` is not supported
 - Sponsor scans show `Bedrijf: {company_name}` instead of a KNVB ID
+
+Only administrators and users with the `toegangscontrole` capability can call
+the verification endpoint. Every scan is checked online against the current
+membership, sponsor relation and pass version. A pass has no default expiry,
+but any relevant eligibility change increments the person's private pass
+version, permanently revoking all older QR codes. If the connection fails, the
+scanner does not make an offline validity claim.
 
 This keeps camera scanning functional on browsers like iOS Chrome that do not expose `BarcodeDetector`.

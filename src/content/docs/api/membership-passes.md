@@ -23,7 +23,11 @@ User must be allowed to access the target person.
 | Name | Type | Required | Description |
 |------|------|----------|-------------|
 | `season` | string | No | Season key (`YYYY-YYYY`). Defaults to current season. |
-| `ttl_days` | int | No | Token lifetime in days. Defaults to `365` (clamped 1-730). |
+| `ttl_days` | int | No | Optional token lifetime in days (1-730). Omit or use `0` for a permanent token. |
+
+The default token has no `exp` claim. It contains `pass_version`, which is
+compared with the current private version on every online scan. Existing tokens
+without this claim are treated as version `1` for backward compatibility.
 
 ## Household pass summary
 
@@ -103,7 +107,7 @@ Validates a scanned token and resolves member status for scanner UIs.
 
 ### Permission
 
-Logged-in approved users.
+Administrators and users with the `toegangscontrole` capability.
 
 ### Request Body
 
@@ -120,7 +124,7 @@ Logged-in approved users.
   "valid": true,
   "token": {
     "issued_at": "2026-02-22T14:30:00+00:00",
-    "expires_at": "2027-02-22T14:30:00+00:00",
+    "expires_at": null,
     "season": "2025-2026"
   },
   "person": {
@@ -139,6 +143,12 @@ Logged-in approved users.
 ```
 
 Scanner UIs use `is_sponsor` to show `company_name` as **Bedrijf** for Sponsor passes. Other pass types continue to show the KNVB ID.
+
+`valid` is calculated from the signature, the current membership status, the
+current pass right and the current `pass_version`. An intact but revoked pass
+returns HTTP 200 with `valid: false` and `reason` set to `revoked`, `former`,
+`expired`, or `no_pass_right`. This lets the scanner identify the person while
+clearly rejecting the pass. A network error has no offline fallback.
 
 ## Authenticated Wallet Actions
 
@@ -159,6 +169,7 @@ several current roles must include one valid `role` key.
 ## Notes
 
 - QR tokens are signed with HS256.
+- QR tokens are permanent by default and must always be verified online.
 - Signing key is generated automatically on first use and stored in option `rondo_membership_pass_jwt_secret`.
 - Apple pass generation requires `pkpass/pkpass` to be installed and certificate config set.
 - Google pass generation uses `google/apiclient` with service-account credentials.
