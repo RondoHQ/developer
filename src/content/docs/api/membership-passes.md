@@ -122,6 +122,7 @@ Administrators and users with the `toegangscontrole` capability.
 ```json
 {
   "valid": true,
+  "pass_type": "businessclub",
   "token": {
     "issued_at": "2026-02-22T14:30:00+00:00",
     "expires_at": null,
@@ -144,11 +145,59 @@ Administrators and users with the `toegangscontrole` capability.
 
 Scanner UIs use `is_sponsor` to show `company_name` as **Bedrijf** for Sponsor passes. Other pass types continue to show the KNVB ID.
 
+`pass_type` is the exact wallet-pass variant encoded when the pass was issued:
+`bondslid`, `verenigingslid`, `businessclub`, or `awc_sponsor`. This keeps
+dual-role members in the correct access statistic.
+
 `valid` is calculated from the signature, the current membership status, the
 current pass right and the current `pass_version`. An intact but revoked pass
 returns HTTP 200 with `valid: false` and `reason` set to `revoked`, `former`,
 `expired`, or `no_pass_right`. This lets the scanner identify the person while
 clearly rejecting the pass. A network error has no offline fallback.
+
+## Match-bound access endpoints
+
+All access endpoints require an administrator or a user with the
+`toegangscontrole` capability.
+
+### List scanner matches
+
+**GET** `/rondo/v1/access-events/matches`
+
+Returns upcoming Sportlink home fixtures with `is_active`, `is_selectable`,
+`window_from`, and `window_until`. The scanner polls this endpoint every minute.
+
+### Select a match
+
+**POST** `/rondo/v1/access-events/select`
+
+```json
+{ "source_id": "sportlink-match-id" }
+```
+
+The server rechecks the current Sportlink feed and accepts only a selectable
+home fixture. The response contains the private event snapshot and its current
+anonymous statistics.
+
+### Scan and count a pass
+
+**POST** `/rondo/v1/access-events/{event_id}/scan`
+
+```json
+{ "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." }
+```
+
+The response extends the regular verification response with `admission` and
+`stats`. `admission.counted` is true only for the first accepted scan of that
+person at this event. A repeat returns `duplicate: true` without increasing the
+total.
+
+### Read live statistics
+
+**GET** `/rondo/v1/access-events/{event_id}/stats`
+
+Returns `total`, a `counts` object keyed by the four pass types, and a labeled
+`breakdown` array. No attendee records or identifiers are exposed.
 
 ## Authenticated Wallet Actions
 

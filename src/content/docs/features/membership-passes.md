@@ -174,3 +174,24 @@ version, permanently revoking all older QR codes. If the connection fails, the
 scanner does not make an offline validity claim.
 
 This keeps camera scanning functional on browsers like iOS Chrome that do not expose `BarcodeDetector`.
+
+## Match selection and anonymous access statistics
+
+The scanner loads home fixtures from the existing server-side Sportlink
+matchday cache. It marks a match active from two hours before until four hours
+after kickoff. One active match is selected automatically. When several are
+active, the operator selects once and the browser remembers that choice for the
+same local date. A manual fallback shows selectable home fixtures for today.
+
+Selecting a fixture creates or updates a private `rondo_access_event` snapshot.
+Every accepted QR scan creates at most one private `rondo_admission` for that
+event. The aggregate breakdown has four fixed types: `bondslid`,
+`verenigingslid`, `businessclub`, and `awc_sponsor`.
+
+Admission posts store only the event reference, exact pass type, and scan time.
+They never store the person ID, name, email address, KNVB ID, or raw token. A
+per-event HMAC option prevents the same person being counted twice across
+scanner devices. Its secret stays server-side and the duplicate-detection
+option is deleted after 30 days; aggregate admission posts remain.
+
+Ticket sales and payment flows are not part of this implementation.
