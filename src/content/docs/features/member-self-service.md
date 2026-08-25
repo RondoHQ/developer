@@ -38,8 +38,8 @@ Een adreswijziging vervangt of maakt de adresregel met label `Home` bij het geko
 
 ## Wijzigingslog
 
-Elke zelfserviceactie maakt een privaat `rondo_profile_change`-record met actor, tijdstip, betrokken personen, oude en nieuwe waarden, verificatiestatus en Sportlink-status. De statussen zijn `pending`, `synced`, `failed` en `local_only`.
+Elke zelfserviceactie maakt een privaat `rondo_profile_change`-record met actor, tijdstip, betrokken personen, oude en nieuwe waarden, verificatiestatus en Sportlink-status. De statussen zijn `pending`, `synced`, `failed`, `action_required` en `local_only`. De UI toont `action_required` als **Actie nodig** met de concrete Sportlink-validatiemelding.
 
 Alleen gebruikers met de capability `ledenadministratie` en beheerders kunnen de log via **Relaties → Wijzigingslog** lezen. Rondo verwijdert logregels na 24 maanden met een dagelijkse retentietaak.
 
-De reverse-sync meldt het resultaat terug via `POST /rondo/v1/profile-change-log/sync-status`. Deze route vereist een beheeraccount, zoals de bestaande Rondo-applicatiegebruiker van de synchronisatie.
+De reverse-sync meldt het resultaat terug via `POST /rondo/v1/profile-change-log/sync-status`. Deze route vereist een beheeraccount, zoals de bestaande Rondo-applicatiegebruiker van de synchronisatie. Een definitieve Sportlink-formuliervalidatie wordt als `action_required` gemeld en blijft herstelbaar; een latere geslaagde retry zet dezelfde logregel alsnog op `synced`.
