@@ -200,7 +200,14 @@ contact edits and archiving continue to require `sponsorbeheer`.
 
 The current-user endpoint returns `is_kader`: admin, **or** any staff capability, **or** any role
 beyond the plain-member baseline (poule roles and admin-created coordinator roles carry no
-capability of their own). `router.jsx` and `Layout.jsx` both read that one field.
+capability of their own). The exception is a role carrying the isolated `kaderlijst` capability:
+that role exposes only the roster and remains outside general kader navigation. `router.jsx` and
+`Layout.jsx` both read the server fields.
+
+`can_access_kaderlijst` is true for general kader accounts and for the built-in `rondo_kaderlijst`
+role. The latter receives the full, field-limited Kaderlijst endpoint but remains household-scoped
+for every general person query. Age-group settings attached to a Kaderlijst role are ignored so a
+stale or accidental configuration cannot widen member-directory access.
 
 Do not re-derive it in the frontend. When the router counted extra roles and the sidebar did not, a
 coordinator was sent to the dashboard while every link to it stayed hidden.

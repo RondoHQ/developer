@@ -116,6 +116,7 @@ Application shell behavior:
 | `/people/:id` | `PersonDetail` | View contact | Auth |
 | `/teams` | `TeamsList` | Team list | Auth |
 | `/teams/:id` | `TeamDetail` | View team | Auth |
+| `/kaderlijst` | `Kaderlijst` | Active staff roster | Kaderlijst capability or general kader account |
 | `/commissies` | `CommissiesList` | Committee list | Auth |
 | `/commissies/:id` | `CommissieDetail` | Committee detail | Auth |
 | `/todos` | `TodosList` | Todo list | Auth |
@@ -135,7 +136,7 @@ Application shell behavior:
 | `/settings/custom-fields` | `CustomFields` | Custom field management | Auth |
 | `/settings/feedback` | `FeedbackManagement` | Feedback settings | Auth |
 
-**Capability-based route guards:** Routes under `/financien/` require `financieel` capability, `/vog` requires VOG capability, and `/tuchtzaken` requires fairplay capability. These are enforced by `CapabilityRoute` wrapper components (`FinancieelRoute`, `VOGRoute`, `FairplayRoute`).
+**Capability-based route guards:** Routes under `/financien/` require `financieel` capability, `/vog` requires VOG capability, `/tuchtzaken` requires fairplay capability, and `/kaderlijst` requires `can_access_kaderlijst`. These are enforced by `CapabilityRoute` wrapper components.
 
 ### Authentication
 

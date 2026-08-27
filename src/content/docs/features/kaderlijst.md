@@ -7,7 +7,8 @@ The Kaderlijst feature provides a live roster sheet for youth staff roles, repla
 ## Route and UI
 
 - Route: `/kaderlijst`
-- Navigation: `Teams -> Kaderlijst`
+- Navigation: `Teams -> Kaderlijst` for general kader accounts; a standalone `Kaderlijst` item for
+  accounts with only the dedicated capability.
 - UI: shared `DataTable` component
 
 Columns:
@@ -34,6 +35,8 @@ The Kaderlijst endpoint is the security boundary. It returns only the canonical 
 the table: names, work history, email addresses, mobile numbers, and telephone numbers. It applies
 the current user's person scope before building the response:
 
+- the dedicated `kaderlijst` capability receives all active kader records without widening general
+  person visibility;
 - management capabilities receive all active kader records;
 - coordinators receive kader linked to teams whose current player roster matches one of their
   permitted age groups;
@@ -41,6 +44,11 @@ the current user's person scope before building the response:
   allowlist still applied.
 
 Do not replace this endpoint with an unscoped `wp/v2/people` request or a shared full-club snapshot.
+
+The built-in `rondo_kaderlijst` role carries only the `kaderlijst` capability. It does not set
+`is_kader`, does not unlock `/people`, `/teams`, or other staff routes, and is ignored when general
+age-group person visibility is calculated. Map a Sportlink functie such as a tournament coordinator
+to this role when the account needs the roster but not the member directory.
 
 ## Server cache
 
