@@ -54,7 +54,10 @@ The technical pilot, matchday and content milestones provide:
 The `narrowcasting` capability manages content, playlists and previews. A user
 with only `sponsorbeheer` sees and manages sponsor items but cannot edit other
 content, playlists, players or Sportlink settings. Administrators additionally
-manage players, display assignments and Sportlink.
+manage players, display assignments and Sportlink. The Club TV interface uses
+the shared Rondo tab design for **Content**, **Afspeellijsten**, **Players** and
+**Instellingen**. Player cards are shown first on the Players tab; the less
+frequent pairing form opens from **Nieuw player koppelen** in a popover.
 
 ## Sportlink matchday adapter
 
@@ -119,8 +122,8 @@ content changes on the next poll.
 
 1. An unpaired player registers its stable `device_id` and receives an
    eight-character activation code that expires after 15 minutes.
-2. An administrator enters that code in **Club TV**, names the display and
-   chooses the schedule.
+2. An administrator opens **Club TV → Players → Nieuw player koppelen**, enters
+   that code, names the display and chooses the schedule.
 3. The same device exchanges its approved code for a 256-bit device token.
 4. The token is written with mode `0600` on the Pi. Rondo stores only an HMAC
    hash made with the WordPress authentication salt.
@@ -134,7 +137,7 @@ rate-limited by source address. Every management route requires
 ## Signed player updates
 
 Administrators approve one stable version and, optionally, one beta version in
-**Club TV → Players & koppelingen**. Each display selects `stable`, `beta` or
+**Club TV → Instellingen**. Each display selects `stable`, `beta` or
 `off`. The device configuration exposes only that channel and its target
 version; it never accepts a release URL from WordPress.
 
