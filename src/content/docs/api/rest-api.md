@@ -9,6 +9,31 @@ This document describes all REST API endpoints available in Rondo Club, includin
 
 All API requests require authentication via WordPress session with REST nonce.
 
+## Tournament registrations
+
+Tournament endpoints are authenticated and use domain permissions rather than generic post-type
+access. Managers are administrators or users with the current work-history role
+`Coördinator toernooien`; entry access is additionally scoped to its assigned staff accounts.
+
+| Method | Endpoint | Access | Purpose |
+| --- | --- | --- | --- |
+| `GET` | `/rondo/v1/tournaments` | Manager | List tournament editions and totals |
+| `POST` | `/rondo/v1/tournaments` | Manager | Create a draft edition |
+| `GET`, `PATCH` | `/rondo/v1/tournaments/{id}` | Manager | Read or edit a draft edition |
+| `GET` | `/rondo/v1/tournaments/assignment-options` | Manager | List eligible teams and current staff accounts |
+| `POST` | `/rondo/v1/tournaments/{id}/publish` | Manager | Create shared entries and send invitations |
+| `PATCH` | `/rondo/v1/tournaments/{id}/deadline` | Manager | Extend the internal deadline |
+| `GET` | `/rondo/v1/tournaments/{id}/entries` | Manager | Read the team-level progress overview |
+| `GET` | `/rondo/v1/tournament-entries/mine` | Signed-in user | List assigned entries |
+| `GET` | `/rondo/v1/tournament-entries/{id}` | Assignee or manager | Read one shared entry |
+| `PATCH` | `/rondo/v1/tournament-entries/{id}/draft` | Assignee | Save contact and tournament-team draft data |
+| `POST` | `/rondo/v1/tournament-entries/{id}/submit` | Assignee | Confirm a positive registration |
+
+Draft and submit writes require the current `version`. A stale version returns HTTP 409 with the
+current entry in the error data. Confirmation requires at least one tournament team, a positive
+player count per team, and one complete shared contact. See
+[Tournament registrations](/features/tournament-registrations/) for the data model and workflow.
+
 **Headers:**
 ```
 X-WP-Nonce: {nonce_value}
