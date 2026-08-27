@@ -375,6 +375,7 @@ Get information about the currently logged in user.
   "can_access_vog": false,
   "can_access_financieel": false,
   "can_edit_financieel": false,
+  "feedback_intro_seen": false,
   "profile_url": "https://.../wp-admin/profile.php",
   "admin_url": "https://.../wp-admin/",
   "linked_person_name": "Jan de Vries",
@@ -383,6 +384,25 @@ Get information about the currently logged in user.
 ```
 
 `linked_person_name` is `null` when the user has no linked person record. `active_functies` is an empty array when there are no current job titles. `is_parent` is derived from a current `child` relationship to a published, non-former person and controls whether a sponsor keeps **Mijn inschrijftaken** as their default landing page.
+
+`feedback_intro_seen` is `false` until the user acknowledges the one-time explanation beside the feedback button.
+
+---
+
+### Acknowledge Feedback Introduction
+
+**POST** `/rondo/v1/user/feedback-intro-seen`
+
+Marks the one-time feedback explanation as acknowledged for the current account. The timestamp is stored in user meta, so the explanation stays dismissed across devices.
+
+**Permission:** Logged in users only
+
+**Success response (200):**
+```json
+{
+  "feedback_intro_seen": true
+}
+```
 
 ---
 
