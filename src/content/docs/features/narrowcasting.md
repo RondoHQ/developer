@@ -41,12 +41,13 @@ The technical pilot, matchday and content milestones provide:
   provide dependable team-logo assets; the schedule, pitch and dressing-room
   assignments are combined into one overview per group of matches.
 - the display header uses the current scene title beside the unframed club logo;
-  only match, cancellation and result scenes show the match date and clock in
-  the lower-right corner, while manually authored slides omit them;
+  match, cancellation, result, announcement and image scenes show the date and
+  clock in the lower-right corner;
 - image slides scale up to fit the available stage without cropping their
   content;
-- up to six active sponsor-company logos rotate per scene, with two slots in
-  the header and four in the footer.
+- up to eight active sponsor-company logos rotate per scene, with three slots in
+  the header and five in the footer; compact card padding gives each logo more
+  usable space.
 - an opt-in browser-presentation flow: an unassigned display allows any signed-in
   Rondo user, while a room-linked controlled display limits its six-digit code
   and session to the active reservation holder and authorized presenters.
