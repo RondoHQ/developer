@@ -14,6 +14,14 @@ De persoonlijke household-route toont het gekoppelde profiel, minderjarige kinde
 
 Heeft een eigen minderjarig kind nog geen andere ouder/verzorger, dan biedt **Mijn gegevens** een formulier om een nieuwe persoon met naam, e-mailadres en optioneel telefoonnummer toe te voegen. `POST /rondo/v1/people/{child_id}/household-parent` accepteert alleen een kind binnen de persoonlijke household-scope, maakt uitsluitend een nieuwe ouder aan en gebruikt daarna dezelfde relatie-, Sportlink-slot- en synchronisatielogica als de ledenadministratie. Een bestaande persoon koppelen blijft voorbehouden aan de ledenadministratie.
 
+## Contributiestatus
+
+De kaart van het gekoppelde lid en ieder eigen minderjarig kind toont de contributiestatus voor het huidige seizoen zodra de contributiefactuur is verstuurd. Het overzicht vermeldt het totaalbedrag, de betaaltermijn en bij een termijnplan de voortgang en eerstvolgende termijn.
+
+De household-route leest hiervoor alleen contributiefacturen met de status `rondo_sent`, `rondo_paid` of `rondo_overdue`, gekoppeld aan de persoon en het huidige `_invoice_season`. Concept- en vervallen facturen blijven verborgen. Voor een nog niet gekozen betaalplan verwijst de actie naar de bestaande openbare planselectiepagina; bij een actief termijnplan wordt uitsluitend de actuele Mollie-betaallink teruggegeven.
+
+Contributiegegevens volgen dezelfde persoonlijke household-scope als de contactgegevens. Een andere ouder/verzorger die alleen ter context op de pagina verschijnt krijgt altijd `contribution: null`, ook wanneer die persoon zelf een contributiefactuur heeft.
+
 ## E-mail
 
 `email_1` is het primaire e-mailadres en `email_2` het tweede e-mailadres. Een adres toevoegen, vervangen of primair maken wordt pas uitgevoerd nadat de ontvanger de eenmalige link heeft geopend. De link is twee uur geldig en een nieuwe aanvraag maakt een oudere aanvraag ongeldig.
