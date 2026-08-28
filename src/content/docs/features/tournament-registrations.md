@@ -24,9 +24,10 @@ count. One contact name, email address, and mobile number apply to all tournamen
 registration. On confirmation, Rondo snapshots the entered teams, player total, applicable price,
 and total amount.
 
-The internal deadline blocks staff writes. A tournament manager can extend it, but it must remain
-in the future and before the organiser's external deadline. Confirmed registrations are read-only
-in this milestone.
+Tournament dates and deadlines are entered as calendar dates without a time. The internal deadline
+remains open through the end of the selected day. A tournament manager can extend it, but it must
+remain in the future and before the organiser's external deadline. Confirmed registrations are
+read-only in this milestone.
 
 ## Storage and privacy
 
