@@ -916,11 +916,12 @@ Creates a `rondo_invoice` post of type `membership` for one person:
 Creates invoices for all uninvoiced members in a season:
 
 1. Admin triggers the job via the "Nog te factureren" (not yet invoiced) UI
-2. `BulkInvoiceCreator` iterates all members with fee snapshots
+2. `BulkInvoiceCreator` builds the job from published people with a valid, positive fee for the selected season; this eligible set is also the progress total
 3. Skips members who already have an invoice for the season
 4. Calls `create_membership_invoice()` for each eligible member
 5. Progress is tracked in a WordPress option (`rondo_bulk_invoice_job`)
-6. Frontend polls `GET /rondo/v1/fees/bulk-invoice-job` for progress updates
+6. The writable progress UI polls `POST /rondo/v1/fees/bulk-invoice-job/process`, which processes one locked batch and returns its status; read-only users poll `GET /rondo/v1/fees/bulk-invoice-job`
+7. WP-Cron remains a fallback, while an option lock prevents cron and REST polling from processing the same batch concurrently
 
 ### Invoice Lifecycle
 
