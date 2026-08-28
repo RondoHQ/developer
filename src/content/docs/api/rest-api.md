@@ -1003,7 +1003,7 @@ Invoice reads require the `financieel_read` capability; writes require `financie
 
 **GET** `/rondo/v1/invoices/statistics`
 
-Returns rolling 7- and 30-day payment totals, average payment lead time, installment-plan counts, 30 daily income buckets, 12 monthly income buckets, and two current-season contribution distributions. `membership_payment_status` counts fully paid, partially paid through installments, and open contribution invoices. `membership_amount_status` returns the collected, outstanding, and total contribution principal. Installment administration fees are excluded from this principal split. Both distributions exclude drafts, cancelled invoices, and credits. Pass `invoice_type=membership|discipline|manual|volunteer_fine` to filter the other statistics by invoice type. Credit invoices are excluded because they are not income.
+Returns rolling 7- and 30-day payment totals, average payment lead time, installment-plan counts, 30 daily income buckets, 12 monthly income buckets, and two current-season invoice distributions. `invoice_payment_status` counts fully paid, installment, and open invoices for the selected invoice type. `invoice_amount_status` returns the collected, outstanding, and total principal for that same selection. Installment administration fees are excluded from this principal split. Both distributions exclude drafts, cancelled invoices, and credits. Pass `invoice_type=membership|discipline|manual|volunteer_fine` to filter all statistics by invoice type. Membership invoices use their explicit sports season; other invoice types use the sports season containing their sent date. The legacy membership-only fields remain available for existing clients. Credit invoices are excluded because they are not income.
 
 ---
 
