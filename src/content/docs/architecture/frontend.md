@@ -136,6 +136,8 @@ Application shell behavior:
 | `/settings/custom-fields` | `CustomFields` | Custom field management | Auth |
 | `/settings/feedback` | `FeedbackManagement` | Feedback settings | Auth |
 
+In `PeopleList` toont de kolom **Team** uitsluitend een actuele teamkoppeling uit `work_history`. Beëindigde teamfuncties blijven beschikbaar in het persoonsdossier, maar verschijnen niet als huidig team in de lijst.
+
 **Capability-based route guards:** Routes under `/financien/` require `financieel` capability, `/vog` requires VOG capability, `/tuchtzaken` requires fairplay capability, and `/kaderlijst` requires `can_access_kaderlijst`. These are enforced by `CapabilityRoute` wrapper components.
 
 ### Authentication
