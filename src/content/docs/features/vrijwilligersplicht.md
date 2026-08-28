@@ -93,6 +93,9 @@ The dashboard also shows **Accounts aangemaakt**. This is the number of WordPres
 non-empty `rondo_linked_person_id`, matching the definition used by Rondo's account management.
 Administrators and service users without a linked person are not included. The value is returned as
 `rondo_account_count` by the same eligibility endpoint, so loading the card adds no extra request.
+The dashboard requests `summary_only=1`; the endpoint then preserves all counts and diagnostics but
+returns an empty `units` array. Detail consumers keep receiving the complete unit collection by
+default, and `with_persons=1` remains available for the exemptions page.
 
 ## Laposta synchronization
 
@@ -641,7 +644,8 @@ policy. Work-history dates are normalized from either the compact `YYYYMMDD` sto
 canonical `YYYY-MM-DD` wire format before comparison. A role whose end date is today is no longer
 current and therefore no longer grants an exemption or access to a committee-restricted shift pool.
 The default staff-role list recognizes both `Trainer` and Sportlink's combined `Trainer/coach`
-title. Eligibility views use generation-based transient keys, so a relationship or role change is
+title. The exemption resolver loads a person's work history once and applies committee and staff
+checks to that shared value. Eligibility views use generation-based transient keys, so a relationship or role change is
 visible immediately when WordPress uses a persistent object cache; old generations expire after the
 normal five-minute TTL.
 
