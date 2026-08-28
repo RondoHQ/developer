@@ -126,11 +126,12 @@ Team and werkfunctie matching allows categories to be assigned based on organiza
 - **Team matching (`matching_teams`)**: Array of team post IDs. Person matches if ANY of their teams appears in this array (not ALL).
 - **Werkfunctie matching (`matching_werkfuncties`)**: Array of werkfunctie strings. Person matches if ANY werkfunctie matches (case-insensitive comparison).
 
-**Priority order:**
-1. Youth categories (age class-based)
-2. Team matching (if person's teams match category's `matching_teams`)
-3. Werkfunctie matching (if person's werkfunctie matches category's `matching_werkfuncties`)
-4. Age class fallback (catch-all categories)
+**Eligibility and priority order:**
+1. A Sportlink `spelactiviteit` value other than empty or `-`, or a current player role on a team, enables age- and player-team-based fees. Staff-only team roles are not a playing signal.
+2. Youth categories match by age class when that playing signal exists.
+3. Team matching applies to current player roles whose team occurs in `matching_teams`.
+4. Werkfunctie matching remains available without a playing signal, so categories such as Donateur continue to work without `spelactiviteit`.
+5. Non-youth age class fallback applies only when a playing signal exists.
 
 **Example:**
 ```php
