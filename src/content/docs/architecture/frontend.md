@@ -127,6 +127,7 @@ Application shell behavior:
 | `/tuchtzaken` | `DisciplineCasesList` | Discipline cases | Fairplay capability |
 | `/financien/contributie` | `Contributie` | Fee overview | Financieel capability |
 | `/financien/contributie/:tab` | `Contributie` | Fee tab view | Financieel capability |
+| `/financien/betaalstatistieken` | `Betaalstatistieken` | Filterable payment statistics and income charts | Financieel capability |
 | `/financien/facturen` | `Facturen` | Invoice list | Financieel capability |
 | `/financien/facturen/:id` | `FactuurDetail` | Invoice detail | Financieel capability |
 | `/financien/instellingen` | `FinanceSettings` | Finance configuration | Financieel capability |

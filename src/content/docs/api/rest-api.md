@@ -1001,6 +1001,12 @@ Invoice reads require the `financieel_read` capability; writes require `financie
 
 ---
 
+**GET** `/rondo/v1/invoices/statistics`
+
+Returns rolling 7- and 30-day payment totals, average payment lead time, installment-plan counts, 30 daily income buckets, and 12 monthly income buckets. Pass `invoice_type=membership|discipline|manual|volunteer_fine` to filter all values by invoice type. Credit invoices are excluded because they are not income.
+
+---
+
 **GET** `/rondo/v1/invoices`
 
 List invoices with optional filters.

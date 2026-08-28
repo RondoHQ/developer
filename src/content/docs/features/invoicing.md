@@ -159,13 +159,13 @@ When `override_email` is passed in options, the email is sent to that address in
 
 **Class:** `Rondo\Finance\BulkInvoiceCreator`
 
-Creates membership invoices for all members in a season via async WP-Cron batch processing.
+Creates membership invoices for members in a season who do not already have one, via async WP-Cron batch processing.
 
-The `Maak facturen` action asks the financial administrator for confirmation before it starts. The REST request must also include `confirmed: true`; calls without explicit confirmation are rejected with HTTP 400.
+The `Maak facturen` action is only visible when at least one invoice-eligible member does not yet have a membership invoice for the season. Its label shows that pending count. The action asks the financial administrator for confirmation before it starts. The REST request must also include `confirmed: true`; calls without explicit confirmation are rejected with HTTP 400.
 
 ### Flow
 
-1. **Start job** — `start_job($season)` queries all published `person` posts, saves job state to a WordPress option, and schedules the first cron batch
+1. **Start job** — `start_job($season)` queries published `person` posts, removes people who already have a membership invoice for the season, saves the remaining job state to a WordPress option, and schedules the first cron batch
 2. **Batch processing** — Each batch processes 50 persons via `run_batch()`, then schedules the next batch 2 seconds later
 3. **Per-person logic** — `create_membership_invoice()` for each person:
    - Checks former-member eligibility before reading a cached fee
@@ -207,14 +207,14 @@ Former members are eligible only when valid `lid_sinds` and `lid_tot` dates prov
 
 All endpoints are under `rondo/v1/invoices`. Reads (list, single, PDF, QR, invoiced-cases) require `financieel_read`; every write requires `financieel`.
 
-The finance dashboard also requests `GET /invoices/statistics`. This read-only endpoint returns the amount and number of recorded payments in rolling 7- and 30-day windows, plus the average number of calendar days between `sent_date` and full payment for invoices paid in the last 30 days. Mollie installments count as separate receipts including their administration fee; a manual paid mark counts only the remaining invoice principal so earlier installments are not counted twice. Invoices without a reliable payment timestamp are excluded from the lead-time average. The response also counts unique people on current-season membership invoices with a 3- or 8-installment plan; draft and cancelled invoices are excluded.
+The separate payment statistics page requests `GET /invoices/statistics`. This read-only endpoint accepts an optional `invoice_type` filter (`membership`, `discipline`, `manual`, or `volunteer_fine`) and returns the amount and number of recorded payments in rolling 7- and 30-day windows, plus the average number of calendar days between `sent_date` and full payment for invoices paid in the last 30 days. It also returns zero-filled daily income for the last 30 calendar days and monthly income for the last 12 calendar months. Mollie installments count as separate receipts including their administration fee; a manual paid mark counts only the remaining invoice principal so earlier installments are not counted twice. Credit invoices and invoices without a reliable payment timestamp are excluded from income and lead-time calculations. The response also counts unique people on current-season membership invoices with a 3- or 8-installment plan; draft and cancelled invoices are excluded.
 
 ### Key Endpoints
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
 | GET | `/invoices` | List invoices (filterable by status, type, person) |
-| GET | `/invoices/statistics` | Recent payment totals and average paid-invoice lead time |
+| GET | `/invoices/statistics` | Filterable payment totals, lead time, and daily/monthly income series |
 | POST | `/invoices` | Create a new discipline invoice |
 | GET | `/invoices/{id}` | Get invoice details |
 | DELETE | `/invoices/{id}` | Delete a draft invoice |
