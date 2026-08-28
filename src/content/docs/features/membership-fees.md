@@ -128,6 +128,7 @@ Team and werkfunctie matching allows categories to be assigned based on organiza
 
 **Eligibility and priority order:**
 1. A Sportlink `spelactiviteit` value other than empty or `-`, or a current player role on a team, enables age- and player-team-based fees. Staff-only team roles are not a playing signal.
+   A dated player role stops being current on its `end_date`; only a later end date remains eligible.
 2. Youth categories match by age class when that playing signal exists.
 3. Team matching applies to current player roles whose team occurs in `matching_teams`.
 4. Werkfunctie matching remains available without a playing signal, so categories such as Donateur continue to work without `spelactiviteit`.
@@ -488,7 +489,7 @@ The `categories` key provides display metadata for the frontend:
 
 Former members appear only when valid `lid_sinds` and `lid_tot` dates show that their membership overlapped the requested season. Missing or invalid membership dates exclude them from the fee list and automatic invoicing.
 
-Cached fees are invalidated by relevant field writes and are also checked against dated `work_history` endings when read. This second check handles the passage of midnight: a position that was valid through its end date cannot keep an old fee category alive on later days.
+Cached fees are invalidated by relevant field writes and are also checked against dated `work_history` endings when read. This second check handles the passage of midnight: a position stops being eligible on its end date and cannot keep an old fee category alive.
 
 ## PHP Service Methods
 
