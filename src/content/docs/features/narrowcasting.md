@@ -40,11 +40,14 @@ The technical pilot, matchday and content milestones provide:
 - programme and result rows show both team logos alongside the team names;
   direct Sportlink assets take precedence and missing association logos use the
   documented `logoapi.voetbal.nl` fallback with the supplied club relation code.
-  Manually entered opponents without a KNVB club relation code use a compact
-  club-abbreviation badge so both team positions remain visible.
+  When no usable logo or club relation code exists, the team name remains
+  visible without a synthetic abbreviation badge.
   Programme and result scenes use the same five-row card layout. The schedule,
   pitch and dressing-room assignments are combined into one overview per group
   of matches.
+- result rows show each match date and time. Sportlink results containing a
+  parenthesized penalty result are rendered as the score after playing time plus
+  an explicit **na strafschoppen** label, rather than as one wrapping score.
 - the display header uses the current scene title beside the unframed club logo;
   match, cancellation, result, announcement and image scenes show the date and
   clock in the lower-right corner;
