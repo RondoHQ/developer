@@ -353,6 +353,7 @@ X-WP-Nonce: {nonce}
 ## Get People by Team
 
 Get all people who work or worked at a team.
+When a person has multiple periods at the same team, the current period takes precedence and the person is returned once.
 
 **Request:**
 ```http
