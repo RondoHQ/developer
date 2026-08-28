@@ -148,7 +148,9 @@ include the site-wide `rondo_vobligation_cache_generation` option. Every mutatio
 assignment, completion, cancellation or no-show must call
 `VolunteerObligationCalculator::invalidate_cache()` after the write. Advancing the generation makes
 the next `GET /rondo/v1/my-shifts` recompute immediately and works with both database transients and
-persistent object caches; do not delete transient database rows directly.
+persistent object caches; do not delete transient database rows directly. When multiple unit caches
+are cold, `decorate_units()` builds one shared per-person tally from a single season-wide shift scan
+and then stores the normal five-minute transient for every unit.
 
 ## Inschrijftaken on person profiles
 
