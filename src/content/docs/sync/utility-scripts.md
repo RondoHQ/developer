@@ -251,6 +251,7 @@ node tools/detect-rondo-club-changes.js --verbose
 ### sync-individual.js
 
 Syncs a single member to Rondo Club by KNVB ID. Useful for debugging or fixing individual records.
+On success it records the computed source hash from the local tracking upsert, so the next People run does not repeat the same update.
 
 ```bash
 node pipelines/sync-individual.js KNVB123456 --verbose               # Full sync
