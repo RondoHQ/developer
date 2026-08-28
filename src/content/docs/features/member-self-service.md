@@ -12,7 +12,7 @@ De persoonlijke household-route toont het gekoppelde profiel, minderjarige kinde
 
 `GET /rondo/v1/people/household` gebruikt een expliciete veldprojectie. De endpoint leest en formatteert alleen de profielvelden die deze pagina toont; voeg nieuwe zichtbare velden daarom aan die projectie toe in plaats van terug te vallen op de volledige persoonsserializer.
 
-Heeft een eigen minderjarig kind nog geen andere ouder/verzorger, dan biedt **Mijn gegevens** een formulier om een nieuwe persoon met naam, e-mailadres en optioneel telefoonnummer toe te voegen. `POST /rondo/v1/people/{child_id}/household-parent` accepteert alleen een kind binnen de persoonlijke household-scope, maakt uitsluitend een nieuwe ouder aan en gebruikt daarna dezelfde relatie-, Sportlink-slot- en synchronisatielogica als de ledenadministratie. Een bestaande persoon koppelen blijft voorbehouden aan de ledenadministratie.
+Heeft een eigen minderjarig kind nog geen andere ouder/verzorger, dan verschijnt na **Wijzigen** de actie om een nieuwe persoon met naam, e-mailadres en optioneel telefoonnummer toe te voegen. De gewone kindkaart toont deze actie niet. `POST /rondo/v1/people/{child_id}/household-parent` accepteert alleen een kind binnen de persoonlijke household-scope, maakt uitsluitend een nieuwe ouder aan en gebruikt daarna dezelfde relatie-, Sportlink-slot- en synchronisatielogica als de ledenadministratie. Een bestaande persoon koppelen blijft voorbehouden aan de ledenadministratie.
 
 ## Contributiestatus
 
