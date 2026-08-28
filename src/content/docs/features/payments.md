@@ -183,6 +183,12 @@ Per-invoice override: installment plans can be disabled for specific invoices vi
 
 After Mollie redirects back with `?betaald=1`, a success page renders with a confirmation message and invoice summary.
 
+## Correcting membership discounts
+
+Finance administrators can adjust the family-discount and entry-discount percentages on sent or overdue membership invoices. The REST endpoint recalculates the discount lines and invoice total and invalidates the existing PDF.
+
+The normal correction flow is blocked once an installment has been paid, a payment request has been sent, or an installment payment link exists. At that point the collected amount and issued payment links must be reconciled together through a bounded administrative correction; changing only the invoice total would leave the payment plan inconsistent.
+
 ## QR Code Generation
 
 **Class:** `Rondo\Finance\QrCodeGenerator`
