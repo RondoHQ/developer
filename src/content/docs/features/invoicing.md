@@ -60,6 +60,8 @@ Additional metadata stored as raw post meta:
 - `_installment_count` — Number of installments
 - `_installment_N_*` — Per-installment meta (see [Installments](/features/installments/))
 
+Invoice list and detail responses expose a canonical `paid_at` timestamp for fully paid invoices. It resolves to the manual paid timestamp, the final paid installment timestamp, or the direct Mollie payment timestamp. The invoice overview offers this value as the optional **Betaald op** column; the detail page always shows it with date and time when available.
+
 ## Invoice Numbering
 
 **Class:** `Rondo\Finance\InvoiceNumbering`

@@ -1009,7 +1009,7 @@ Returns rolling 7- and 30-day payment totals, average payment lead time, install
 
 **GET** `/rondo/v1/invoices`
 
-List invoices with optional filters.
+List invoices with optional filters. Fully paid invoices include `paid_at` as an RFC 3339 timestamp. For installment plans this is the latest payment timestamp once every installment is paid.
 
 **Parameters:**
 
@@ -1024,7 +1024,7 @@ List invoices with optional filters.
 
 **GET** `/rondo/v1/invoices/{id}`
 
-Get a single invoice with full details including line items, installment data, and person summary.
+Get a single invoice with full details including line items, installment data, person summary, and the canonical `paid_at` timestamp. Each paid installment also exposes its own `paid_at` timestamp.
 
 ---
 
