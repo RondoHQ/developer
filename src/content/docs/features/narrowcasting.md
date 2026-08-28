@@ -37,9 +37,12 @@ The technical pilot, matchday and content milestones provide:
   and light background; individual items can explicitly opt into custom colours;
 - a browser preview that always selects the nearest Saturday (including the
   current day when opened on Saturday), while paired players select today;
-- programme and result rows show both team logos supplied by Sportlink alongside
-  the team names; the schedule, pitch and dressing-room assignments are combined
-  into one overview per group of matches.
+- programme and result rows show both team logos alongside the team names;
+  direct Sportlink assets take precedence and missing association logos use the
+  documented `logoapi.voetbal.nl` fallback with the supplied club relation code.
+  Programme and result scenes use the same five-row card layout. The schedule,
+  pitch and dressing-room assignments are combined into one overview per group
+  of matches.
 - the display header uses the current scene title beside the unframed club logo;
   match, cancellation, result, announcement and image scenes show the date and
   clock in the lower-right corner;
