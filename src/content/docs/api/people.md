@@ -98,6 +98,8 @@ Sort surname columns by `last_name`, not by the combined display value. This kee
 
 `GET /rondo/v1/people/filtered` accepts `first_name` and `last_name` text filters. The `last_name` filter matches the displayed surname, including the infix. Both `first_name` and `last_name` are valid `orderby` values.
 
+Pass `spelactiviteit_no_team=1` to return people with a non-empty `spelactiviteit` field who do not have a current player role linked to a team. Current staff or volunteer roles on a team do not exclude a person. The endpoint resolves these candidates through the native field layer before applying the normal row-level access filters.
+
 Deceased people are excluded from this endpoint by default, including CSV exports built from it.
 Pass `include_deceased=1` to include them; this automatically includes former members as well.
 Summary records expose a read-only `is_deceased` boolean. The standard single-person REST response
