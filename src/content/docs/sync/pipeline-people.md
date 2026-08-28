@@ -205,7 +205,7 @@ See `config/field-mapping.json` for the complete mapping. Key fields:
 | `addresses` (repeater) | `StreetName` + `AddressNumber`, `ZipCode`, `City` |
 | `lid-sinds` | `MemberSince` |
 | `leeftijdsgroep` | `AgeClassDescription`; for Onder 6 through Onder 19, a missing or contradictory value is derived from `DateOfBirth` and the KNVB season boundary on 1 July |
-| `spelactiviteit` | `KernelGameActivities`; always included, with `null` clearing the previous value when an active member stops playing |
+| `spelactiviteit` | `KernelGameActivities`; an explicitly empty value becomes `null` and clears the previous value, while a partial response that omits the property leaves the existing value untouched |
 | `type-lid` | `TypeOfMemberDescription` |
 | `freescout-id` | From `sportlink_member_free_fields.freescout_id` |
 | `datum-vog` | From `sportlink_member_free_fields.vog_datum` |

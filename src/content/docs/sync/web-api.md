@@ -26,7 +26,7 @@ openssl rand -base64 32
 
 ### POST /api/sync/individual
 
-Syncs a single member from Sportlink to Rondo Club. Launches a Playwright browser session to fetch fresh data from Sportlink (person details, parents, functions, committees, and free fields), then syncs the member to WordPress. Fresh parent data overrides the member's record from the latest full snapshot before parent deduplication, so a newly added parent is created or updated immediately and linked to the child in both directions. Other snapshot members remain available so shared parents retain links to siblings.
+Syncs a single member from Sportlink to Rondo Club. Launches a Playwright browser session to fetch fresh data from Sportlink (person details, parents, functions, committees, and free fields), then syncs the member to WordPress. The fresh `/general` response is partial, so it is overlaid on the latest complete SearchMembers snapshot before preparing the person; fields such as `KernelGameActivities` and `AgeClassDescription` are preserved instead of being mistaken for empty values. Fresh parent data overrides the member's record from the latest full snapshot before parent deduplication, so a newly added parent is created or updated immediately and linked to the child in both directions. Other snapshot members remain available so shared parents retain links to siblings.
 
 **Rate limit:** 5 requests per minute.
 
