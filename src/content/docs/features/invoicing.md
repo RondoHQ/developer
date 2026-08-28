@@ -207,11 +207,14 @@ Former members are eligible only when valid `lid_sinds` and `lid_tot` dates prov
 
 All endpoints are under `rondo/v1/invoices`. Reads (list, single, PDF, QR, invoiced-cases) require `financieel_read`; every write requires `financieel`.
 
+The finance dashboard also requests `GET /invoices/statistics`. This read-only endpoint returns the amount and number of recorded payments in rolling 7- and 30-day windows, plus the average number of calendar days between `sent_date` and full payment for invoices paid in the last 30 days. Mollie installments count as separate receipts including their administration fee; a manual paid mark counts only the remaining invoice principal so earlier installments are not counted twice. Invoices without a reliable payment timestamp are excluded from the lead-time average. The response also counts unique people on current-season membership invoices with a 3- or 8-installment plan; draft and cancelled invoices are excluded.
+
 ### Key Endpoints
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
 | GET | `/invoices` | List invoices (filterable by status, type, person) |
+| GET | `/invoices/statistics` | Recent payment totals and average paid-invoice lead time |
 | POST | `/invoices` | Create a new discipline invoice |
 | GET | `/invoices/{id}` | Get invoice details |
 | DELETE | `/invoices/{id}` | Delete a draft invoice |
