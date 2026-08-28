@@ -992,7 +992,8 @@ A separate email template is used when sending installment payment requests:
 
 Rendering notes:
 - Placeholder substitution still happens inside the finance sender classes.
-- The resolved HTML is then wrapped in the shared `Rondo\Notifications\EmailTemplate` layout, which adds branded spacing, footer, and a CTA button.
+- The initial contribution email subject is stored in `rondo_finance_membership_email_subject` and is fully editable under **Finance Settings > Email templates > Contributie**. It accepts `{naam}`, `{voornaam}`, `{factuur_nummer}`, `{totaal_bedrag}`, and `{organisatie_naam}`; omitting `{factuur_nummer}` keeps the invoice number out of the subject.
+- The resolved HTML is then wrapped in the shared `Rondo\Notifications\EmailTemplate` layout, which adds branded spacing and a CTA button. Contribution emails omit the generic support line below the body.
 - This same shared wrapper is also used for direct invoice mails and invoice reminders, so finance-related emails now have a consistent visual structure.
 - The `Standaard e-mail voor gewone facturen` setting now uses the same rich text editor as the other finance templates and stores HTML with `wp_kses_post()` sanitization.
 - Existing plain-text regular-invoice templates remain backward compatible: if no HTML markup is detected, the sender still converts the text to paragraphs/line breaks before wrapping it.
