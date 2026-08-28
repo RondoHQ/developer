@@ -603,6 +603,19 @@ other contacts while still reporting a parent or sponsor who is also registered 
 Former members are excluded from the eligibility calculation as normal business logic and are not
 reported as a data-quality problem.
 
+### Bounded metadata processing
+
+A cold eligibility calculation queries all published person IDs, then primes post objects and
+metadata in bounded batches. After each batch, Rondo discards only the request-local object-cache
+state. Persistent object-cache values and the generation-based eligibility transient remain
+untouched. WordPress object caches with native `flush_runtime` support use that API; the legacy
+SiteGround Memcached drop-in is reinitialized while preserving its global and non-persistent cache
+groups. If neither safe mechanism is available, Rondo falls back to one complete batch.
+
+The batch size defaults to 250 and can be adjusted with the
+`rondo_eligibility_person_meta_batch_size` filter. Keep it above zero and verify both query count and
+peak memory when changing it.
+
 ### Drill-downs
 
 The dashboard's **Datakwaliteit** card links each count to a drill-down that lists the personen
