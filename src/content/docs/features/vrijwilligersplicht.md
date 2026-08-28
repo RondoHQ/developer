@@ -54,8 +54,8 @@ Lennart plays Senioren and has two JO16- children.
 
 :::caution[Deprecated accessor]
 `get_eligible_unit_for_person()` (singular) returns only the *first* unit and therefore hides the
-gezin duty of a playing parent. It is kept solely because `VolunteerFineGenerator` uses it to walk a
-household roster. Do not use it to answer "what does this person owe".
+gezin duty of a playing parent. It remains available for integrations that need one household
+roster. Do not use it to answer "what does this person owe".
 :::
 
 ## Multi-child scaling
