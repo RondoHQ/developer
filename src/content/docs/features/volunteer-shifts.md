@@ -166,6 +166,11 @@ cancelled shifts are omitted. It reuses the signup-confirmation calendar builder
 `Europe/Amsterdam`, stable per-person event UIDs, and a description and URL back to
 `/vrijwillig` in every event.
 
+The personal navigation link opens `/vrijwillig?tab=mine`. That view requests only
+`GET /rondo/v1/my-shifts`; the much larger signup calendar request is enabled when the member
+opens **Beschikbaar**. The diensttype filter on the personal tab is derived from the member's own
+shift response so it does not depend on loading the full calendar.
+
 ## Obligation credit
 
 `VolunteerObligationCalculator` reads `assigned_persons` directly and does not care who
