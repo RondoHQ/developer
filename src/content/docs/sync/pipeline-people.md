@@ -204,12 +204,14 @@ See `config/field-mapping.json` for the complete mapping. Key fields:
 | `contact_info` (repeater) | `Email`, `Mobile`, `Telephone` |
 | `addresses` (repeater) | `StreetName` + `AddressNumber`, `ZipCode`, `City` |
 | `lid-sinds` | `MemberSince` |
-| `leeftijdsgroep` | `AgeClassDescription` |
+| `leeftijdsgroep` | `AgeClassDescription`; for Onder 6 through Onder 19, a missing or contradictory value is derived from `DateOfBirth` and the KNVB season boundary on 1 July |
 | `type-lid` | `TypeOfMemberDescription` |
 | `freescout-id` | From `sportlink_member_free_fields.freescout_id` |
 | `datum-vog` | From `sportlink_member_free_fields.vog_datum` |
 | `financiele-blokkade` | From `sportlink_member_free_fields.has_financial_block` |
 | `wacht_op_overschrijving` | `true` when `Tooltip` contains "overschrijving" (case-insensitive). Sportlink markeert overgeschreven leden van een andere club met de tooltip "Actie van een ander (overschrijving)" totdat de KNVB-overschrijving verwerkt is. Het veld wordt altijd weggeschreven (ook `false`), zodat de badge automatisch verdwijnt zodra Sportlink de tooltip weghaalt. |
+
+Youth age-class corrections are logged with the KNVB ID, Sportlink value, derived value, and birthdate. The fallback is intentionally limited to Onder 6 through Onder 19; adult and special categories remain fully owned by Sportlink.
 
 ## Database Tables Used
 
