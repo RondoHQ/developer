@@ -10,7 +10,9 @@ registry and WordPress post meta; there are no custom tables.
 
 A sponsor company has a title, `publish` or `draft` status, featured-image logo,
 structured address, `sponsor_role` (`businessclub` or `awc_sponsor`) and optional
-stable `sponsit_contact_id`.
+stable `sponsit_contact_id`. `club_tv_priority` controls the AWC-defined display
+frequency. The independent `club_tv_opt_out` flag records a Businessclub
+sponsor's own preference without overwriting that frequency.
 
 The `contacts` repeater contains `person_id`, `contact_role`, `is_primary`,
 `receives_pass`, `is_primary_pass` and the stable `sponsit_person_id`. The
@@ -33,6 +35,7 @@ The private CPT is not exposed through `wp/v2`. Its API is:
 | `GET`, `POST /rondo/v1/sponsors` | Search/list or create companies |
 | `GET`, `PATCH`, `DELETE /rondo/v1/sponsors/{id}` | Read, update or archive |
 | `POST /rondo/v1/sponsors/{id}/contacts` | Create an external person and relation |
+| `POST`, `PATCH /rondo/v1/sponsors/{id}/narrowcasting-preference` | Store a Businessclub sponsor's own opt-out |
 | `GET /rondo/v1/sponsor-person-options` | Find an existing person to link |
 
 Person responses expose `sponsor_relationships` and `is_sponsor_contact` only

@@ -38,7 +38,11 @@ Sponsor accounts without a staff or parent role use **Mijn gegevens** as their
 default landing page. Sponsors who are also a current parent keep **Mijn
 inschrijftaken** as their default. If the linked person owns a pass from an active sponsor
 organization, their own card also shows that organization's current logo and an
-upload action to add or replace it. The personal card is labeled
+upload action to add or replace it. Sponsor details appear in a separate card
+below the personal contact card. That sponsor card explains that the logo is
+used on Club TV and previews the logo in the same white frame as the TV layout.
+For Businessclub organizations it also offers a personal narrowcasting opt-out.
+The personal card is labeled
 **Contactpersoon**, or **Contactpersoon en ouder** when the sponsor contact also
 has a current child relationship. The organization block is labeled **Sponsor**,
 so the roles are visually distinct. The action does not expose or unlock the general
@@ -47,8 +51,8 @@ sponsor-management screens.
 The household API returns the pass type, display label, wallet availability,
 session-bound signed action URLs and client-safe role labels. For the organization
 behind a sponsor pass it additionally returns only the organization ID, display
-name, logo URL and an explicit `can_edit_logo` flag. Contacts, addresses and
-other sponsor-management data remain private.
+name, logo URL, sponsor role, Club TV opt-out and explicit self-service flags.
+Contacts, addresses and other sponsor-management data remain private.
 
 ## Authenticated wallet actions
 

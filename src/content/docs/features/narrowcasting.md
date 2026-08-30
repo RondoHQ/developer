@@ -6,6 +6,10 @@ Rondo Club includes the control plane and browser display for subscription-free
 club narrowcasting. A Raspberry Pi runs the separate Rondo Player agent behind
 each television.
 
+Businessclub sponsors can opt out from their personal **Mijn gegevens** page.
+The opt-out is enforced for both rotating sponsor-logo rows and dedicated
+sponsor slides while preserving the display frequency configured by AWC.
+
 The site-wide Club TV [feature toggle](./feature-toggles/) defaults to `on`. `admin_only` limits the
 management UI, content API, and browser-presenter sender to administrators. `off` hides those human
 surfaces completely. Paired Raspberry Pi players continue fetching their existing configuration and

@@ -184,17 +184,18 @@ other members go to `/vrijwillig`. The current-user endpoint supplies both
 `is_sponsor` and `is_parent`; `is_parent` reuses
 `ParentRelationshipService::has_current_child()` rather than a legacy flag.
 
-### Sponsor self-service logo
+### Sponsor self-service presence
 
-`AccessControl::can_edit_sponsor_logo()` grants a regular account one narrowly
-scoped write: replacing the logo of the active organization that supplies the
-pass for its own `rondo_linked_person_id`. It resolves the canonical primary
-pass relationship through `Sponsors\Relations`; being another contact of the
+`AccessControl::can_manage_sponsor_self_service()` grants a regular account
+narrowly scoped writes for the active organization that supplies the pass for
+its own `rondo_linked_person_id`. It resolves the canonical primary pass
+relationship through `Sponsors\Relations`; being another contact of the
 organization or holding a legacy sponsor flag is not sufficient.
 
-The permission is used only by
-`POST /rondo/v1/sponsors/{id}/logo/upload`. General sponsor reads, field updates,
-contact edits and archiving continue to require `sponsorbeheer`.
+The shared scope is used by the logo upload and the Businessclub narrowcasting
+preference endpoint. `AccessControl::can_edit_sponsor_logo()` remains the
+logo-specific alias. General sponsor reads, field updates, contact edits and
+archiving continue to require `sponsorbeheer`.
 
 ### `is_kader`
 
