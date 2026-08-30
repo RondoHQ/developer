@@ -20,6 +20,12 @@ relation is stored only on the company. `Rondo\Sponsors\Relations` builds the
 reverse person view, resolves pass eligibility and enforces one primary contact
 per company and one primary sponsor-pass relationship per person.
 
+Successful sponsor-contact logins, self-service logo replacements and actual
+changes to the Club TV opt-out are stored as private `rondo_sponsor_log` posts.
+Each entry keeps the sponsor, event type, timestamp and an actor-name snapshot.
+Sponsor profiles return the newest 50 entries; a daily cleanup removes entries
+older than 24 months. Re-saving an unchanged Club TV preference is not logged.
+
 ## Permissions and UI
 
 Administrators and users with `sponsorbeheer` manage `/sponsors`. They can link
@@ -36,6 +42,7 @@ The private CPT is not exposed through `wp/v2`. Its API is:
 | `GET`, `PATCH`, `DELETE /rondo/v1/sponsors/{id}` | Read, update or archive |
 | `POST /rondo/v1/sponsors/{id}/contacts` | Create an external person and relation |
 | `POST`, `PATCH /rondo/v1/sponsors/{id}/narrowcasting-preference` | Store a Businessclub sponsor's own opt-out |
+| `POST /rondo/v1/sponsors/{id}/logo/upload` | Replace the sponsor's own logo |
 | `GET /rondo/v1/sponsor-person-options` | Find an existing person to link |
 
 Person responses expose `sponsor_relationships` and `is_sponsor_contact` only
