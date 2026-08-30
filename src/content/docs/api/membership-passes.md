@@ -14,6 +14,11 @@ These endpoints require an authenticated and approved WordPress user (`X-WP-Nonc
 
 Issues a signed JWT token for one person. The token is used as QR payload in wallet passes and scanner flows.
 
+The response `pass.background_color` contains the same resolved background
+color used by the Apple Wallet and Google Wallet generators. It follows the
+club's configured accent color for regular passes and is white for Sponsor and
+Businessclub passes.
+
 ### Permission
 
 User must be allowed to access the target person.

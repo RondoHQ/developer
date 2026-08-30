@@ -94,6 +94,11 @@ the club or Businessclub pass branding, the member name, relevant pass detail,
 and a large high-contrast QR code. It is available independently of device type
 and Apple or Google Wallet configuration.
 
+The digital pass uses the same configured wallet background color as Apple
+Wallet and Google Wallet. Regular member passes therefore follow the club's
+configured accent color, while Sponsor and Businessclub passes use the same
+white background as their wallet versions.
+
 The page requests a fresh token from the existing QR-token endpoint. When a
 person has several pass choices, **Mijn gegevens** uses the same choice popover
 as the wallet actions and sends its opaque `role` key to the endpoint. The
