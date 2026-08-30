@@ -24,10 +24,18 @@ User must be allowed to access the target person.
 |------|------|----------|-------------|
 | `season` | string | No | Season key (`YYYY-YYYY`). Defaults to current season. |
 | `ttl_days` | int | No | Optional token lifetime in days (1-730). Omit or use `0` for a permanent token. |
+| `role` | string | No | Opaque pass-choice key from the household summary. Required when `requires_role` is true. |
 
 The default token has no `exp` claim. It contains `pass_version`, which is
 compared with the current private version on every online scan. Existing tokens
 without this claim are treated as version `1` for backward compatibility.
+The endpoint resolves `role` server-side and rejects missing or unknown choices
+when a person has several current passes. The response `payload.pass_type` is
+therefore the exact `bondslid`, `verenigingslid`, `businessclub`, or
+`awc_sponsor` variant that the digital pass and scanner use. Its client-safe
+`person` summary also includes `company_name` for Sponsor passes. The `pass`
+object returns the exact `type`, selected `role_label`, and configured
+`logo_url` used by the digital card.
 
 ## Household pass summary
 
@@ -76,6 +84,10 @@ management fields.
 `bondslid`, `verenigingslid`, `businessclub`, or `awc_sponsor`. The endpoint
 remains limited to the linked person and their children under 18, including for
 users who also have management privileges.
+
+The authenticated app route `/mijn-gegevens/pas/{person_id}` uses this summary
+and the QR-token endpoint to render the digital pass. It is not a stable public
+pass URL and does not weaken the household or QR-token permission checks.
 
 `wallets.*.available` reflects the current server configuration. The action URLs
 are signed for the current user and login session; they are not stable public links. When

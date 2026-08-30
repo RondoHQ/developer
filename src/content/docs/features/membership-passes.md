@@ -31,8 +31,9 @@ eligible relationship falls back to `type-lid`. Legacy `is_sponsor` and
 
 Every user linked to a person can open **Mijn gegevens**, including users who
 also have a staff or management role. Each visible household card shows direct
-Apple Wallet and Google Wallet actions for its eligible pass. This includes
-passes for children under 18. Ineligible people receive no pass action.
+Apple Wallet and Google Wallet actions plus an authenticated digital pass with
+the same QR payload. This includes passes for children under 18. Ineligible
+people receive no pass action.
 
 Sponsor accounts without a staff or parent role use **Mijn gegevens** as their
 default landing page. Sponsors who are also a current parent keep **Mijn
@@ -84,6 +85,27 @@ There is no public membership-pass page or stable public pass URL. The one-time
 `rondo_membership_pass_private_actions_v1_done` cleanup removes legacy
 `_membership_pass_token` and `_membership_pass_url` person meta and flushes the
 old rewrite rule.
+
+## Digital pass without a wallet
+
+The **Geen wallet? Toon je pas met QR-code** link opens
+`/mijn-gegevens/pas/{person_id}` inside the authenticated app. The page renders
+the club or Businessclub pass branding, the member name, relevant pass detail,
+and a large high-contrast QR code. It is available independently of device type
+and Apple or Google Wallet configuration.
+
+The page requests a fresh token from the existing QR-token endpoint. When a
+person has several pass choices, **Mijn gegevens** uses the same choice popover
+as the wallet actions and sends its opaque `role` key to the endpoint. The
+server resolves that key to the current validated Sponsor or regular member
+tier before issuing the token. A missing or unknown choice is rejected.
+
+The route itself is not a public pass URL: the app and endpoint both require an
+authenticated session, and person access remains server-side scoped. The QR
+payload can still be retained as a screenshot, just like the QR code inside a
+wallet pass. Every scan checks current eligibility and `pass_version`, so an
+old screenshot stops working after revocation or a relevant entitlement
+change.
 
 ## Settings location
 
@@ -156,8 +178,8 @@ Backward-compatible constants are still supported as fallback.
 
 ## REST exposure
 
-The household response exposes the client-safe wallet summary. Scanner
-endpoints remain:
+The household response exposes the client-safe wallet and digital-pass summary.
+Scanner endpoints remain:
 
 - `GET /rondo/v1/membership-passes/people/{person_id}/qr-token`
 - `POST /rondo/v1/membership-passes/verify`
