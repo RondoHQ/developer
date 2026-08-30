@@ -56,8 +56,9 @@ Endpoint: `POST /wp-json/rondo/v1/lettermint/webhook`
 
 Supported actionable events:
 - `message.hard_bounced`
-- `message.soft_bounced`
 - `message.spam_complaint`
+
+Soft bounces (`message.soft_bounced`) are ignored and do not create tasks or update suppression state.
 
 Behavior:
 - Verifies webhook signatures using Lettermint SDK
@@ -156,7 +157,6 @@ Behavior:
 - Creates a webhook pointing to `POST /wp-json/rondo/v1/lettermint/webhook`
 - Registers only actionable events:
   - `message.hard_bounced`
-  - `message.soft_bounced`
   - `message.spam_complaint`
 - Persists returned `webhook_id` and webhook secret (`secret`/`signing_secret`) to WordPress options for runtime verification
 

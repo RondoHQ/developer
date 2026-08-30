@@ -98,8 +98,8 @@ Handled by `Rondo\Notifications\LettermintWebhook`. No WordPress authentication 
 - Configurable signing secret and tolerance via `LettermintConfig`
 - Only actionable events are processed:
   - `message.hard_bounced`
-  - `message.soft_bounced`
   - `message.spam_complaint`
+- Soft bounces are ignored because temporary delivery failures do not require follow-up
 
 **Processing behavior:**
 - Updates `rondo_lettermint_suppressed_emails` option for recipient tracking
