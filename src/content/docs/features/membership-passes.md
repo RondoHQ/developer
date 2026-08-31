@@ -5,17 +5,20 @@ title: "Membership Passes"
 Membership passes let authenticated members add their own card, or a minor
 child's card, to Apple Wallet or Google Wallet from **Mijn gegevens**.
 
-## Reusable AWC 1 guest passes
+## Reusable guest passes for a configured team
 
-An authenticated person with a current player role for the team titled
-`AWC 1` receives two fixed guest slots on **Mijn gegevens**. Player eligibility
-is resolved server-side from current `work_history` and the configured player
-role list. Staff roles and former members do not receive the controls.
+An administrator selects one team under **Settings → Club → Team with guest
+passes**. An authenticated person with a current player role for that exact team
+record receives two fixed guest slots on **Mijn gegevens**. Player eligibility
+is resolved server-side from current `work_history`, the selected team ID and the
+configured player role list. Staff roles, former members and players of a
+different team record do not receive the controls. Leaving the setting empty
+disables guest passes.
 
 Each slot is created only when the player requests its share link. The public
 `/gastpas/{token}` page lets the guest enter their own name once, then provides
 Apple Wallet, Google Wallet and a digital QR fallback. The pass remains usable
-for later AWC 1 home matches; the player does not activate it for every match.
+for later home matches of the configured team; the player does not activate it for every match.
 The card and scanner show the guest name and **Gast van {player}**.
 
 Replacing a guest keeps the same numbered slot, rotates the public link and
@@ -36,8 +39,8 @@ Authenticated player endpoints are:
 - `POST /rondo/v1/guest-passes/slots/{1|2}/replace`
 
 Guest QR payloads use the signed `rondo-guest-pass` audience. At scan time the
-server rechecks the pass version, claimed status, current AWC 1 player role and
-the selected event's home team before recording admission.
+server rechecks the pass version, claimed status, current role for the configured
+team and the selected event's home-team name before recording admission.
 
 ## Eligibility
 
