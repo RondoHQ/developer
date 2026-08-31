@@ -40,14 +40,14 @@ Before running, `pipelines/sync-freescout.js` verifies that `FREESCOUT_API_KEY` 
 
 1. Reads member data from `data/rondo-sync.sqlite` → `rondo_club_members`
 2. Reads team assignments from `data/rondo-sync.sqlite` → `rondo_club_work_history`
-3. Reads contribution data from `data/nikki-sync.sqlite` → `nikki_contributions`
+3. Fetches the current contribution and invoice status once from `GET /wp-json/rondo/v1/fees`
 4. Builds customer records with:
    - Name, email, phone from Rondo Club member data
    - Photo URL from member data
    - Website URLs from contact info
    - Team memberships (comma-separated)
    - KNVB ID, member since date
-   - Latest Nikki contribution balance and status
+   - Current Rondo contribution balance, season, payment status, and installment progress
 5. Computes `source_hash` per customer
 6. Upserts into `data/freescout-sync.sqlite` → `freescout_customers`
 
@@ -91,10 +91,10 @@ Sent to `PUT /api/customers/{id}/customer_fields`:
 | `union_teams` | 1 | All current team names, comma-separated | `rondo_club_work_history` |
 | `public_person_id` | 4 | KNVB ID | `rondo_club_members` |
 | `member_since` | 5 | `acf['lid-sinds']` | `rondo_club_members` |
-| `nikki_saldo` | 7 | Most recent year's outstanding balance | `nikki_contributions` |
-| `nikki_status` | 8 | Most recent year's payment status | `nikki_contributions` |
+| `contribution_outstanding` | 7 | Current outstanding contribution principal | Rondo `GET /rondo/v1/fees` |
+| `contribution_status` | 8 | Season, payment status, and installment progress | Rondo `GET /rondo/v1/fees` |
 
-Field IDs are configurable via `FREESCOUT_FIELD_*` environment variables.
+Field IDs are configurable via `FREESCOUT_FIELD_CONTRIBUTION_OUTSTANDING` and `FREESCOUT_FIELD_CONTRIBUTION_STATUS`. The legacy Nikki environment names remain fallback aliases so the existing FreeScout field IDs can be reused during cutover.
 
 ### RelationEnd Field
 
@@ -127,7 +127,6 @@ The conversations pipeline is:
 |---|---|---|
 | `rondo-sync.sqlite` | `rondo_club_members` | Member data (name, contact, KNVB ID) |
 | `rondo-sync.sqlite` | `rondo_club_work_history` | Current team assignments |
-| `nikki-sync.sqlite` | `nikki_contributions` | Financial contribution data |
 | `freescout-sync.sqlite` | `freescout_customers` | Customer → FreeScout ID mapping + hashes |
 | `freescout-sync.sqlite` | `freescout_conversations` | Conversation tracking for activity sync |
 
@@ -141,6 +140,7 @@ The conversations pipeline is:
 ## Error Handling
 
 - Missing credentials cause immediate exit (not a silent skip)
+- A failed or invalid Rondo contribution response aborts customer preparation before any FreeScout fields can be cleared
 - Individual customer sync failures don't stop the pipeline
 - 5xx errors trigger exponential backoff (up to 3 retries)
 - Conversation sync failures are tracked independently
@@ -159,5 +159,4 @@ The conversations pipeline is:
 | `lib/freescout-db.js` | FreeScout SQLite operations (customers + conversations) |
 | `lib/freescout-client.js` | FreeScout HTTP client + credential check |
 | `lib/rondo-club-db.js` | Rondo Club data lookup |
-| `lib/nikki-db.js` | Nikki contribution lookup |
 | `lib/http-client.js` | HTTP request utilities |

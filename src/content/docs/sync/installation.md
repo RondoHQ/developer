@@ -163,7 +163,6 @@ This prompts for Lettermint credentials (if not already in `.env`) and installs 
 | Schedule | Pipeline | Command |
 |----------|----------|---------|
 | 4x daily (8am, 11am, 2pm, 5pm) | People | `sync.sh people` |
-| Daily 7:00 AM | Nikki | `sync.sh nikki` |
 | Daily 8:00 AM | FreeScout | `sync.sh freescout` |
 | 4x daily (7:30am, 10:30am, 1:30pm, 4:30pm) | Functions (recent) | `sync.sh functions` |
 | Weekly Sunday 1:00 AM | Functions (full) | `sync.sh functions --all` |

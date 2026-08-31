@@ -451,7 +451,15 @@ Returns calculated membership fees for all members with optional category metada
       "from_cache": true,
       "calculated_at": "2026-02-09 10:30:00",
       "nikki_total": 172.50,
-      "nikki_saldo": 0.00
+      "nikki_saldo": 0.00,
+      "invoice_id": 456,
+      "invoice_number": "C2026-001",
+      "invoice_status": "sent",
+      "invoice_total": 172.50,
+      "invoice_outstanding": 115.00,
+      "installment_plan": "quarterly_3",
+      "installment_count": 3,
+      "paid_installments": 1
     }
   ],
   "categories": {
@@ -478,6 +486,8 @@ Returns calculated membership fees for all members with optional category metada
   }
 }
 ```
+
+Current-season responses include the latest Rondo contribution invoice per member. `invoice_outstanding` is the unpaid contribution principal and excludes administration fees. This finance-read-protected contract is also the source for FreeScout's contribution balance and status fields.
 
 **Categories Metadata (Phase 157+):**
 The `categories` key provides display metadata for the frontend:

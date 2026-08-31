@@ -1200,11 +1200,17 @@ The `GET /rondo/v1/fees` endpoint enriches each member's fee data with invoice i
   "first_name": "Jan",
   "final_fee": 172.50,
   "invoice_id": 456,
-  "invoice_status": "sent"
+  "invoice_number": "C2026-001",
+  "invoice_status": "sent",
+  "invoice_total": 172.50,
+  "invoice_outstanding": 115.00,
+  "installment_plan": "quarterly_3",
+  "installment_count": 3,
+  "paid_installments": 1
 }
 ```
 
-The `invoice_id` and `invoice_status` fields are `null` when no invoice exists for the member.
+The invoice fields are `null` when no invoice exists for the member. `invoice_outstanding` contains the unpaid contribution principal, excluding installment administration fees. Draft and cancelled invoices return `null` because no active amount is due. Paid invoices return `0`.
 
 ### Fee Settings Installment Fields
 
