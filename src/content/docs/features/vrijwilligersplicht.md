@@ -656,11 +656,11 @@ Active committee and staff roles use `VolunteerStatus::is_position_current()` as
 policy. Work-history dates are normalized from either the compact `YYYYMMDD` storage format or the
 canonical `YYYY-MM-DD` wire format before comparison. A role whose end date is today is no longer
 current and therefore no longer grants an exemption or access to a committee-restricted shift pool.
-The default staff-role list recognizes both `Trainer` and Sportlink's combined `Trainer/coach`
-title. The exemption resolver loads a person's work history once and applies committee and staff
-checks to that shared value. Eligibility views use generation-based transient keys, so a relationship or role change is
-visible immediately when WordPress uses a persistent object cache; old generations expire after the
-normal five-minute TTL.
+The default staff-role list recognizes `Trainer`, `Trainer/coach`, `Assistent-trainer`, and
+`Assistent-trainer/coach`. The exemption resolver loads a person's work history once and applies
+committee and staff checks to that shared value. Eligibility views use generation-based transient
+keys, so a relationship or role change is visible immediately when WordPress uses a persistent
+object cache; old generations expire after the normal five-minute TTL.
 
 The management page at `/vrijwilligers/vrijstellingen` offers filters for committee members, team
 staff, and manual exemptions. A user with the `vrijwilligers` capability can search for a person on
