@@ -5,6 +5,40 @@ title: "Membership Passes"
 Membership passes let authenticated members add their own card, or a minor
 child's card, to Apple Wallet or Google Wallet from **Mijn gegevens**.
 
+## Reusable AWC 1 guest passes
+
+An authenticated person with a current player role for the team titled
+`AWC 1` receives two fixed guest slots on **Mijn gegevens**. Player eligibility
+is resolved server-side from current `work_history` and the configured player
+role list. Staff roles and former members do not receive the controls.
+
+Each slot is created only when the player requests its share link. The public
+`/gastpas/{token}` page lets the guest enter their own name once, then provides
+Apple Wallet, Google Wallet and a digital QR fallback. The pass remains usable
+for later AWC 1 home matches; the player does not activate it for every match.
+The card and scanner show the guest name and **Gast van {player}**.
+
+Replacing a guest keeps the same numbered slot, rotates the public link and
+increments the pass version. Old Wallet passes, screenshots and share links
+therefore fail online verification immediately. Keeping the stable slot is
+also the quota boundary: the scanner accepts slot 1 and slot 2 at most once
+each per event, even if a player replaces a guest during that event.
+
+Guest-pass state is stored in the private `rondo_guest_pass` post type. Domain
+fields include the host person, slot number, guest name, status, claim time and
+pass version. The 64-character bearer token is stored as private infrastructure
+metadata and is never included in scanner responses or admission records.
+
+Authenticated player endpoints are:
+
+- `GET /rondo/v1/guest-passes/me`
+- `POST /rondo/v1/guest-passes/slots/{1|2}`
+- `POST /rondo/v1/guest-passes/slots/{1|2}/replace`
+
+Guest QR payloads use the signed `rondo-guest-pass` audience. At scan time the
+server rechecks the pass version, claimed status, current AWC 1 player role and
+the selected event's home team before recording admission.
+
 ## Eligibility
 
 A person is eligible based on native field `type_lid` (stored as `type-lid`):
@@ -221,13 +255,20 @@ are shown below scan results at the end of the page.
 
 Selecting a fixture creates or updates a private `rondo_access_event` snapshot.
 Every accepted QR scan creates at most one private `rondo_admission` for that
-event. The aggregate breakdown has four fixed types: `bondslid`,
-`verenigingslid`, `businessclub`, and `awc_sponsor`.
+event. The aggregate breakdown has five fixed types: `bondslid`,
+`verenigingslid`, `businessclub`, `awc_sponsor`, and `guest`.
 
 Admission posts store only the event reference, exact pass type, and scan time.
 They never store the person ID, name, email address, KNVB ID, or raw token. A
 per-event HMAC option prevents the same person being counted twice across
 scanner devices. Its secret stays server-side and the duplicate-detection
 option is deleted after 30 days; aggregate admission posts remain.
+
+Guest admissions are the scoped exception to the anonymous member flow. For 30
+days they additionally store the guest-pass reference, host person, stable slot
+and guest-name snapshot so the club can identify whose guest was admitted.
+The daily cleanup removes those four identifying fields together with the
+duplicate-detection lock. The event, `guest` pass type and aggregate count
+remain; regular member admissions continue to contain no attendee identity.
 
 Ticket sales and payment flows are not part of this implementation.
