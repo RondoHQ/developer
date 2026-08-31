@@ -22,6 +22,12 @@ De household-route leest hiervoor alleen contributiefacturen met de status `rond
 
 Contributiegegevens volgen dezelfde persoonlijke household-scope als de contactgegevens. Een andere ouder/verzorger die alleen ter context op de pagina verschijnt krijgt altijd `contribution: null`, ook wanneer die persoon zelf een contributiefactuur heeft.
 
+## Mijn VOG
+
+Het gekoppelde lid kan via **Profiel → Mijn VOG** de eigen VOG-status, afgiftedatum en vervaldatum bekijken. `GET /rondo/v1/vog/me` retourneert alleen de gegevens van het gekoppelde persoonsprofiel.
+
+Beheerders stellen onder **Instellingen → VOG** afzonderlijke ledenberichten in voor een ontbrekende, verlopen en bijna verlopende VOG. De instellingen worden als WordPress-opties opgeslagen en de persoonlijke VOG-route levert de actuele teksten mee aan de profielpagina. Een lege instelling valt terug op de standaardtekst.
+
 ## E-mail
 
 `email_1` is het primaire e-mailadres en `email_2` het tweede e-mailadres. Een adres toevoegen, vervangen of primair maken wordt pas uitgevoerd nadat de ontvanger de eenmalige link heeft geopend. De link is twee uur geldig en een nieuwe aanvraag maakt een oudere aanvraag ongeldig.
