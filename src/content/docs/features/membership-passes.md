@@ -214,6 +214,11 @@ after kickoff. One active match is selected automatically. When several are
 active, the operator selects once and the browser remembers that choice for the
 same local date. A manual fallback shows selectable home fixtures for today.
 
+The camera remains available without a selected fixture. In that mode the
+scanner still verifies current membership, pass entitlement, and pass version,
+but it does not create an admission or change match statistics. Match totals
+are shown below scan results at the end of the page.
+
 Selecting a fixture creates or updates a private `rondo_access_event` snapshot.
 Every accepted QR scan creates at most one private `rondo_admission` for that
 event. The aggregate breakdown has four fixed types: `bondslid`,
