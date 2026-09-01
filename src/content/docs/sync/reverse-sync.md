@@ -44,6 +44,8 @@ Existing Sportlink parent relationships are authorized through the local `rondo_
 
 Immediately before writing, the browser reads the child's current `MemberParentalInfo`. It matches the desired normalized e-mail first, followed by exactly one slot containing the mapped previous e-mail. If the e-mail is missing, it may complete exactly one partially filled slot when every existing name, e-mail, and phone value agrees with the desired parent after name and Dutch phone normalization. Conflicting or ambiguous partial slots stay blocked; otherwise only a fully empty slot is used. The browser fills `NameParent1/2`, `EmailAddressParent1/2`, and `TelephoneParent1/2`, saves through the Sportlink SPA, reads the record again with the same normalization, and only then marks the job synchronized.
 
+A verified parent-slot write also completes the matching parent contact entries in Rondo's profile-change audit. A callback failure is logged separately and never retries an already completed Sportlink write.
+
 Jobs retry transient failures with bounded backoff. Two occupied slots become a visible blocked/error status in Rondo. Relationship removal cancels pending work but does not clear an already written Sportlink slot in version 1.
 
 ## Tracked Fields
