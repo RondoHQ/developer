@@ -29,20 +29,20 @@ Phase 2: Sync to Sportlink (when unsynced changes exist)
     rondo_club_change_detections → lib/reverse-sync-sportlink.js → Sportlink Browser (Playwright)
 
 Parent-slot track:
-    Modified parent/child relationships → parent_slot_sync_jobs
+    New relationships + audited parent e-mail replacements → parent_slot_sync_jobs
     → MemberParentalInfo editor → verified Sportlink parent slot
     → status callback to Rondo Club
 ```
 
 ## Parent/guardian slot synchronization
 
-Parent relationships use a separate incremental cursor and durable SQLite queue. A parent change can affect multiple children, so this track does not use the flat-field `sync_origin` shortcut.
+Parent relationships use a separate incremental cursor and durable SQLite queue. One audited parent e-mail change can affect multiple children, so this track does not use the flat-field `sync_origin` shortcut.
 
-This track also supports former members who still have a current parent/guardian role. Their historical member profile remains read-only, but Rondo accepts edits to the primary parent e-mail address and phone number. Modifying either field makes every current child a candidate; the desired parent-slot hash then queues the changed values for Sportlink. Parent addresses are not part of this track because `MemberParentalInfo` has no address fields.
+New UI-created parent relationships queue a full parent slot containing the current name, primary e-mail address and optional phone number. Parent addresses are not part of this track because `MemberParentalInfo` has no address fields.
 
-Existing Sportlink parent relationships are authorized through the local `rondo_club_parents` mapping for that exact child. When a parent's primary Rondo e-mail changes, the queued payload retains the previous mapped Sportlink e-mail so the writer can find the already assigned child slot and replace its e-mail instead of creating or selecting another parent.
+Existing Sportlink parent relationships are updated only from a pending Rondo profile-change audit entry containing an exact old-to-new e-mail replacement. A generic mismatch is ignored because a child slot may intentionally use the parent's current `email_2`. The audit event is applied to every current child relationship; historical mappings and unrelated person modifications cannot authorize an overwrite.
 
-Immediately before writing, the browser reads the child's current `MemberParentalInfo`. It matches the desired normalized e-mail first, followed by exactly one slot containing the mapped previous e-mail. If the e-mail is missing, it may complete exactly one partially filled slot when every existing name, e-mail, and phone value agrees with the desired parent after name and Dutch phone normalization. Conflicting or ambiguous partial slots stay blocked; otherwise only a fully empty slot is used. The browser fills `NameParent1/2`, `EmailAddressParent1/2`, and `TelephoneParent1/2`, saves through the Sportlink SPA, reads the record again with the same normalization, and only then marks the job synchronized.
+Immediately before writing, the browser reads the child's current `MemberParentalInfo`. For an audited replacement it must find exactly one slot containing the old e-mail and a compatible parent name. It changes only `EmailAddressParent1/2`; name and phone remain untouched and are verified after saving. If the old address is absent, duplicated or attached to a conflicting name, the job stays blocked for review. New relationship jobs retain their separate compatible-partial-or-empty-slot behavior and may fill all three fields.
 
 After every child job for a parent has been resolved, the verified parent-slot writes complete the matching parent contact entries in Rondo's profile-change audit. A callback failure is logged separately and never retries an already completed Sportlink write.
 
