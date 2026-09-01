@@ -29,6 +29,8 @@ access. Managers are administrators or users with the current work-history role
 | `PATCH` | `/rondo/v1/tournament-entries/{id}/draft` | Assignee | Save contact and tournament-team draft data |
 | `POST` | `/rondo/v1/tournament-entries/{id}/submit` | Assignee | Confirm a positive registration |
 | `POST` | `/rondo/v1/tournament-entries/{id}/retry-payment-link` | Assignee or manager | Idempotently create or recover the linked tournament payment |
+| `POST` | `/rondo/v1/tournament-entries/{id}/payment-reminder` | Manager | Send a manual reminder for an open payment |
+| `POST` | `/rondo/v1/tournament-entries/{id}/reopen` | Manager | Cancel an unpaid invoice and reopen the registration |
 
 Draft and submit writes require the current `version`. A stale version returns HTTP 409 with the
 current entry in the error data. Confirmation requires at least one tournament team, a positive

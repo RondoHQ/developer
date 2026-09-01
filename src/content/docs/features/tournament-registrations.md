@@ -3,9 +3,9 @@ title: "Tournament registrations"
 ---
 
 Rondo manages tournament editions and one shared registration task per selected club team. A
-positive registration now creates one tournament invoice and a persistent Mollie payment link.
-Payment reminders, external submission tracking, and programme distribution remain follow-up
-milestones.
+positive registration creates one tournament invoice and a persistent Mollie payment link. Payment
+email and reminders are operational; external submission tracking and programme distribution remain
+follow-up milestones.
 
 ## Roles and assignment
 
@@ -28,8 +28,11 @@ and total amount.
 Tournament dates and deadlines are entered as calendar dates without a time. The internal deadline
 remains open through the end of the selected day. A tournament manager can extend it, but it must
 remain in the future and before the organiser's external deadline. Confirmed registrations are
-read-only. If payment-link creation fails, the registration remains valid and both assigned staff
-and tournament managers can retry the idempotent payment action.
+read-only for assigned staff. A manager can reopen an unpaid registration: Rondo archives the old
+payment link and invoice, restores the saved team draft, and creates a new invoice after the next
+confirmation. Paid registrations cannot be reopened. If payment-link creation fails, the
+registration remains valid and both assigned staff and tournament managers can retry the
+idempotent payment action.
 
 ## Payment
 
@@ -43,6 +46,13 @@ Assigned staff see **Pay now** while payment is open. The existing verified Moll
 the invoice paid; entry responses derive `payment_state` and `paid_at` from that invoice, so the
 tournament manager sees the same status without financial permissions. Free registrations expose
 `payment_state=not_applicable` and do not create an invoice.
+
+Publishing is blocked until a usable dedicated tournament Mollie account is configured. A
+tournament has its own payment deadline and configurable reminder days, defaulting to seven and two
+days before that deadline. Confirmation sends the payment link once to every assigned staff member.
+The daily scheduler sends each configured reminder moment at most once and skips entries that are
+not submitted, have no open link, or are already paid. Managers can also send a manual payment
+reminder from the tournament overview.
 
 A tournament manager can delete both draft and published tournaments. Deletion moves the tournament
 and every linked team registration to the WordPress trash, so they immediately disappear from the
