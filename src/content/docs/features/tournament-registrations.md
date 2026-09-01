@@ -76,7 +76,9 @@ The published tournament detail has three tabs:
 External processing is tracked once per tournament as `not_processed`, `submitted` or `confirmed`.
 The lifecycle can move from `open` to `closed` or `archived`; archived tournaments are read-only.
 The CSV and landscape PDF exports use the same server-side dataset and include tournament metadata,
-deadlines, totals, selected teams, submitted counts, contacts, payment state and planner notes.
+deadlines, totals, selected teams, submitted counts, contacts, payment state and planner notes. The
+PDF also uses the configured club logo, accent color and accent background color from the finance
+settings.
 
 Operational changes, submissions, payment events, reminders and programme delivery are written as
 private tournament activity comments. These comments are available only through the manager API.
