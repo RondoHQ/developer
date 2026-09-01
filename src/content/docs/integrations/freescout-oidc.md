@@ -6,11 +6,12 @@ Rondo Club includes a narrowly scoped OpenID Connect provider for the first-part
 
 ## Provider endpoints
 
-The issuer is the Rondo Club site URL without a trailing slash. Clients should discover the remaining endpoints from:
+The issuer is the Rondo Club site URL plus `/oauth`, without a trailing slash. Keeping discovery
+below that path avoids collisions with a top-level `.well-known` directory reserved by the host
+for certificate validation. Clients should discover the remaining endpoints from:
 
 ```text
-GET /.well-known/openid-configuration
-GET /.well-known/oauth-authorization-server
+GET /oauth/.well-known/openid-configuration
 ```
 
 The advertised endpoints are:
