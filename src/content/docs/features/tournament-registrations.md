@@ -12,6 +12,9 @@ Administrators and users whose linked person has a current work-history role nam
 `Coördinator toernooien` can manage tournaments at `/toernooien`. The manager selects club teams
 and active team staff who have a Rondo account. Publishing creates one `rondo_tourn_entry` post per
 club team, assigns every selected staff account to that shared entry, and sends the initial email.
+The publication review can select every eligible team and all of its current staff in one action.
+It shows the exact team and recipient counts and separately reports teams skipped because they have
+no active staff member with a Rondo account.
 
 Assigned staff use `/mijn-toernooien`. Multiple assignees edit the same draft with optimistic
 locking, so an outdated browser cannot overwrite a newer version. There is deliberately no decline
@@ -20,9 +23,12 @@ or no-participation state: an entry can only remain open or become a positive re
 ## Registration model
 
 One club team can register one or more tournament teams. Every tournament team has its own player
-count. One contact name, email address, and mobile number apply to all tournament teams in that
-registration. On confirmation, Rondo snapshots the entered teams, player total, applicable price,
-and total amount.
+count. The contact must be one of the Rondo people linked to the staff accounts assigned to the
+entry. The assignee chooses themselves or a colleague in one action; Rondo reads the name, email
+address and mobile number from that person's profile and blocks confirmation while either contact
+channel is missing. The person relation is authoritative, while the resolved contact details are
+snapshotted for the invoice and export. On confirmation, Rondo also snapshots the entered teams,
+player total, applicable price, and total amount.
 
 Tournament schedule rows contain a local date and time in the WordPress site timezone. Deadlines
 remain calendar dates without a time, and the internal deadline remains open through the end of the
@@ -31,8 +37,9 @@ organiser's external deadline. Confirmed registrations are
 read-only for assigned staff. A manager can reopen an unpaid registration: Rondo archives the old
 payment link and invoice, restores the saved team draft, and creates a new invoice after the next
 confirmation. Paid registrations cannot be reopened. If payment-link creation fails, the
-registration remains valid and both assigned staff and tournament managers can retry the
-idempotent payment action.
+registration remains valid. Rondo schedules a deduplicated automatic retry after five minutes and
+uses increasing intervals up to one day until payment-link creation succeeds. The participant page
+polls only while creation or recovery is pending and receives the payment email after success.
 
 ## Payment
 
@@ -106,8 +113,9 @@ through the domain REST controller. Fields use the native Rondo field registry a
 meta for repeaters. The generic WordPress REST API cannot expose either post type.
 
 Entry reads are limited to the assigned accounts and tournament managers. Entry writes are limited
-to assigned accounts; retrying payment-link creation is available to assignees and tournament
-managers. The assignment stores a snapshot of names, roles, and email addresses plus private
-per-user lookup markers for efficient personal task lists.
+to assigned accounts. The assignment stores person and user IDs plus a snapshot of names, roles,
+email addresses and mobile numbers, with private per-user lookup markers for efficient personal
+task lists. Failed payment recovery runs through a private WordPress cron hook and has no manual
+REST action.
 
 See [REST API](/api/rest-api/#tournament-registrations) for the endpoints.

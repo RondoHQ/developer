@@ -34,19 +34,21 @@ access. Managers are administrators or users with the current work-history role
 | `GET` | `/rondo/v1/tournament-entries/{id}` | Assignee or manager | Read one shared entry |
 | `PATCH` | `/rondo/v1/tournament-entries/{id}/draft` | Assignee | Save contact and tournament-team draft data |
 | `POST` | `/rondo/v1/tournament-entries/{id}/submit` | Assignee | Confirm a positive registration |
-| `POST` | `/rondo/v1/tournament-entries/{id}/retry-payment-link` | Assignee or manager | Idempotently create or recover the linked tournament payment |
 | `POST` | `/rondo/v1/tournament-entries/{id}/payment-reminder` | Manager | Send a manual reminder for an open payment |
 | `POST` | `/rondo/v1/tournament-entries/{id}/reopen` | Manager | Cancel an unpaid invoice and reopen the registration |
 | `PATCH` | `/rondo/v1/tournament-entries/{id}/planner-note` | Manager | Update the private operational note |
 
 Draft and submit writes require the current `version`. A stale version returns HTTP 409 with the
-current entry in the error data. Confirmation requires at least one tournament team, a positive
-player count per team, and one complete shared contact. See
+current entry in the error data. Contact selection uses `contact_person_id`, which must identify a
+Rondo person linked to one of the assigned staff accounts. Confirmation requires at least one
+tournament team, a positive player count per team, and complete email and mobile details on that
+person. See
 [Tournament registrations](/features/tournament-registrations/) for the data model and workflow.
 
-Submitted entry responses include `invoice_id`, `payment_state`, `payment_url`, `paid_at`, and a
-retry-safe error message where relevant. The payment URL is returned only while the linked invoice
-is payable. Mollie-confirmed paid invoices return `payment_state=paid` without the old checkout URL.
+Entry responses include `contact_candidates` for the assigned Rondo people. Submitted responses
+also include `invoice_id`, `payment_state`, `payment_url`, and `paid_at`. The payment URL is returned
+only while the linked invoice is payable. Mollie-confirmed paid invoices return `payment_state=paid`
+without the old checkout URL; failed link creation is retried automatically through WordPress cron.
 
 Tournament detail responses contain overall and per-age-group totals, lifecycle and external status,
 programme state and private activity history. `POST .../program` accepts `action=save`, `preview` or
