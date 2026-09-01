@@ -20,6 +20,14 @@ Assigned staff use `/mijn-toernooien`. Multiple assignees edit the same draft wi
 locking, so an outdated browser cannot overwrite a newer version. There is deliberately no decline
 or no-participation state: an entry can only remain open or become a positive registration.
 
+After publication, a manager can edit the assignment for each club team from **Teams and
+payments**. The picker reloads the current team-linked staff accounts and can select all current
+staff or an explicit subset. The server requires at least one current eligible account and the
+entry's current `version`. Added staff immediately gain access and receive the assignment email at
+most once; removed staff immediately lose access. Every change is recorded in the tournament
+activity. Removing the selected contact from an open draft clears that choice, while a submitted
+contact and all financial snapshots remain unchanged.
+
 ## Registration model
 
 One club team can register one or more tournament teams. Every tournament team has its own player
@@ -88,8 +96,9 @@ The published tournament detail has three tabs:
   internal, payment and organiser deadlines, lifecycle status, external processing status and the
   activity history.
 - **Teams and payments** keeps selected teams visible even when they did not submit. Managers can
-  filter the table, inspect contacts, payment status and last payment email, recover an open payment,
-  send a manual reminder, reopen an unpaid entry and maintain a private planner note.
+  filter the table, synchronize or redistribute assigned staff, inspect contacts, payment status and
+  last payment email, recover an open payment, send a manual reminder, reopen an unpaid entry and
+  maintain a private planner note.
 - **Communication** stores a programme PDF or URL and message. Preview resolves current assigned
   staff and the shared contact of submitted registrations, deduplicates addresses case-insensitively
   and reports invalid addresses. Sending stores the exact subject, message, file or URL, timestamp
@@ -113,9 +122,10 @@ through the domain REST controller. Fields use the native Rondo field registry a
 meta for repeaters. The generic WordPress REST API cannot expose either post type.
 
 Entry reads are limited to the assigned accounts and tournament managers. Entry writes are limited
-to assigned accounts. The assignment stores person and user IDs plus a snapshot of names, roles,
-email addresses and mobile numbers, with private per-user lookup markers for efficient personal
-task lists. Failed payment recovery runs through a private WordPress cron hook and has no manual
-REST action.
+to assigned accounts, except that managers can redistribute the assignment through the dedicated
+assignee route. The assignment stores person and user IDs plus a snapshot of names, roles, email
+addresses and mobile numbers, with private per-user lookup markers for efficient personal task
+lists. Failed payment recovery runs through a private WordPress cron hook and has no manual REST
+action.
 
 See [REST API](/api/rest-api/#tournament-registrations) for the endpoints.

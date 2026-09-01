@@ -34,6 +34,7 @@ access. Managers are administrators or users with the current work-history role
 | `GET` | `/rondo/v1/tournament-entries/{id}` | Assignee or manager | Read one shared entry |
 | `PATCH` | `/rondo/v1/tournament-entries/{id}/draft` | Assignee | Save contact and tournament-team draft data |
 | `POST` | `/rondo/v1/tournament-entries/{id}/submit` | Assignee | Confirm a positive registration |
+| `PATCH` | `/rondo/v1/tournament-entries/{id}/assignees` | Manager | Synchronize or redistribute current team staff with `user_ids` and `version` |
 | `POST` | `/rondo/v1/tournament-entries/{id}/payment-reminder` | Manager | Send a manual reminder for an open payment |
 | `POST` | `/rondo/v1/tournament-entries/{id}/reopen` | Manager | Cancel an unpaid invoice and reopen the registration |
 | `PATCH` | `/rondo/v1/tournament-entries/{id}/planner-note` | Manager | Update the private operational note |
@@ -44,6 +45,11 @@ Rondo person linked to one of the assigned staff accounts. Confirmation requires
 tournament team, a positive player count per team, and complete email and mobile details on that
 person. See
 [Tournament registrations](/features/tournament-registrations/) for the data model and workflow.
+
+Assignee updates also require the current entry `version` and at least one current, team-linked staff
+account with an active Rondo account. The response includes `assignment_update` counts for added and
+removed staff and invitation delivery. Removing an assignee revokes access immediately; submitted
+contact and invoice snapshots are never rewritten.
 
 Entry responses include `contact_candidates` for the assigned Rondo people. Submitted responses
 also include `invoice_id`, `payment_state`, `payment_url`, and `paid_at`. The payment URL is returned
