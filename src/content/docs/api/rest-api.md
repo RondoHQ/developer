@@ -19,7 +19,7 @@ access. Managers are administrators or users with the current work-history role
 | --- | --- | --- | --- |
 | `GET` | `/rondo/v1/tournaments` | Manager | List tournament editions and totals |
 | `POST` | `/rondo/v1/tournaments` | Manager | Create a draft edition |
-| `GET`, `PATCH`, `DELETE` | `/rondo/v1/tournaments/{id}` | Manager | Read or edit a draft edition, or trash any edition and its entries |
+| `GET`, `PATCH`, `DELETE` | `/rondo/v1/tournaments/{id}` | Manager | Read an edition, edit allowed draft or published fields with `version`, or trash it and its entries |
 | `GET` | `/rondo/v1/tournaments/assignment-options` | Manager | List eligible teams and current staff accounts |
 | `POST` | `/rondo/v1/tournaments/{id}/publish` | Manager | Create shared entries and send invitations |
 | `PATCH` | `/rondo/v1/tournaments/{id}/deadline` | Manager | Extend the internal deadline |
@@ -29,6 +29,7 @@ access. Managers are administrators or users with the current work-history role
 | `GET` | `/rondo/v1/tournaments/{id}/export.csv` | Manager | Download the operational CSV export |
 | `GET` | `/rondo/v1/tournaments/{id}/export.pdf` | Manager | Download the print-friendly PDF export |
 | `POST` | `/rondo/v1/tournaments/{id}/program` | Manager | Save, preview or send the programme |
+| `POST` | `/rondo/v1/tournaments/{id}/change-notification` | Manager | Send one saved published change to its current recipient preview |
 | `GET` | `/rondo/v1/tournament-entries/mine` | Signed-in user | List assigned entries |
 | `GET` | `/rondo/v1/tournament-entries/{id}` | Assignee or manager | Read one shared entry |
 | `PATCH` | `/rondo/v1/tournament-entries/{id}/draft` | Assignee | Save contact and tournament-team draft data |

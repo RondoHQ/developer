@@ -24,9 +24,10 @@ count. One contact name, email address, and mobile number apply to all tournamen
 registration. On confirmation, Rondo snapshots the entered teams, player total, applicable price,
 and total amount.
 
-Tournament dates and deadlines are entered as calendar dates without a time. The internal deadline
-remains open through the end of the selected day. A tournament manager can extend it, but it must
-remain in the future and before the organiser's external deadline. Confirmed registrations are
+Tournament schedule rows contain a local date and time in the WordPress site timezone. Deadlines
+remain calendar dates without a time, and the internal deadline remains open through the end of the
+selected day. A tournament manager can extend it, but it must remain in the future and before the
+organiser's external deadline. Confirmed registrations are
 read-only for assigned staff. A manager can reopen an unpaid registration: Rondo archives the old
 payment link and invoice, restores the saved team draft, and creates a new invoice after the next
 confirmation. Paid registrations cannot be reopened. If payment-link creation fails, the
@@ -59,6 +60,20 @@ manager and assignee interfaces. Rondo does not send cancellation messages; the 
 the manager that they must inform registered teams themselves.
 
 ## Manager operations
+
+Managers can edit the operational information of an `open` or `closed` tournament, including its
+name, organiser, location, description, schedule date and time, deadlines, and payment-reminder
+days. The update requires the current tournament `version`, so a stale browser receives HTTP 409
+instead of overwriting a newer edit. Target teams and assignments stay outside this generic update.
+Pricing rules and game formats remain editable until the first entry becomes `submitted`; after
+that point both the UI and server lock them, while existing registration and invoice snapshots
+remain unchanged.
+
+After a participant-visible update, the save response includes the private activity ID, changed
+fields, and a deduplicated recipient preview. The manager may skip email or send that one change
+once. Recipients are all current assignees of every selected team plus the contact of every
+submitted entry. Delivery results are stored on the change activity; partial email failure never
+rolls back the saved tournament update.
 
 The published tournament detail has three tabs:
 
