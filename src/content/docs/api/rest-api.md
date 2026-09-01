@@ -23,7 +23,12 @@ access. Managers are administrators or users with the current work-history role
 | `GET` | `/rondo/v1/tournaments/assignment-options` | Manager | List eligible teams and current staff accounts |
 | `POST` | `/rondo/v1/tournaments/{id}/publish` | Manager | Create shared entries and send invitations |
 | `PATCH` | `/rondo/v1/tournaments/{id}/deadline` | Manager | Extend the internal deadline |
+| `PATCH` | `/rondo/v1/tournaments/{id}/external-status` | Manager | Store external submission progress |
+| `PATCH` | `/rondo/v1/tournaments/{id}/status` | Manager | Close or archive a tournament |
 | `GET` | `/rondo/v1/tournaments/{id}/entries` | Manager | Read the team-level progress overview |
+| `GET` | `/rondo/v1/tournaments/{id}/export.csv` | Manager | Download the operational CSV export |
+| `GET` | `/rondo/v1/tournaments/{id}/export.pdf` | Manager | Download the print-friendly PDF export |
+| `POST` | `/rondo/v1/tournaments/{id}/program` | Manager | Save, preview or send the programme |
 | `GET` | `/rondo/v1/tournament-entries/mine` | Signed-in user | List assigned entries |
 | `GET` | `/rondo/v1/tournament-entries/{id}` | Assignee or manager | Read one shared entry |
 | `PATCH` | `/rondo/v1/tournament-entries/{id}/draft` | Assignee | Save contact and tournament-team draft data |
@@ -31,6 +36,7 @@ access. Managers are administrators or users with the current work-history role
 | `POST` | `/rondo/v1/tournament-entries/{id}/retry-payment-link` | Assignee or manager | Idempotently create or recover the linked tournament payment |
 | `POST` | `/rondo/v1/tournament-entries/{id}/payment-reminder` | Manager | Send a manual reminder for an open payment |
 | `POST` | `/rondo/v1/tournament-entries/{id}/reopen` | Manager | Cancel an unpaid invoice and reopen the registration |
+| `PATCH` | `/rondo/v1/tournament-entries/{id}/planner-note` | Manager | Update the private operational note |
 
 Draft and submit writes require the current `version`. A stale version returns HTTP 409 with the
 current entry in the error data. Confirmation requires at least one tournament team, a positive
@@ -40,6 +46,11 @@ player count per team, and one complete shared contact. See
 Submitted entry responses include `invoice_id`, `payment_state`, `payment_url`, `paid_at`, and a
 retry-safe error message where relevant. The payment URL is returned only while the linked invoice
 is payable. Mollie-confirmed paid invoices return `payment_state=paid` without the old checkout URL.
+
+Tournament detail responses contain overall and per-age-group totals, lifecycle and external status,
+programme state and private activity history. `POST .../program` accepts `action=save`, `preview` or
+`send`, plus an optional PDF upload or programme URL. Preview and send return deduplicated recipients
+and invalid addresses; send also returns the individual delivery results.
 
 **Headers:**
 ```

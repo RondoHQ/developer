@@ -3,9 +3,8 @@ title: "Tournament registrations"
 ---
 
 Rondo manages tournament editions and one shared registration task per selected club team. A
-positive registration creates one tournament invoice and a persistent Mollie payment link. Payment
-email and reminders are operational; external submission tracking and programme distribution remain
-follow-up milestones.
+positive registration creates one tournament invoice and a persistent Mollie payment link. The
+manager overview also covers external processing, exports and programme distribution.
 
 ## Roles and assignment
 
@@ -58,6 +57,29 @@ A tournament manager can delete both draft and published tournaments. Deletion m
 and every linked team registration to the WordPress trash, so they immediately disappear from the
 manager and assignee interfaces. Rondo does not send cancellation messages; the confirmation warns
 the manager that they must inform registered teams themselves.
+
+## Manager operations
+
+The published tournament detail has three tabs:
+
+- **Overview** shows authoritative totals for the complete tournament and each age group, the
+  internal, payment and organiser deadlines, lifecycle status, external processing status and the
+  activity history.
+- **Teams and payments** keeps selected teams visible even when they did not submit. Managers can
+  filter the table, inspect contacts, payment status and last payment email, recover an open payment,
+  send a manual reminder, reopen an unpaid entry and maintain a private planner note.
+- **Communication** stores a programme PDF or URL and message. Preview resolves current assigned
+  staff and the shared contact of submitted registrations, deduplicates addresses case-insensitively
+  and reports invalid addresses. Sending stores the exact subject, message, file or URL, timestamp
+  and per-recipient result for later inspection.
+
+External processing is tracked once per tournament as `not_processed`, `submitted` or `confirmed`.
+The lifecycle can move from `open` to `closed` or `archived`; archived tournaments are read-only.
+The CSV and landscape PDF exports use the same server-side dataset and include tournament metadata,
+deadlines, totals, selected teams, submitted counts, contacts, payment state and planner notes.
+
+Operational changes, submissions, payment events, reminders and programme delivery are written as
+private tournament activity comments. These comments are available only through the manager API.
 
 ## Storage and privacy
 
