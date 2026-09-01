@@ -5,7 +5,12 @@ title: "Invoicing System"
 
 ## Overview
 
-The invoicing system manages the full lifecycle of club invoices — from creation through PDF generation, email delivery, and payment tracking. It supports discipline invoices, membership invoices, and manual invoices.
+The invoicing system manages the full lifecycle of club invoices — from creation through PDF generation, email delivery, and payment tracking. It supports discipline invoices, membership invoices, tournament invoices, and manual invoices.
+
+Tournament invoices are created by a confirmed tournament entry, use the `O` number prefix, and
+store `_tournament_entry_id` as their immutable domain link. They use the dedicated default Mollie
+account configured for tournaments. The tournament entry exposes a permission-filtered derivative
+of the invoice status; the invoice and verified Mollie webhook remain the financial source of truth.
 
 Viewing invoices requires `financieel_read`; creating, sending, deleting or marking them paid requires `financieel` (which implies the read capability).
 

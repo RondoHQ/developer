@@ -261,7 +261,7 @@ Tracks financial invoices for membership fees or discipline case charges. Introd
 
 | Field | Key | Type | Description |
 |-------|-----|------|-------------|
-| Factuurtype | `invoice_type` | select | Type: `membership` or `discipline` |
+| Factuurtype | `invoice_type` | select | Type: `membership`, `discipline`, `tournament` or `manual` |
 | Factuurnummer | `invoice_number` | text | Generated invoice number (C prefix for contributie) |
 | Persoon | `person` | post_object | Link to Person post |
 | Status | `status` | select | Invoice status |
