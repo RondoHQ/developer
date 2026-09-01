@@ -29,6 +29,11 @@ remains open through the end of the selected day. A tournament manager can exten
 remain in the future and before the organiser's external deadline. Confirmed registrations are
 read-only in this milestone.
 
+A tournament manager can delete both draft and published tournaments. Deletion moves the tournament
+and every linked team registration to the WordPress trash, so they immediately disappear from the
+manager and assignee interfaces. Rondo does not send cancellation messages; the confirmation warns
+the manager that they must inform registered teams themselves.
+
 ## Storage and privacy
 
 Tournament editions use the private `rondo_tournament` post type and team registrations use the

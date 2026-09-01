@@ -19,7 +19,7 @@ access. Managers are administrators or users with the current work-history role
 | --- | --- | --- | --- |
 | `GET` | `/rondo/v1/tournaments` | Manager | List tournament editions and totals |
 | `POST` | `/rondo/v1/tournaments` | Manager | Create a draft edition |
-| `GET`, `PATCH` | `/rondo/v1/tournaments/{id}` | Manager | Read or edit a draft edition |
+| `GET`, `PATCH`, `DELETE` | `/rondo/v1/tournaments/{id}` | Manager | Read or edit a draft edition, or trash any edition and its entries |
 | `GET` | `/rondo/v1/tournaments/assignment-options` | Manager | List eligible teams and current staff accounts |
 | `POST` | `/rondo/v1/tournaments/{id}/publish` | Manager | Create shared entries and send invitations |
 | `PATCH` | `/rondo/v1/tournaments/{id}/deadline` | Manager | Extend the internal deadline |
