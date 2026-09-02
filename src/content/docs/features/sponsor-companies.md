@@ -71,3 +71,23 @@ audit and rollback; it does not delete or clear the original records.
 Rondo Sync subsequently owns companies with a `sponsit_contact_id`. It archives
 only missing Sponsit-owned companies and never overwrites or archives manually
 created companies without that ID.
+
+## Manually managed Businessclub memberships
+
+Businessclub memberships that do not exist in Sponsit can be grouped under one
+active, manually created sponsor without a `sponsit_contact_id`. Set its role to
+`businessclub` and link each Rondo person as a contact. A descriptive contact
+role such as `Lid van verdienste` can explain why the person receives the
+membership.
+
+These contacts count as Businessclub members throughout Rondo. When the contact
+has `receives_pass=true` and `is_primary_pass=true`, the manual Businessclub pass
+remains primary even if Sponsit also links that person to another sponsor. The
+Sponsit sync clears its own primary-pass flag in that case instead of replacing
+the manual choice.
+
+The Sponsit-to-Laposta step also includes active contacts from manual
+Businessclub sponsors. A manual Businessclub relation takes precedence over an
+AWC Sponsor relation for the `businessclub`, `bedrijfsnaam` and
+`sponsorvariant` fields. Existing Sponsit source IDs are retained when the same
+person also has a Sponsit-backed relation.
