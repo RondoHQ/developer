@@ -83,6 +83,16 @@ npm run preview-freescout-cleanup
 
 The preview scans only customers tracked by `freescout-sync.sqlite` and reports aggregate counts for phone, photo, address, company, job title, notes, social profiles, websites, customer custom fields, and customer properties. It reads standard contact data from FreeScout's embedded customer fields. It prints no names, email addresses, customer IDs, or field values and does not change FreeScout. A later cleanup may clear stored profile data after explicit approval.
 
+### Existing profile cleanup
+
+After reviewing the preview and receiving explicit approval, clear profile data beyond names and email addresses with:
+
+```bash
+npm run cleanup-freescout-profiles -- --apply --confirm=remove-extra-profile-data
+```
+
+The cleanup changes only customers tracked by `freescout-sync.sqlite`. It clears phone numbers, photos, addresses, company, job title, notes, social profiles, websites, and non-empty customer custom fields. It never sends or changes customer names or email addresses. Use `--limit=1` for a canary run, inspect the aggregate after-count, and then run without a limit. The operation is idempotent and stops on the first failed profile so it can be safely resumed after investigation.
+
 ## Conversations Pipeline
 
 The conversations pipeline downloads conversations from FreeScout and creates corresponding activities in Rondo Club, providing a unified timeline of member interactions.
@@ -135,6 +145,7 @@ The conversations pipeline is:
 | `steps/submit-freescout-sync.js` | FreeScout API sync + customer preparation |
 | `steps/prepare-freescout-customers.js` | Customer data preparation |
 | `tools/preview-freescout-customer-cleanup.js` | Read-only aggregate inventory of legacy customer profile data |
+| `tools/cleanup-freescout-customer-profiles.js` | Explicitly confirmed removal of profile data beyond name and email |
 | `steps/download-freescout-conversations.js` | Download conversations from FreeScout |
 | `steps/prepare-freescout-conversations.js` | Match conversations to persons |
 | `steps/submit-freescout-activities.js` | Create activities in Rondo Club |
