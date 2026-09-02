@@ -81,7 +81,7 @@ Run the read-only preview on the production sync host before removing legacy pro
 npm run preview-freescout-cleanup
 ```
 
-The preview scans only customers tracked by `freescout-sync.sqlite` and reports aggregate counts for phone, photo, address, company, job title, notes, social profiles, websites, and customer properties. It prints no names, email addresses, customer IDs, or field values and does not change FreeScout. A later cleanup may clear the six legacy Rondo-managed custom fields for every matched tracked customer after explicit approval.
+The preview scans only customers tracked by `freescout-sync.sqlite` and reports aggregate counts for phone, photo, address, company, job title, notes, social profiles, websites, customer custom fields, and customer properties. It reads standard contact data from FreeScout's embedded customer fields. It prints no names, email addresses, customer IDs, or field values and does not change FreeScout. A later cleanup may clear stored profile data after explicit approval.
 
 ## Conversations Pipeline
 
