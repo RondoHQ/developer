@@ -70,7 +70,11 @@ audit and rollback; it does not delete or clear the original records.
 
 Rondo Sync subsequently owns companies with a `sponsit_contact_id`. It archives
 only missing Sponsit-owned companies and never overwrites or archives manually
-created companies without that ID.
+created companies without that ID. After archiving the final active sponsor
+relationship for a person, Sync also clears the legacy `is_sponsor` and
+`sponsor_pass_variant` person fields. The person record itself remains available
+as a normal contact. When another active sponsor relationship remains, the
+legacy sponsor fields are preserved.
 
 ## Manually managed Businessclub memberships
 
