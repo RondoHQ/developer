@@ -49,7 +49,7 @@ Returns all activities for a person, sorted by creation date (newest first).
     "person_id": 789,
     "author_id": 1,
     "author": "Jan de Vries",
-    "created": "2026-02-12 14:30:00",
+    "created": "2026-02-12T13:30:00+00:00",
     "modified": "2026-02-12 14:30:00",
     "activity_type": "call",
     "activity_date": "2026-02-12",
@@ -144,7 +144,7 @@ Returns all activities for a person, sorted by creation date (newest first).
 | `person_id` | int | ID of the person this activity belongs to. |
 | `author_id` | int | User ID of the creator. |
 | `author` | string | Display name of the creator. |
-| `created` | string | Creation timestamp (`YYYY-MM-DD HH:MM:SS`). |
+| `created` | string | Creation timestamp as UTC RFC3339, including the `+00:00` offset. |
 | `modified` | string | Modification timestamp. |
 | `activity_type` | string | Type of activity (see table above). |
 | `activity_date` | string | Date of the activity (`YYYY-MM-DD`), or empty string. |
