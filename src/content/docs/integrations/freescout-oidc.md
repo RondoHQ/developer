@@ -104,7 +104,10 @@ Production requests require HTTPS.
 The configuration service advertises only the closed `ledenadministratie` mapping and
 `ledenadministratie.v1` sidebar policy. It accepts only a FreeScout base URL belonging to an
 enabled OIDC client. The access service resolves the exact issuer and opaque subject, then checks
-the user's current `ledenadministratie` capability. It never rematches an agent by email.
+the user's current `ledenadministratie` capability. `freescoutUserId` is `null` during the
+pre-binding access check and a positive integer after a local user exists. It is used only for
+audit correlation; access is always resolved from the signed issuer and subject, never from the
+local ID or an email address.
 
 The sidebar matches normalized customer addresses exactly against `email_1` and `email_2`, applies
 the effective Rondo user's normal person visibility, and returns escaped, script-free markup. A
