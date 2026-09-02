@@ -3,7 +3,7 @@ title: "FreeScout Pipeline"
 ---
 
 
-Syncs Rondo Club member data to FreeScout helpdesk as customers, enriching support tickets with member context. Also downloads FreeScout conversations and creates activities in Rondo Club.
+Syncs only the minimum customer identity needed by FreeScout: first name, last name, and email address. Live member context is supplied by the Rondo Integration sidebar instead of being copied into FreeScout customer profiles. The pipeline also downloads FreeScout conversations and creates activities in Rondo Club.
 
 ## Schedule
 
@@ -39,17 +39,9 @@ Before running, `pipelines/sync-freescout.js` verifies that `FREESCOUT_API_KEY` 
 **Script:** `steps/prepare-freescout-customers.js` (called internally by `steps/submit-freescout-sync.js`)
 
 1. Reads member data from `data/rondo-sync.sqlite` → `rondo_club_members`
-2. Reads team assignments from `data/rondo-sync.sqlite` → `rondo_club_work_history`
-3. Fetches the current contribution and invoice status once from `GET /wp-json/rondo/v1/fees`
-4. Builds customer records with:
-   - Name, email, phone from Rondo Club member data
-   - Photo URL from member data
-   - Website URLs from contact info
-   - Team memberships (comma-separated)
-   - KNVB ID, member since date
-   - Current Rondo contribution balance, season, payment status, and installment progress
-5. Computes `source_hash` per customer
-6. Upserts into `data/freescout-sync.sqlite` → `freescout_customers`
+2. Builds customer records containing only first name, last name, and email address
+3. Computes `source_hash` per customer
+4. Upserts the minimal identity into `data/freescout-sync.sqlite` → `freescout_customers`
 
 ### Customer Submit
 
@@ -60,10 +52,10 @@ Before running, `pipelines/sync-freescout.js` verifies that `FREESCOUT_API_KEY` 
 2. For each changed customer:
    - **No `freescout_id`**: `POST /api/customers` (create new customer)
    - **Has `freescout_id`**: `PUT /api/customers/{freescout_id}` (update existing)
-3. After creating/updating, syncs **custom fields** via `PUT /api/customers/{id}/customer_fields`
-4. Stores returned FreeScout customer ID as `freescout_id`
-5. Updates `last_synced_hash` on success
-6. Rate limited: exponential backoff on 5xx errors (1s, 2s, 4s)
+   - Updates add the current source email without removing other valid customer emails
+3. Stores the returned FreeScout customer ID as `freescout_id`
+4. Updates `last_synced_hash` on success
+5. Rate limited: exponential backoff on 5xx errors (1s, 2s, 4s)
 
 **Output:** `{ total, synced, created, updated, skipped, deleted, errors }`
 
@@ -75,30 +67,21 @@ Sent to `POST/PUT /api/customers`:
 
 | FreeScout Field | Source | Origin |
 |---|---|---|
-| `firstName` | `acf.first_name` | `rondo_club_members.data_json` |
-| `lastName` | `acf.last_name` | `rondo_club_members.data_json` |
-| `emails[].value` | Email from `contact_info` repeater | `rondo_club_members.data_json` |
-| `phones[].value` | Mobile from `contact_info` repeater | `rondo_club_members.data_json` |
-| `photoUrl` | Photo URL | `rondo_club_members.data_json` |
-| `websites[].value` | Website URLs from `contact_info` repeater | `rondo_club_members.data_json` |
+| `firstName` | `fields.first_name` | `rondo_club_members.data_json` |
+| `lastName` | `fields.last_name` | `rondo_club_members.data_json` |
+| `emails[].value` | `fields.email_1`, falling back to `fields.email_2` | `rondo_club_members.data_json` |
 
-### Custom Fields
+The customer sync does not send phone numbers, photos, addresses, websites, social profiles, notes, company details, teams, KNVB IDs, membership dates, contribution data, or custom fields. FreeScout conversations still contain their original email content.
 
-Sent to `PUT /api/customers/{id}/customer_fields`:
+### Existing profile cleanup preview
 
-| FreeScout Custom Field | Field ID | Source | Origin |
-|---|---|---|---|
-| `union_teams` | 1 | All current team names, comma-separated | `rondo_club_work_history` |
-| `public_person_id` | 4 | KNVB ID | `rondo_club_members` |
-| `member_since` | 5 | `acf['lid-sinds']` | `rondo_club_members` |
-| `contribution_outstanding` | 7 | Current outstanding contribution principal | Rondo `GET /rondo/v1/fees` |
-| `contribution_status` | 8 | Season, payment status, and installment progress | Rondo `GET /rondo/v1/fees` |
+Run the read-only preview on the production sync host before removing legacy profile data:
 
-Field IDs are configurable via `FREESCOUT_FIELD_CONTRIBUTION_OUTSTANDING` and `FREESCOUT_FIELD_CONTRIBUTION_STATUS`. The legacy Nikki environment names remain fallback aliases so the existing FreeScout field IDs can be reused during cutover.
+```bash
+npm run preview-freescout-cleanup
+```
 
-### RelationEnd Field
-
-The `RelationEnd` field from Sportlink member functions is included in FreeScout customer sync data. This tracks when a member's club-level function ended (e.g., when they stopped being "Voorzitter").
+The preview scans only customers tracked by `freescout-sync.sqlite` and reports aggregate counts for phone, photo, address, company, job title, notes, social profiles, websites, and customer properties. It prints no names, email addresses, customer IDs, or field values and does not change FreeScout. A later cleanup may clear the six legacy Rondo-managed custom fields for every matched tracked customer after explicit approval.
 
 ## Conversations Pipeline
 
@@ -126,7 +109,6 @@ The conversations pipeline is:
 | Database | Table | Usage |
 |---|---|---|
 | `rondo-sync.sqlite` | `rondo_club_members` | Member data (name, contact, KNVB ID) |
-| `rondo-sync.sqlite` | `rondo_club_work_history` | Current team assignments |
 | `freescout-sync.sqlite` | `freescout_customers` | Customer → FreeScout ID mapping + hashes |
 | `freescout-sync.sqlite` | `freescout_conversations` | Conversation tracking for activity sync |
 
@@ -140,7 +122,6 @@ The conversations pipeline is:
 ## Error Handling
 
 - Missing credentials cause immediate exit (not a silent skip)
-- A failed or invalid Rondo contribution response aborts customer preparation before any FreeScout fields can be cleared
 - Individual customer sync failures don't stop the pipeline
 - 5xx errors trigger exponential backoff (up to 3 retries)
 - Conversation sync failures are tracked independently
@@ -153,6 +134,7 @@ The conversations pipeline is:
 | `pipelines/sync-freescout.js` | Pipeline orchestrator (customers + conversations) |
 | `steps/submit-freescout-sync.js` | FreeScout API sync + customer preparation |
 | `steps/prepare-freescout-customers.js` | Customer data preparation |
+| `tools/preview-freescout-customer-cleanup.js` | Read-only aggregate inventory of legacy customer profile data |
 | `steps/download-freescout-conversations.js` | Download conversations from FreeScout |
 | `steps/prepare-freescout-conversations.js` | Match conversations to persons |
 | `steps/submit-freescout-activities.js` | Create activities in Rondo Club |
