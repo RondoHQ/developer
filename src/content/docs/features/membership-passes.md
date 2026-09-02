@@ -153,7 +153,8 @@ change.
 
 Wallet configuration lives in **Settings → Koppelingen → Wallets**.
 
-Uploads are stored as WordPress media attachments (no manual server paths):
+Uploads use a dedicated credential endpoint and never become public WordPress
+media attachments:
 
 - Apple certificate `.p12` upload
 - Google service-account `.json` upload
@@ -161,6 +162,10 @@ Uploads are stored as WordPress media attachments (no manual server paths):
 The Wallets tab reads the Apple certificate and shows its expiry date. It warns
 from 45 days before expiry and reports missing, expired or unreadable files
 without exposing the certificate path or password.
+
+Apple `.p12` and Google service-account files are encrypted at rest. Rondo
+decrypts each file only into a mode-`0600` temporary file for the duration of
+the Wallet operation.
 
 Required uploads/extensions are enabled for financieel/admin users via `upload_mimes`.
 

@@ -113,6 +113,16 @@ NIKKI_URL=https://nikki-online.nl
 DEBUG_LOG=false
 ```
 
+The host volume that stores `.env` must provide encryption at rest. Restrict the
+file itself to the sync service account as well:
+
+```bash
+chmod 600 /home/rondo/.env
+```
+
+The cron installer applies `umask 077` and enforces this mode automatically.
+Cached browser sessions are stored with mode `0600` in a mode-`0700` directory.
+
 ### 5. Verify Installation
 
 Run a test download to confirm Sportlink credentials work:

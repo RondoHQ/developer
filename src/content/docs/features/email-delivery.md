@@ -118,7 +118,7 @@ Rondo exposes Lettermint connection management in:
 
 - `Instellingen > Koppelingen > Lettermint`
 
-The screen stores credentials via the existing club config endpoint (`POST /wp-json/rondo/v1/config`) without exposing token/secret values in responses (only `has_*` flags are returned).
+The screen stores credentials via the existing club config endpoint (`POST /wp-json/rondo/v1/config`). Tokens and webhook secrets are encrypted at rest with sodium and are never returned by the API; responses contain only `has_*` flags.
 
 UI guidance:
 - Project API token help link points to `https://dash.lettermint.co/projects`
