@@ -101,22 +101,25 @@ Each request carries `X-Rondo-Timestamp`, a one-time `X-Rondo-Nonce`, and
 separated by newlines. Requests outside the five-minute clock window and reused nonces are denied.
 Production requests require HTTPS.
 
-The configuration service advertises only the closed `ledenadministratie` mapping and
-`ledenadministratie.v1` sidebar policy. It accepts only a FreeScout base URL belonging to an
-enabled OIDC client. The access service resolves the exact issuer and opaque subject, then checks
-the user's current `ledenadministratie` capability. `freescoutUserId` is `null` during the
+The configuration service advertises the generic `basis.v1` sidebar policy plus the closed
+managed-access mappings `ledenadministratie` and `contributie`. It accepts only a FreeScout base
+URL belonging to an enabled OIDC client. The access service resolves the exact issuer and opaque
+subject, then checks the user's current capability for each managed mapping. `freescoutUserId` is `null` during the
 pre-binding access check and a positive integer after a local user exists. It is used only for
 audit correlation; access is always resolved from the signed issuer and subject, never from the
 local ID or an email address.
 
-The sidebar matches normalized customer addresses exactly against `email_1` and `email_2`, applies
-the effective Rondo user's normal person visibility, and returns escaped, script-free markup. When
-a shared address belongs to multiple accessible profiles, the iframe presents a profile selector
-and one complete profile card at a time. The selector contains no inaccessible profiles. Malformed
-and synthetic addresses are ignored, and inaccessible records look identical to no match. The
-fixed mailbox policy includes membership, contact, household, process, and visible open-task
-summaries while excluding finance, VOG, notes, full work history, FreeScout IDs, user IDs, and
-wallet action URLs.
+FreeScout administrators select independently in which active mailboxes the sidebar appears; this
+never grants mailbox access. An unmapped selected mailbox requests `basis.v1`, while active managed
+mappings retain their dedicated policy. The sidebar matches normalized customer addresses exactly
+against `email_1` and `email_2`, applies the effective Rondo user's normal person visibility, and
+returns escaped, script-free markup. When a shared address belongs to multiple accessible profiles,
+the iframe presents a profile selector and one complete profile card at a time. The selector
+contains no inaccessible profiles. Malformed and synthetic addresses are ignored, and inaccessible
+records look identical to no match. Membership, contact, household, process, and visible open-task
+summaries exclude VOG, notes, full work history, FreeScout IDs, user IDs, and wallet action URLs.
+Open contribution invoices appear only under the Ledenadministratie and Contributie policies and
+only when the exact bound user has `financieel_read` or `financieel`.
 
 The activity service uses the same matcher in integration scope. It stores one native
 `rondo_activity` comment for the conversation start and one for every published incoming or sent
