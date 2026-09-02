@@ -117,9 +117,15 @@ process, and visible open-task summaries while excluding finance, VOG, notes, fu
 FreeScout IDs, user IDs, and wallet action URLs.
 
 The activity service uses the same matcher in integration scope. It stores one native
-`rondo_activity` comment per configured FreeScout instance and numeric conversation ID. Retries are
-idempotent, while explicit customer changes can move, hide, or restore the pointer. Customer email
-addresses and message content are never persisted.
+`rondo_activity` comment for the conversation start and one for every published incoming or sent
+reply. The configured FreeScout instance, conversation ID, event type, and immutable reply thread
+ID form the idempotency key. Explicit customer changes move, hide, or restore all pointers for the
+conversation together.
+
+Reply events contain direction, subject, timestamp, and a server-generated conversation link, but
+never message text, recipients, attachments, or agent email. For a sent reply, FreeScout may send
+the local user ID plus the issuer and opaque subject from its existing Rondo binding. Rondo resolves
+the author locally, so a FreeScout-supplied display name is never trusted or stored.
 
 The signed configuration response publishes an installation-level audit retention period from 90
 through 730 days. Rondo resolves it from `RONDO_AUDIT_RETENTION_DAYS`, then the
