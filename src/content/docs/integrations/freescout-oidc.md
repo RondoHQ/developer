@@ -79,9 +79,53 @@ Only a consumed emailed link may create that proof: account activation, Magic Lo
 
 The dedicated flow stores only token hashes. Its email contains no OAuth parameters, and consumption rechecks the user, address, uniqueness, client, and exact callback before consent resumes.
 
+## Signed FreeScout services
+
+The Rondo Integration module calls four public REST routes that authenticate the exact raw JSON
+body with HMAC-SHA256 before parsing it or reading person data:
+
+```text
+POST /wp-json/rondo/v1/integrations/freescout/configuration
+POST /wp-json/rondo/v1/integrations/freescout/access
+POST /wp-json/rondo/v1/integrations/freescout/sidebar
+POST /wp-json/rondo/v1/integrations/freescout/activity
+```
+
+Set the same random value of at least 32 characters in FreeScout and in Rondo server configuration
+as `RONDO_FREESCOUT_SIGNING_KEY`. During rotation, Rondo may temporarily accept the old value from
+`RONDO_FREESCOUT_SIGNING_KEY_PREVIOUS`. Never expose either value to browser code, an API response,
+application logs, or source control.
+
+Each request carries `X-Rondo-Timestamp`, a one-time `X-Rondo-Nonce`, and
+`X-Rondo-Signature: v1=<hex HMAC-SHA256>`. Rondo signs the timestamp, nonce, and exact raw body,
+separated by newlines. Requests outside the five-minute clock window and reused nonces are denied.
+Production requests require HTTPS.
+
+The configuration service advertises only the closed `ledenadministratie` mapping and
+`ledenadministratie.v1` sidebar policy. It accepts only a FreeScout base URL belonging to an
+enabled OIDC client. The access service resolves the exact issuer and opaque subject, then checks
+the user's current `ledenadministratie` capability. It never rematches an agent by email.
+
+The sidebar matches normalized customer addresses exactly against `email_1` and `email_2`, applies
+the effective Rondo user's normal person visibility, and returns escaped, script-free markup. A
+shared address is ambiguous; malformed and synthetic addresses are ignored; inaccessible records
+look identical to no match. The fixed mailbox policy includes membership, contact, household,
+process, and visible open-task summaries while excluding finance, VOG, notes, full work history,
+FreeScout IDs, user IDs, and wallet action URLs.
+
+The activity service uses the same matcher in integration scope. It stores one native
+`rondo_activity` comment per configured FreeScout instance and numeric conversation ID. Retries are
+idempotent, while explicit customer changes can move, hide, or restore the pointer. Customer email
+addresses and message content are never persisted.
+
+The signed configuration response publishes an installation-level audit retention period from 90
+through 730 days. Rondo resolves it from `RONDO_AUDIT_RETENTION_DAYS`, then the
+`freescout_audit_retention_days` WordPress option, then the 365-day default. An invalid environment
+value blocks configuration; an environment value also locks the Rondo settings field.
+
 ## FreeScout recovery boundary
 
-The future Rondo Integration module must keep two independent break-glass paths: `/login?rondo_oauth=0` for one visible local-login attempt and a server-side `RONDO_FORCE_OAUTH_LOGIN` switch that can disable forced Rondo login. These controls belong to FreeScout and do not weaken Rondo's provider validation.
+The Rondo Integration module keeps two independent break-glass paths: `/login?rondo_oauth=0` for one visible local-login attempt and a server-side `RONDO_FORCE_OAUTH_LOGIN` switch that can disable forced Rondo login. These controls belong to FreeScout and do not weaken Rondo's provider validation.
 
 ## Storage
 
