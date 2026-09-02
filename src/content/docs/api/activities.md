@@ -147,8 +147,8 @@ Returns all activities for a person, sorted by creation date (newest first).
 | `created` | string | Creation timestamp as UTC RFC3339, including the `+00:00` offset. |
 | `modified` | string | Modification timestamp. |
 | `activity_type` | string | Type of activity (see table above). |
-| `activity_date` | string | Date of the activity (`YYYY-MM-DD`), or empty string. |
-| `activity_time` | string | Time of the activity (`HH:MM`), or empty string. |
+| `activity_date` | string | Date of the activity in the configured site timezone (`YYYY-MM-DD`), or empty string. |
+| `activity_time` | string | Time of the activity in the configured site timezone (`HH:MM`), or empty string. |
 | `participants` | int[] | Array of person IDs, or empty array. |
 
 ---
