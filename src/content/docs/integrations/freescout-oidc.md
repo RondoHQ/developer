@@ -110,11 +110,13 @@ audit correlation; access is always resolved from the signed issuer and subject,
 local ID or an email address.
 
 The sidebar matches normalized customer addresses exactly against `email_1` and `email_2`, applies
-the effective Rondo user's normal person visibility, and returns escaped, script-free markup. A
-shared address is ambiguous; malformed and synthetic addresses are ignored; inaccessible records
-look identical to no match. The fixed mailbox policy includes membership, contact, household,
-process, and visible open-task summaries while excluding finance, VOG, notes, full work history,
-FreeScout IDs, user IDs, and wallet action URLs.
+the effective Rondo user's normal person visibility, and returns escaped, script-free markup. When
+a shared address belongs to multiple accessible profiles, the iframe presents a profile selector
+and one complete profile card at a time. The selector contains no inaccessible profiles. Malformed
+and synthetic addresses are ignored, and inaccessible records look identical to no match. The
+fixed mailbox policy includes membership, contact, household, process, and visible open-task
+summaries while excluding finance, VOG, notes, full work history, FreeScout IDs, user IDs, and
+wallet action URLs.
 
 The activity service uses the same matcher in integration scope. It stores one native
 `rondo_activity` comment for the conversation start and one for every published incoming or sent
