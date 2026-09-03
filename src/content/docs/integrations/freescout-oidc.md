@@ -121,6 +121,16 @@ summaries exclude VOG, notes, full work history, FreeScout IDs, user IDs, and wa
 Open contribution invoices appear only under the Ledenadministratie and Contributie policies and
 only when the exact bound user has `financieel_read` or `financieel`.
 
+For a conversation whose exact subject is `Overschrijvingsverzoek`, the FreeScout module also
+checks that the first published incoming email comes from
+`no-reply@sportlinkservices.nl`. It parses that message locally for exactly one table row labelled
+`Relatiecode`, validates the value as a KNVB ID, and sends only this minimal signed person reference
+to Rondo. The message HTML and its other personal fields never leave FreeScout. Rondo gives this
+reference precedence over the shared sender address, matches it exactly against the canonical
+`knvb-id` person field, and applies the same uniqueness and effective-user visibility rules as the
+email matcher. Missing, invalid, conflicting, or inapplicable references fall back to normal
+customer-email matching.
+
 The sidebar presents this data as a compact member card with status badges and separate tabs for
 membership, contact, and actions. Open contribution remains visible as an action block above the
 tabs. The action area ends with **Open in Rondo** and, when a valid KNVB ID is available, **Open in
