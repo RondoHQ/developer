@@ -114,12 +114,15 @@ never grants mailbox access. An unmapped selected mailbox requests `basis.v1`, w
 mappings retain their dedicated policy. The sidebar matches normalized customer addresses exactly
 against `email_1` and `email_2`, applies the effective Rondo user's normal person visibility, and
 returns escaped, script-free markup. When a shared address belongs to multiple accessible profiles,
-the iframe presents a profile selector and one complete profile card at a time. The selector
-contains no inaccessible profiles. Malformed and synthetic addresses are ignored, and inaccessible
-records look identical to no match. Membership, contact, household, action, volunteer-signup, and
+Rondo first prefers the single profile whose normalized full name equals the original sender's
+FreeScout display name. If none does, it prefers the single active profile when every other match is
+a former member or has an ended membership. Remaining ambiguous matches use the iframe profile
+selector with one complete profile card at a time. The selector contains no inaccessible profiles.
+Malformed and synthetic addresses are ignored, and inaccessible records look identical to no
+match. Membership, contact, household, action, volunteer-signup, and
 visible open-task summaries exclude VOG, notes, full work history, FreeScout IDs, user IDs, digital
 pass details, and wallet action URLs. Current teams and visible household relations link to their
-Rondo records. Mobile numbers receive a WhatsApp action only when they normalize to a valid
+Rondo records. Mobile numbers receive an accessible WhatsApp icon only when they normalize to a valid
 8-to-15-digit international number; addresses render as street plus house number followed by postal
 code and city. Open contribution invoices appear only under the Ledenadministratie and Contributie
 policies and only when the exact bound user has `financieel_read` or `financieel`. Their aggregate
