@@ -121,12 +121,28 @@ summaries exclude VOG, notes, full work history, FreeScout IDs, user IDs, and wa
 Open contribution invoices appear only under the Ledenadministratie and Contributie policies and
 only when the exact bound user has `financieel_read` or `financieel`.
 
-When the first published incoming email's sender shares an exact domain with a primary or alias
-address of the active mailbox, FreeScout uses its `To` recipients for person matching instead of
-the conversation customer. It first removes the sender and every primary or alias address of the
-active mailbox. This prevents an internally forwarded or CC'd message from showing the colleague
-who sent it. If no eligible recipient remains, the module sends an empty match set and does not
-fall back to the internal sender. Subdomains do not count as the same domain.
+When an incoming email's sender shares an exact domain with a primary or alias address of the
+active mailbox, the module removes the sender and every primary or alias address of that mailbox
+from its `To` recipients. When exactly one eligible recipient remains and that address already
+belongs to a FreeScout customer, the module makes that customer the conversation customer before
+FreeScout renders or records the conversation. It removes the new primary customer from CC and
+keeps the actual internal sender on CC. This aligns FreeScout's native customer header and previous
+conversations with the Rondo card without losing the colleague from reply routing. The module does
+not create customers, does not change a conversation with zero or multiple eligible recipients,
+and applies this behavior only to mailboxes where the Rondo sidebar is enabled. Subdomains do not
+count as the same domain.
+
+The sidebar and activity delivery continue to derive their match from the first published incoming
+email using the same recipient filter. An existing conversation created before this behavior was
+installed can be inspected and repaired individually. The first command only previews the result:
+
+```sh
+php artisan rondo:reconcile-conversation-customer 123
+php artisan rondo:reconcile-conversation-customer 123 --apply
+```
+
+The repair refuses non-sidebar mailboxes, missing customers, and ambiguous recipients. Applying a
+change queues the normal customer-change activity so existing Rondo pointers are reconciled too.
 
 For a conversation whose exact subject is `Overschrijvingsverzoek`, the FreeScout module also
 checks that the first published incoming email comes from
