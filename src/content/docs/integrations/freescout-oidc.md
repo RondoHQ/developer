@@ -121,6 +121,13 @@ summaries exclude VOG, notes, full work history, FreeScout IDs, user IDs, and wa
 Open contribution invoices appear only under the Ledenadministratie and Contributie policies and
 only when the exact bound user has `financieel_read` or `financieel`.
 
+When the first published incoming email's sender shares an exact domain with a primary or alias
+address of the active mailbox, FreeScout uses its `To` recipients for person matching instead of
+the conversation customer. It first removes the sender and every primary or alias address of the
+active mailbox. This prevents an internally forwarded or CC'd message from showing the colleague
+who sent it. If no eligible recipient remains, the module sends an empty match set and does not
+fall back to the internal sender. Subdomains do not count as the same domain.
+
 For a conversation whose exact subject is `Overschrijvingsverzoek`, the FreeScout module also
 checks that the first published incoming email comes from
 `no-reply@sportlinkservices.nl`. It parses that message locally for exactly one table row labelled
@@ -140,14 +147,15 @@ rejects other external destinations. Rondo returns no JavaScript: the sandboxed 
 owns the constrained profile and tab controls and applies the administrator-configured club
 accent colors.
 
-The activity service uses the same matcher in integration scope. It stores one native
+The activity service uses the same internal-sender recipient selection in integration scope. It stores one native
 `rondo_activity` comment for the conversation start and one for every published incoming or sent
 reply. The configured FreeScout instance, conversation ID, event type, and immutable reply thread
 ID form the idempotency key. Explicit customer changes move, hide, or restore all pointers for the
 conversation together.
 
 Reply events contain direction, subject, timestamp, and a server-generated conversation link, but
-never message text, recipients, attachments, or agent email. For a sent reply, FreeScout may send
+never message text, attachments, or agent email. Only the selected matching email addresses are
+sent; unrelated recipients and mailbox addresses are excluded. For a sent reply, FreeScout may send
 the local user ID plus the issuer and opaque subject from its existing Rondo binding. Rondo resolves
 the author locally, so a FreeScout-supplied display name is never trusted or stored.
 
