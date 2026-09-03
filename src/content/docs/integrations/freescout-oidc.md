@@ -59,7 +59,7 @@ Updating a client can change `label`, `redirect_uris`, `freescout_base_url`, and
 
 ## Eligible identities
 
-An administrator is eligible when the account has an acceptable external email. A normal user additionally needs the `ledenadministratie` capability and a linked, published person record. The capability list can be extended through the `rondo_oidc_freescout_capabilities` filter when another managed mailbox is approved.
+An administrator is eligible when the account has an acceptable external email. A normal user additionally needs the `ledenadministratie` or `financieel` capability and a linked, published person record. `financieel_read` alone does not qualify, because that role may not receive access to the Contributie mailbox. The capability list can be extended through the `rondo_oidc_freescout_capabilities` filter when another managed mailbox is approved.
 
 Rondo resolves `rondo_contact_email` first and otherwise uses the WordPress account email. Synthetic `@members.rondo.invalid` addresses, addresses inconsistent with the linked person, and addresses shared by another FreeScout-eligible user are rejected.
 
@@ -116,15 +116,19 @@ against `email_1` and `email_2`, applies the effective Rondo user's normal perso
 returns escaped, script-free markup. When a shared address belongs to multiple accessible profiles,
 the iframe presents a profile selector and one complete profile card at a time. The selector
 contains no inaccessible profiles. Malformed and synthetic addresses are ignored, and inaccessible
-records look identical to no match. Membership, contact, household, process, and visible open-task
+records look identical to no match. Membership, contact, household, action, and visible open-task
 summaries exclude VOG, notes, full work history, FreeScout IDs, user IDs, and wallet action URLs.
 Open contribution invoices appear only under the Ledenadministratie and Contributie policies and
 only when the exact bound user has `financieel_read` or `financieel`.
 
 The sidebar presents this data as a compact member card with status badges and separate tabs for
-membership, contact, and process information. Open contribution remains visible as an action block
-above the tabs. Rondo returns no JavaScript: the sandboxed FreeScout module owns the constrained
-profile and tab controls and applies the administrator-configured club accent colors.
+membership, contact, and actions. Open contribution remains visible as an action block above the
+tabs. The action area ends with **Open in Rondo** and, when a valid KNVB ID is available, **Open in
+Sportlink** for users with `ledenadministratie` or `financieel`. That external URL is restricted
+to `https://club.sportlink.com/member/member-details/{KNVB-ID}/general`; the FreeScout module
+rejects other external destinations. Rondo returns no JavaScript: the sandboxed FreeScout module
+owns the constrained profile and tab controls and applies the administrator-configured club
+accent colors.
 
 The activity service uses the same matcher in integration scope. It stores one native
 `rondo_activity` comment for the conversation start and one for every published incoming or sent
