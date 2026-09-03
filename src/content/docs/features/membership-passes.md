@@ -8,15 +8,15 @@ child's card, to Apple Wallet or Google Wallet from **Mijn gegevens**.
 ## Reusable guest passes for a configured team
 
 An administrator selects one team under **Settings → Club → Team with guest
-passes**. An authenticated person with a current player role for that exact team
-record receives two fixed guest slots on **Mijn gegevens**. Player eligibility
-is resolved server-side from current `work_history`, the selected team ID and the
-configured player role list. Staff roles, former members and players of a
-different team record do not receive the controls. Leaving the setting empty
-disables guest passes.
+passes**. An authenticated person with a current player or staff role for that
+exact team record receives two fixed guest slots on **Mijn gegevens**. Host
+eligibility is resolved server-side from current `work_history`, the selected
+team ID and the configured player and staff role lists. Former members and people
+with a role for a different team record do not receive the controls. Leaving the
+setting empty disables guest passes.
 
-Each slot is created only when the player requests its share link. The public
-`/gastpas/{token}` page lets the guest enter their own name once, then provides
+Each slot is created only when the player or staff member requests its share
+link. The public `/gastpas/{token}` page lets the guest enter their own name once, then provides
 Apple Wallet, Google Wallet and a digital QR fallback. The pass remains usable
 for later home matches of the configured team; the player does not activate it for every match.
 The card and scanner show the guest name and **Gast van {player}**.
@@ -32,15 +32,16 @@ fields include the host person, slot number, guest name, status, claim time and
 pass version. The 64-character bearer token is stored as private infrastructure
 metadata and is never included in scanner responses or admission records.
 
-Authenticated player endpoints are:
+Authenticated host endpoints are:
 
 - `GET /rondo/v1/guest-passes/me`
 - `POST /rondo/v1/guest-passes/slots/{1|2}`
 - `POST /rondo/v1/guest-passes/slots/{1|2}/replace`
 
 Guest QR payloads use the signed `rondo-guest-pass` audience. At scan time the
-server rechecks the pass version, claimed status, current role for the configured
-team and the selected event's home-team name before recording admission.
+server rechecks the pass version, claimed status, current player or staff role
+for the configured team and the selected event's home-team name before recording
+admission.
 
 ## Eligibility
 
