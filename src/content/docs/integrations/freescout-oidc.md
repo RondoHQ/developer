@@ -163,9 +163,11 @@ email matcher. Missing, invalid, conflicting, or inapplicable references fall ba
 customer-email matching.
 
 The sidebar presents this data as a compact member card with status badges and separate tabs for
-membership, contact, and actions. Open contribution remains visible as an action block above the
-tabs. The action area ends with **Open in Rondo** and, when a valid KNVB ID is available, **Open in
-Sportlink** for users with `ledenadministratie` or `financieel`. That external URL is restricted
+membership, contact, and actions. Open contribution invoices appear above the tabs as fully
+clickable rows. The block shows the total outstanding balance and each invoice's outstanding
+balance, while omitting repeated invoice totals and due dates. The action area ends with **Open in
+Rondo** and, when a valid KNVB ID is available, **Open in Sportlink** for users with
+`ledenadministratie` or `financieel`. That external URL is restricted
 to `https://club.sportlink.com/member/member-details/{KNVB-ID}/general`; the FreeScout module
 rejects other external destinations. Rondo returns no JavaScript: the sandboxed FreeScout module
 owns the constrained profile and tab controls and applies the administrator-configured club
