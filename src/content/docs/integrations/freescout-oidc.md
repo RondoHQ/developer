@@ -116,10 +116,15 @@ against `email_1` and `email_2`, applies the effective Rondo user's normal perso
 returns escaped, script-free markup. When a shared address belongs to multiple accessible profiles,
 the iframe presents a profile selector and one complete profile card at a time. The selector
 contains no inaccessible profiles. Malformed and synthetic addresses are ignored, and inaccessible
-records look identical to no match. Membership, contact, household, action, and visible open-task
-summaries exclude VOG, notes, full work history, FreeScout IDs, user IDs, and wallet action URLs.
-Open contribution invoices appear only under the Ledenadministratie and Contributie policies and
-only when the exact bound user has `financieel_read` or `financieel`.
+records look identical to no match. Membership, contact, household, action, volunteer-signup, and
+visible open-task summaries exclude VOG, notes, full work history, FreeScout IDs, user IDs, digital
+pass details, and wallet action URLs. Current teams and visible household relations link to their
+Rondo records. Mobile numbers receive a WhatsApp action only when they normalize to a valid
+8-to-15-digit international number; addresses render as street plus house number followed by postal
+code and city. Open contribution invoices appear only under the Ledenadministratie and Contributie
+policies and only when the exact bound user has `financieel_read` or `financieel`. Their aggregate
+open amount is shown once, each invoice number links to its Rondo invoice, and invoice amount,
+installment state, and due date render as separate rows.
 
 When an incoming email's sender shares an exact domain with a primary or alias address of the
 active mailbox, the module removes the sender and every primary or alias address of that mailbox
