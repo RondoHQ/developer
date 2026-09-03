@@ -121,6 +121,11 @@ summaries exclude VOG, notes, full work history, FreeScout IDs, user IDs, and wa
 Open contribution invoices appear only under the Ledenadministratie and Contributie policies and
 only when the exact bound user has `financieel_read` or `financieel`.
 
+The sidebar presents this data as a compact member card with status badges and separate tabs for
+membership, contact, and process information. Open contribution remains visible as an action block
+above the tabs. Rondo returns no JavaScript: the sandboxed FreeScout module owns the constrained
+profile and tab controls and applies the administrator-configured club accent colors.
+
 The activity service uses the same matcher in integration scope. It stores one native
 `rondo_activity` comment for the conversation start and one for every published incoming or sent
 reply. The configured FreeScout instance, conversation ID, event type, and immutable reply thread
