@@ -190,6 +190,35 @@ through 730 days. Rondo resolves it from `RONDO_AUDIT_RETENTION_DAYS`, then the
 `freescout_audit_retention_days` WordPress option, then the 365-day default. An invalid environment
 value blocks configuration; an environment value also locks the Rondo settings field.
 
+## Realtime mailbox provisioning
+
+An administrator can enable **Realtime FreeScout-toegang** in Rondo's FreeScout settings. Changes
+to a user's effective `ledenadministratie` or `financieel` access then queue one current-state
+notification per enabled FreeScout client. Existing identified users are queued once when the
+feature is first enabled.
+
+Rondo stores pending delivery in private `rondo_fs_event` posts. Each post contains only a UUID,
+opaque OIDC subject, client ID, state, attempt count, next-attempt time and stable failure reason.
+It never stores names, email addresses, capability values or mailbox lists. Delivery is immediate
+where possible, retries after 1, 5, 15 and 60 minutes and then hourly, and survives process or cron
+interruptions. The settings screen exposes aggregate pending and long-running failure counts.
+
+Rondo sends the signed event to:
+
+```text
+POST {freescout_base_url}/rondo/integration/events/access
+```
+
+The exact JSON body contains only `version`, `eventId`, `issuer` and `subject`. FreeScout verifies
+the same five-minute timestamp, nonce and HMAC contract before parsing it, stores the event UUID
+for idempotency, and calls Rondo's signed access service for the current desired state. The event
+itself never grants access. FreeScout reconciles only module-managed mailbox relationships, so
+manual mailbox assignments remain untouched. Its hourly full reconciliation remains the repair
+path when an event is missed.
+
+Processed event UUIDs are kept for the last verified Rondo retention period and pruned daily in
+bounded batches. Failed events remain retryable. FreeScout has no local retention override.
+
 ## FreeScout recovery boundary
 
 The Rondo Integration module keeps two independent break-glass paths: `/login?rondo_oauth=0` for one visible local-login attempt and a server-side `RONDO_FORCE_OAUTH_LOGIN` switch that can disable forced Rondo login. These controls belong to FreeScout and do not weaken Rondo's provider validation.
@@ -203,5 +232,6 @@ The provider uses WordPress-native storage only:
 - user meta for the opaque subject and email proof;
 - hashed transients for pending requests, verification links, authorization codes, and access tokens;
 - short-lived option locks for atomic authorization-code consumption.
+- private `rondo_fs_event` posts for pending FreeScout access notifications.
 
 No custom database tables are created.
