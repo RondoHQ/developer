@@ -13,6 +13,10 @@ cd /home/rondo
 
 ## Checking Sync Status
 
+The dashboard reports domain counts for People runs. **People created**, **People updated**, and
+**People unchanged** come from the Rondo Club submission result. Download and preparation volumes
+are shown as **Processed** in the run's step table, so they do not look like newly created people.
+
 ### View Cron Schedule
 
 ```bash
