@@ -257,3 +257,14 @@ several current roles must include one valid `role` key.
 - Signing key is generated automatically on first use and stored in option `rondo_membership_pass_jwt_secret`.
 - Apple pass generation requires `pkpass/pkpass` to be installed and certificate config set.
 - Google pass generation uses `google/apiclient` with service-account credentials.
+
+### Stored access-event archive
+
+**GET** `/rondo/v1/access-events?page=1`
+
+Requires administrator or access-control permission, matching the scanner routes.
+Returns `events` (the same match snapshots as selection) and `total_pages`.
+Pages contain at most 25 published events ordered by stored start date descending,
+then ID descending. `page` must be a positive integer. This read-only endpoint
+neither calls Sportlink nor creates matches, and returns no attendee data.
+Use the existing `/access-events/{event_id}/stats` route for aggregate counts.

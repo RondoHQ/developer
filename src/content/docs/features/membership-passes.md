@@ -284,3 +284,13 @@ duplicate-detection lock. The event, `guest` pass type and aggregate count
 remain; regular member admissions continue to contain no attendee identity.
 
 Ticket sales and payment flows are not part of this implementation.
+
+### Access statistics on desktop and mobile
+
+The **Toegangsstatistieken** menu opens `/toegangsstatistieken` for administrators
+and users with access-control permission. It lists stored matches, newest first,
+with 25 matches per archive page. Matches appear once selected in the scanner;
+viewing this page never creates an event or admission. Select a match to see the
+shared admission total and breakdown by pass type, refreshed every five seconds.
+Past matches remain available independently of the current Sportlink feed.
+The page also links to the scanner, including on desktop.
