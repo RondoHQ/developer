@@ -203,7 +203,7 @@ Backward-compatible constants are still supported as fallback.
 Class: `Rondo\Passes\MembershipPassGoogle`
 
 - Uses `google/apiclient`
-- Creates/updates GenericClass + GenericObject
+- Creates/updates GenericClass + GenericObject without a season argument; membership passes are permanent and validity is checked online
 - Redirects member to Google Save-to-Wallet URL
 - Uses uploaded service-account JSON attachment
 - Tier routing depends on `type-lid`, not KNVB ID presence
