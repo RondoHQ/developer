@@ -53,9 +53,12 @@ A person is eligible based on native field `type_lid` (stored as `type-lid`):
   `sponsor_role` selects `businessclub` or `awc_sponsor` (`Sponsor` tier),
   independently of `person_type` and `type-lid`
 
-Every eligible person must also be active: `former_member` must be false and
-`lid_tot` must be empty or today/future. The same centralized eligibility check
-is used by the household response, wallet generators and QR verification.
+Regular member passes require active membership: `former_member` must be false
+and `lid_tot` must be empty or today/future. Sponsor and Businessclub passes
+follow the current sponsor entitlement independently of former or expired
+membership. An inactive member cannot select a regular member pass. Household
+responses, wallet generators and QR verification share these eligibility rules;
+revoked sponsor rights and outdated pass versions still invalidate the pass.
 
 The active sponsor relation remains the primary tier. When that person also has
 a `Bondslid` or `Verenigingslid` tier and at least one current work-history
