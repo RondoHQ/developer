@@ -28,6 +28,11 @@ consent action checks the user's WordPress nonce, then issues a two-minute autho
 bound to S256 PKCE. A fixed private-use callback returns to the app; client-side state prevents
 mixing login attempts. No client secret is embedded.
 
+The opt-in plugin preserves the authorization destination through the WordPress login form POST.
+Its late `login_redirect` filter accepts only the site's exact `admin-post.php` URL with the spike
+action and valid client, callback, scope, state and S256 fields. Other destinations retain the
+existing theme redirect. The filter is registered only when the development experiment is enabled.
+
 The token endpoint issues a five-minute opaque bearer token. The app keeps it only in process
 memory, and the server stores its payload under a hashed transient key. The payload includes the
 canonical club origin and a password fingerprint. Changed passwords or removed read access
@@ -63,4 +68,4 @@ The experiment does not implement secure persistent storage, refresh tokens, ver
 callback links, a signed club directory, an installation UUID, push, Wallet handoffs or the full
 member screens. Those remain required work, with device and security verification before release.
 The agreed first-release design remains in `docs/prd/mobile-app-first-release.md`; actual spike
-evidence and native-build blockers are recorded in `docs/prd/mobile-app-spike-results.md`.
+evidence and remaining device checks are recorded in `docs/prd/mobile-app-spike-results.md`.
