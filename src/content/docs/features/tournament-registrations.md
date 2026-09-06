@@ -16,6 +16,12 @@ The publication review can select every eligible team and all of its current sta
 It shows the exact team and recipient counts and separately reports teams skipped because they have
 no active staff member with a Rondo account.
 
+The invitation list only shows teams with at least one current player, using the same member
+counts as the team overview. Former members and ended player positions do not count; staff alone
+do not make a team eligible for this list. Players do not need a Rondo account. The assignment
+options API includes `player_count` for this filter and retains all teams so managers can still
+maintain staff assignments on existing registrations after a team loses its last player.
+
 Assigned staff use `/mijn-toernooien`. Multiple assignees edit the same draft with optimistic
 locking, so an outdated browser cannot overwrite a newer version. There is deliberately no decline
 or no-participation state: an entry can only remain open or become a positive registration.
