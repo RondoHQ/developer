@@ -97,6 +97,8 @@ The fast team-roster response used in step 1 does not expose the start and end d
 4. Maps `RelationStart` and `RelationEnd` to the corresponding work-history row
 5. Reconciles the existing row instead of creating a dated duplicate
 
+Before mapping, `lib/team-membership-periods.js` interprets an empty `RelationEnd` using `SeasonDescription`. A recognized closed season such as `2025/'26` gets June 30, 2026 as its inferred end date. The cutoff follows Europe/Amsterdam. Explicit source end dates remain authoritative; current/future seasons, unrecognized seasons, and contradictory start dates are left unchanged. A continuing current-season copy with the same team, role, and start date takes precedence over an inferred historical end. Multiple historical copies retain the latest season. The normal reconciliation closes the existing current row and keeps unrelated and already ended history.
+
 The standalone monthly player-history run remains a safety net, but new team assignments no longer wait for it before their dates appear in Rondo Club.
 
 **Output:** `{ total, downloaded, synced, created, reconciled, skippedUnchanged, skippedQuarantined, errors }`
