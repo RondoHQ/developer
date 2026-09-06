@@ -3,7 +3,7 @@ title: Capacitor mobile login experiment
 ---
 
 Rondo's planned public app uses Capacitor with locally packaged React assets for iOS and Android.
-The experimental implementation lives in `rondo-club/mobile/`, version **0.5.0**. It is a development
+The experimental implementation lives in `rondo-club/mobile/`, version **0.6.0**. It is a development
 proof, not a production authentication provider or a store-ready application.
 
 ## Isolation and installation
@@ -39,10 +39,10 @@ canonical club origin and a password fingerprint. Changed passwords or removed r
 invalidate it; existing endpoint permissions determine the available data on every request.
 An atomic WordPress option claim prevents concurrent authorization-code replay.
 
-The read adapter maps only `me`, `household`, `my-shifts`, `calendar` and `pass` to existing REST endpoints. It establishes
+The read adapter maps only `me`, `household`, `profile`, `my-shifts`, `calendar` and `pass` to existing REST endpoints. It establishes
 the token user's context for `rest_do_request()` and restores the caller afterwards. It does not
 skip permission callbacks or field filters. The bearer token does not authenticate arbitrary
-WordPress REST routes. Only separately consented current-member signup/cancel writes are available. Existing cookie/nonce authentication
+WordPress REST routes. Separately consented current-member signup/cancel and own-profile writes are available. Existing cookie/nonce authentication
 and confidential FreeScout OIDC behavior remain unchanged.
 
 | Endpoint under `/wp-json/rondo-mobile-spike/v1` | Method | Purpose |
@@ -54,11 +54,13 @@ and confidential FreeScout OIDC behavior remain unchanged.
 | `/read?resource=my-shifts` | GET | Current member's original duties |
 | `/read?resource=calendar&month=YYYY-MM` | GET | Exactly one month, forced `signup` view |
 | `/read?resource=pass&person_id=…&role=…` | GET | Original QR issuance, additionally restricted to personal household passes |
+| `/read?resource=profile` | GET | Own contact data, edit availability and pending email verification |
+| `/profile` | POST | Separately consented own-profile actions through existing services |
 | `/shift` | POST | Separately consented current-member signup/cancel through existing routes |
 | `/revoke` | POST | Idempotent device-family revocation using access or refresh token |
 
 The browser authorization action is `rondo_mobile_spike_authorize` on `wp-admin/admin-post.php`.
-Its public client is `rondo-mobile-spike`, scope `rondo:spike:read` with optional `rondo:spike:volunteer`, and callback
+Its public client is `rondo-mobile-spike`, scope `rondo:spike:read` with optional `rondo:spike:volunteer` and `rondo:spike:profile`, and callback
 `club.rondo.spike://oauth/callback`. Native HTTP follows no redirects. No browser CORS exception
 or global WordPress authentication filter is installed.
 
@@ -86,7 +88,7 @@ Club switching is exclusively under More → My clubs. Each login creates its ow
 React Router history and TanStack Query client; logout/unmount cancels and clears the cache.
 Android Back follows the same history and minimizes the app at the initial root.
 
-Profile changes and Wallet setup still open fixed `/vrijwillig` or `/mijn-gegevens` pages in the
+Wallet setup and remaining household/contribution actions open the fixed `/mijn-gegevens` page in the
 system browser. No app token or server-provided nonce is appended to those links. Browser return
 and app activation invalidate cached reads. A return is never treated as proof of a write or payment.
 A Wallet action is offered only when the household summary reports a configured Wallet provider.
@@ -191,10 +193,58 @@ The fixed `POST /shift` adapter accepts only `shift_id`, `action` (`signup`/`can
 `force_overlap`. It rejects person selection and routes only to the current member's original
 signup/cancel endpoints. Existing eligibility, certificate/pool checks, locks/capacity, signup
 windows, cancellation deadlines and confirmation scheduling remain authoritative. Caller context
-is restored even when the original route rejects the action. No other native writes are added.
+is restored even when the original route rejects the action. Profile operations are described separately below.
 
 The duty screen requires confirmation and uses server `can_signup`/`can_cancel` flags. Overlap
 requires a second explicit decision; late signup explains the existing 30-minute grace period.
 Writes are serialized at the client and never automatically retried. An uncertain result presents
 a readback action, and confirmed writes invalidate the session's member caches. Local mail stays
 captured and the whole adapter is still disabled outside local/development.
+
+## Native own-profile editing (0.6.0)
+
+New logins request read, volunteer and `rondo:spike:profile` permission. Browser consent explains
+own contact changes and household address effects. Old read-only and volunteer device families
+keep their original permissions after refresh and must reconnect to grant profile access.
+
+`GET /read?resource=profile` returns the own person from the existing filtered household response,
+`can_edit`, `readonly_reason` and token-free `pending_email` metadata. Former-member and deceased
+restrictions come from `MemberProfileService::linked_person_id()` on both read and every write.
+
+`POST /profile` accepts exactly `action` and `values`. Fixed actions delegate to existing routes:
+
+| Action | Required values | Original route |
+|---|---|---|
+| `phones` | All four phone slots | POST `/user/profile-phones` |
+| `address` | street_name, house_number, house_number_addition, postal_code, city, state, country, country_code | POST `/user/household-address` |
+| `email_request` | slot, email | POST `/user/profile-email/request` |
+| `email_cancel` | Empty object | DELETE `/user/profile-email/pending` |
+| `email_remove` | Empty object | DELETE `/user/profile-email/secondary` |
+
+All original paths are under `/rondo/v1`. The adapter rejects unknown/missing fields, non-string
+values, long values and caller-selected person IDs. The logged-in linked person is authoritative,
+including when the token belongs to an administrator. Phone groups must be complete because the
+existing service replaces all four slots. Original validation, phone normalization, household
+propagation, secondary-email promotion, audit logs and sync markers are preserved. No sync is run
+locally. Email verification uses the existing public verification page; app activation or the
+explicit refresh button reads the actual result. Browser return alone is never proof of verification.
+
+The member navigates through My details → Gegevens wijzigen. Address forms explain the effect on
+minor children; email forms explain verification and matching child-address propagation. Pending
+requests can be cancelled, and secondary email removal requires confirmation. Form drafts remain
+in component memory only. Writes share one session guard with volunteer actions; they are never
+queued or retried automatically. After an uncertain response, controls require a fresh profile
+read before allowing another submission. Logout rejects stale write results.
+
+Wallet, contribution and separate child/other-parent editing remain on the club site. The adapter
+still requires local/development opt-in, and all test email is captured locally.
+
+Validation for 0.6.0: 35 mobile JavaScript tests and 21 focused WordPress/MySQL tests (208 assertions)
+pass. Web/mobile/native builds, mobile lint and PHP coding standards pass. Both simulators exercised
+profile consent upgrade, phone save plus cold restart, and a pending secondary-email request.
+iPhone exercised address save and pending-email cancellation. Android opened the captured verification
+link in Chrome and showed the confirmed address after a cold app restart. Independent WordPress
+reads verified persisted phone/address values and pending/verified email states. Android interruption
+before delivery exercised the readback-only error state and recovery; actual loss of a response after
+storage is covered by the client unit test. No physical device, real mailbox or local Sportlink sync
+was used. Shared-service household propagation and former-member rejection are covered in PHP.
