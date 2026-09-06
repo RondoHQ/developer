@@ -143,6 +143,13 @@ to `_shift_assigned_at_{person_id}`; assignments without either timestamp are re
 Upcoming shortages are limited to active shifts in the next 30 days. The response contains only
 counts and shift identifiers for drill-down, never names or contact details.
 
+The `account_trend` series contains `{ date, count, cumulative }` points for all existing site
+accounts, across all seasons and roles. It uses WordPress `user_registered` (UTC), groups
+registrations by calendar day in the site timezone, and excludes invalid or future dates. Deleted
+accounts no longer contribute. The season selector does not filter this series; the panel states
+its all-time scope. The chart shares the signup chart component and shows both the cumulative
+total and the number created today. No account IDs, names, or email addresses are returned.
+
 An assignment made by a coordinator writes the same `_shift_signup_at_` timestamp a
 self-signup would, so the member keeps their normal cancellation rights — nobody is
 trapped in a dienst somebody else planned for them.
