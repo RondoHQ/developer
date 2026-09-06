@@ -291,3 +291,32 @@ fixture keeps this test available without installing any signing credential. Pro
 login, dynamic live member-pass issuance, physical devices and Google Wallet remain separate tests.
 
 The native Wallet action appears above the pass, with space between the button and card, so members can access it without scrolling past the QR code.
+
+## Restricted AWC pilot preparation
+
+The separate `mobile/pilot-plugin/rondo-mobile-pilot.php` uses the shared gateway while the
+original development plugin retains its local/development-only guard. Neither is theme-loaded.
+`npm run prepare:pilot --prefix mobile` produces an isolated `club.rondo.pilot` native project,
+fixed AWC directory, verified HTTPS callback registrations and a separately installable plugin.
+The generated projects omit development TLS trust, local environment files and synthetic fixtures.
+The pilot hides editing/signup actions and blocks their server routes; viewing household data,
+calendars and eligible real Wallet passes is the first scope.
+
+Production opt-in requires the exact AWC origin, `RONDO_MOBILE_PILOT`, an enabled
+`rondo_mobile_pilot` option with a deadline/epoch and explicit account/person tester pairs. Each
+request rechecks both linked identities, normal read permission, the pilot policy and expiry.
+Sessions expire after seven days, access after five minutes; token reuse revokes the family.
+Pilot token storage, client, scope and cleanup hooks are separate from the development experiment.
+Token and Wallet routes have an atomic 60/minute per-source-IP quota. Policy changes revoke old
+credentials; rotate the epoch when disabling/re-enabling to make revocation permanent.
+
+Actual Apple/Android signing identifiers generate the domain association files; none are guessed.
+Apple signing, association publication, callback query-log redaction, backend activation, TestFlight
+review/distribution and physical-device verification remain activation gates. The preparation command
+performs none of these. See `docs/prd/mobile-awc-pilot.md` in the application repository for the
+handoff and test sequence. Tester identities stay outside version control.
+
+The iPhone pilot uses `ASWebAuthenticationSession` with the exact HTTPS callback (iOS 17.4+),
+including the `webcredentials` association alongside Universal Links. It does not rely on
+a normal in-browser same-origin redirect to open the app. Mail callbacks close the pending native
+authentication session after successful exchange. This still requires signed physical-device verification.
