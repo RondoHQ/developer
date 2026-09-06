@@ -75,6 +75,27 @@ separate from the active-member import: former members are not re-imported, but 
 - Parent entries: creates person entries with `oudervan` (child names) field
 - `vrijwilligersplicht`: `-1` when exempt or not applicable, `0` when completed, otherwise the summed number of duties still to complete
 
+### Parent names in Laposta
+
+An address in `EmailAddressParent1` or `EmailAddressParent2` belongs to a parent
+recipient even when the same address is also the child's `Email` or
+`EmailAlternative`. Those child-derived rows use the parent's name and include
+all linked child names in `oudervan`. Existing list assignments and child-specific
+team and membership fields remain unchanged.
+
+Name resolution checks all children before choosing a name:
+
+1. Use the structured name of a unique member with that primary email, excluding
+   every child who lists the address as a parent address.
+2. Otherwise, use a unique nonempty `NameParent1` / `NameParent2` from any child.
+   Sportlink supplies this as one string, which goes into `voornaam`; the child's
+   `tussenvoegsel` and `achternaam` are cleared.
+3. Conflicting identities use `Ouder/verzorger` instead of whichever name happens
+   to appear first. Missing names use `Ouder/verzorger van <child>`.
+
+A child's own separate address keeps the child's name. Laposta submission retains
+its existing unsubscribe and notification suppression settings.
+
 ### Step 3: Submit to Laposta
 
 **Script:** `steps/submit-laposta-list.js`
