@@ -95,3 +95,5 @@ The DataTable exposes filters for:
 ## Role semantics
 
 People can appear multiple times in the list. Each row reflects the role in the context of that specific team/year/age-group assignment.
+
+The roster renders each combination of person ID, team ID and normalized display role once. Multiple current work-history entries with different start dates can describe the same assignment; those entries share one roster row. Distinct roles and assignments at different teams remain separate, and stored work history is preserved.
