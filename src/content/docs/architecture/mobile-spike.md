@@ -3,7 +3,7 @@ title: Capacitor mobile login experiment
 ---
 
 Rondo's planned public app uses Capacitor with locally packaged React assets for iOS and Android.
-The experimental implementation lives in `rondo-club/mobile/`, version **0.6.0**. It is a development
+The experimental implementation lives in `rondo-club/mobile/`, version **0.6.1**. It is a development
 proof, not a production authentication provider or a store-ready application.
 
 ## Isolation and installation
@@ -248,3 +248,7 @@ reads verified persisted phone/address values and pending/verified email states.
 before delivery exercised the readback-only error state and recovery; actual loss of a response after
 storage is covered by the client unit test. No physical device, real mailbox or local Sportlink sync
 was used. Shared-service household propagation and former-member rejection are covered in PHP.
+
+Version 0.6.1 separates the household action links with a wrapping gap and removes the province input. Existing `state` data remains in the complete address payload so saving another address field does not clear it.
+
+The address form uses a single Dutch country dropdown from pinned `i18n-iso-countries` data. Selecting a country sets its name and two-letter ISO code together. Existing Dutch/English names and three-letter codes are resolved on opening; unknown values require an explicit selection. Neither province nor country code has a separate input.
