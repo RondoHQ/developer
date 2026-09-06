@@ -289,3 +289,5 @@ a unique test serial and an explicitly invalid admission barcode. The actual App
 cancellation, addition and the saved pass in Wallet were verified on the iOS simulator. The local
 fixture keeps this test available without installing any signing credential. Production mobile
 login, dynamic live member-pass issuance, physical devices and Google Wallet remain separate tests.
+
+The native Wallet action appears above the pass, with space between the button and card, so members can access it without scrolling past the QR code.
