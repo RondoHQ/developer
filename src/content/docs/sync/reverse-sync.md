@@ -72,6 +72,8 @@ Jobs retry transient failures with bounded backoff. Two occupied slots become a 
 | `city` | `addresses` repeater (Home row) | /general (address section) | `input[name="City"]` | text |
 | `country_code` | `addresses` repeater (Home row) | /general (address section) | `select[name="CountryCode"]` | select |
 
+Nieuwe en gewijzigde adresregels vereisen een niet-lege landnaam en ISO-landcode. Rondo gebruikt voor Nederlandse adressen standaard `Nederland` en `NL`, zodat de reverse-sync nooit een lege optie aan Sportlinks landenlijst aanbiedt.
+
 ### Administrative fields
 
 | Field | Rondo Club ACF Field | Sportlink Page | Sportlink Selector | Type |

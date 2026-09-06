@@ -52,6 +52,8 @@ Dezelfde vier velden zijn per minderjarig kind afzonderlijk te beheren vanaf de 
 
 Een adreswijziging vervangt of maakt de adresregel met label `Home` bij het gekoppelde actieve lid en alle zichtbare minderjarige kinderen. Andere adresregels, zoals een factuur- of werkadres, blijven behouden. Voormalige en overleden leden worden niet aangepast.
 
+Land en landcode zijn verplicht. Nederlandse adressen krijgen bij ontbrekende invoer automatisch `Nederland` en `NL`; een buitenlands adres zonder geldige ISO-landcode wordt geweigerd voordat het profiel of de Sportlink-wachtrij wordt bijgewerkt.
+
 ## Wijzigingslog
 
 Elke zelfserviceactie maakt een privaat `rondo_profile_change`-record met actor, tijdstip, betrokken personen, oude en nieuwe waarden, verificatiestatus en Sportlink-status. De statussen zijn `pending`, `synced`, `failed`, `action_required` en `local_only`. De UI toont `action_required` als **Actie nodig** met de concrete Sportlink-validatiemelding.
