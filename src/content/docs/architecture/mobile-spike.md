@@ -3,7 +3,7 @@ title: Capacitor mobile login experiment
 ---
 
 Rondo's planned public app uses Capacitor with locally packaged React assets for iOS and Android.
-The experimental implementation lives in `rondo-club/mobile/`, version **0.4.0**. It is a development
+The experimental implementation lives in `rondo-club/mobile/`, version **0.4.1**. It is a development
 proof, not a production authentication provider or a store-ready application.
 
 ## Isolation and installation
@@ -166,3 +166,15 @@ exchange, and duplicate events share one exchange. A lost exchange response need
 Existing-account email links are tested with locally captured synthetic mail. New-account and
 household activation journeys, real email-app handoff and physical devices remain unverified.
 Verified HTTPS callbacks remain a separate release gate.
+
+## Membership pass branding (0.4.1)
+
+Native pass cards consume the existing QR response's `pass.background_color`, sharing
+`getMembershipPassBackground` and `getMembershipPassPresentation` with the web pass. The app
+no longer overrides club backgrounds with its own gradient. Sponsor variants use dark text;
+businessclub passes retain their pass-specific same-origin logo. Other passes prefer the
+reviewed club logo and fall back to the response's same-origin logo. Logos have no frame,
+background or padding; failed images are hidden. The surrounding app retains Rondo branding.
+
+Native simulator checks cover the synthetic ordinary member's green pass, official AWC SVG and
+loaded QR on iOS and Android. Sponsor/businessclub accounts were not exercised in that native run.
