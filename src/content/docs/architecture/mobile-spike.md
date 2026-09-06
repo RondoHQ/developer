@@ -3,7 +3,7 @@ title: Capacitor mobile login experiment
 ---
 
 Rondo's planned public app uses Capacitor with locally packaged React assets for iOS and Android.
-The experimental implementation lives in `rondo-club/mobile/`, version **0.3.1**. It is a development
+The experimental implementation lives in `rondo-club/mobile/`, version **0.4.0**. It is a development
 proof, not a production authentication provider or a store-ready application.
 
 ## Isolation and installation
@@ -92,8 +92,8 @@ A Wallet action is offered only when the household summary reports a configured 
 
 ## Limits and release gates
 
-Completed logins survive process restarts for up to 30 days. The pending PKCE verifier remains
-memory-only, so killing the app during browser authorization requires restarting login. No offline
+Completed logins survive process restarts for up to 30 days. Pending authorization survives
+process termination for at most ten minutes in the native vault. No offline
 personal-data mode is implemented. Browser logout alone does not revoke an app session.
 
 Verified HTTPS callbacks, a signed club directory, installation UUID, background snapshot privacy,
@@ -107,8 +107,7 @@ evidence and remaining device checks are recorded in `docs/prd/mobile-app-spike-
 
 `DeviceSession` serializes vault writes and coalesces refresh requests. Startup validates the saved
 club against the compiled directory, rotates its refresh token and saves the replacement before
-publishing access. Five-minute access tokens, personal responses, QR codes and pending PKCE
-verifiers stay in memory. A network error retains the encrypted login for retry; invalid grants
+publishing access. Five-minute access tokens, personal responses and QR codes stay in memory. A network error retains the encrypted login for retry; invalid grants
 require a new login. There is no offline personal-data mode.
 
 The local `RondoSessionVault` bridge supports only read/write/clear for one bounded record. iOS
@@ -149,3 +148,21 @@ Figtree 600/700/800 headings and the navy `#001B60`, teal `#00908B`, purple `#99
 border palette match the Rondo website. The native launcher and splash images are rendered from
 its unchanged `rondo-logo.svg`, centered with padding for platform masks. Fonts are bundled with
 their OFL license, without remote requests.
+
+## Existing-account email login and cold callbacks (0.4.0)
+
+The opt-in plugin uses Magic Login's `magic_login_create_login_link` and final
+`magic_login_redirect` filters to preserve only its exact validated authorization destination.
+This fixes Rondo activation's explicit home redirect for an existing linked account. The provider's
+token, nonce, throttling and account eligibility checks remain authoritative. SMS, other hosts,
+normal web destinations and malformed authorization requests are unchanged.
+
+`DeviceSession` stores a pending club ID/origin, verifier, state and creation time before opening
+the browser. Startup validates the reviewed directory and ten-minute TTL before native callbacks
+can consume that state. Resume rebuilds the original authorization URL. Cancel and valid denial
+clear the pending record; an unrelated state cannot cancel it. Consumption is persisted before
+exchange, and duplicate events share one exchange. A lost exchange response needs a new login.
+
+Existing-account email links are tested with locally captured synthetic mail. New-account and
+household activation journeys, real email-app handoff and physical devices remain unverified.
+Verified HTTPS callbacks remain a separate release gate.
