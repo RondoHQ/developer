@@ -278,3 +278,14 @@ Local tests use synthetic data and unavailable/invalid provider configuration. N
 or issuer account is installed. Successful signed-pass addition remains a release gate requiring
 an approved Wallet test configuration and device verification; this development PR does not deploy
 the adapter, register an issuer or publish an app.
+
+
+### Signed Apple pass verified
+
+On 6 September, the existing AWC certificate signed a synthetic test pass on the club server.
+Its private key stayed there. Only the signed pass was transferred to a local fixture, which
+serves it after the adapter's normal session, household and selected-pass checks. The pass uses
+a unique test serial and an explicitly invalid admission barcode. The actual Apple add sheet,
+cancellation, addition and the saved pass in Wallet were verified on the iOS simulator. The local
+fixture keeps this test available without installing any signing credential. Production mobile
+login, dynamic live member-pass issuance, physical devices and Google Wallet remain separate tests.
