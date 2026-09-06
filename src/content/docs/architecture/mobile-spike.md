@@ -3,7 +3,7 @@ title: Capacitor mobile login experiment
 ---
 
 Rondo's planned public app uses Capacitor with locally packaged React assets for iOS and Android.
-The experimental implementation lives in `rondo-club/mobile/`, version **0.4.1**. It is a development
+The experimental implementation lives in `rondo-club/mobile/`, version **0.5.0**. It is a development
 proof, not a production authentication provider or a store-ready application.
 
 ## Isolation and installation
@@ -42,7 +42,7 @@ An atomic WordPress option claim prevents concurrent authorization-code replay.
 The read adapter maps only `me`, `household`, `my-shifts`, `calendar` and `pass` to existing REST endpoints. It establishes
 the token user's context for `rest_do_request()` and restores the caller afterwards. It does not
 skip permission callbacks or field filters. The bearer token does not authenticate arbitrary
-WordPress REST routes, and the adapter cannot dispatch writes. Existing cookie/nonce authentication
+WordPress REST routes. Only separately consented current-member signup/cancel writes are available. Existing cookie/nonce authentication
 and confidential FreeScout OIDC behavior remain unchanged.
 
 | Endpoint under `/wp-json/rondo-mobile-spike/v1` | Method | Purpose |
@@ -54,10 +54,11 @@ and confidential FreeScout OIDC behavior remain unchanged.
 | `/read?resource=my-shifts` | GET | Current member's original duties |
 | `/read?resource=calendar&month=YYYY-MM` | GET | Exactly one month, forced `signup` view |
 | `/read?resource=pass&person_id=…&role=…` | GET | Original QR issuance, additionally restricted to personal household passes |
+| `/shift` | POST | Separately consented current-member signup/cancel through existing routes |
 | `/revoke` | POST | Idempotent device-family revocation using access or refresh token |
 
 The browser authorization action is `rondo_mobile_spike_authorize` on `wp-admin/admin-post.php`.
-Its public client is `rondo-mobile-spike`, scope `rondo:spike:read`, and callback
+Its public client is `rondo-mobile-spike`, scope `rondo:spike:read` with optional `rondo:spike:volunteer`, and callback
 `club.rondo.spike://oauth/callback`. Native HTTP follows no redirects. No browser CORS exception
 or global WordPress authentication filter is installed.
 
@@ -85,7 +86,7 @@ Club switching is exclusively under More → My clubs. Each login creates its ow
 React Router history and TanStack Query client; logout/unmount cancels and clears the cache.
 Android Back follows the same history and minimizes the app at the initial root.
 
-Write actions and Wallet setup still open fixed `/vrijwillig` or `/mijn-gegevens` pages in the
+Profile changes and Wallet setup still open fixed `/vrijwillig` or `/mijn-gegevens` pages in the
 system browser. No app token or server-provided nonce is appended to those links. Browser return
 and app activation invalidate cached reads. A return is never treated as proof of a write or payment.
 A Wallet action is offered only when the household summary reports a configured Wallet provider.
@@ -97,7 +98,7 @@ process termination for at most ten minutes in the native vault. No offline
 personal-data mode is implemented. Browser logout alone does not revoke an app session.
 
 Verified HTTPS callbacks, a signed club directory, installation UUID, background snapshot privacy,
-push, direct Wallet delivery, native writes, guest passes, complete contribution controls and
+push, direct Wallet delivery, remaining native writes, guest passes, complete contribution controls and
 configurable navigation remain release work. Physical-device, reinstall, locked-device and backup
 checks plus an independent security review are still required.
 The agreed first-release design remains in `docs/prd/mobile-app-first-release.md`; actual spike
@@ -178,3 +179,22 @@ background or padding; failed images are hidden. The surrounding app retains Ron
 
 Native simulator checks cover the synthetic ordinary member's green pass, official AWC SVG and
 loaded QR on iOS and Android. Sponsor/businessclub accounts were not exercised in that native run.
+
+## Native member shift actions (0.5.0)
+
+The browser now offers explicit `rondo:spike:volunteer` consent alongside read access. Scope is
+bound to the authorization code and server device family, retained during refresh, and returned
+with token pairs. Existing families and legacy pending login records remain read-only; the user
+must reconnect to grant the additional permission. There is no silent upgrade.
+
+The fixed `POST /shift` adapter accepts only `shift_id`, `action` (`signup`/`cancel`) and boolean
+`force_overlap`. It rejects person selection and routes only to the current member's original
+signup/cancel endpoints. Existing eligibility, certificate/pool checks, locks/capacity, signup
+windows, cancellation deadlines and confirmation scheduling remain authoritative. Caller context
+is restored even when the original route rejects the action. No other native writes are added.
+
+The duty screen requires confirmation and uses server `can_signup`/`can_cancel` flags. Overlap
+requires a second explicit decision; late signup explains the existing 30-minute grace period.
+Writes are serialized at the client and never automatically retried. An uncertain result presents
+a readback action, and confirmed writes invalidate the session's member caches. Local mail stays
+captured and the whole adapter is still disabled outside local/development.
