@@ -3,7 +3,7 @@ title: Capacitor mobile login experiment
 ---
 
 Rondo's planned public app uses Capacitor with locally packaged React assets for iOS and Android.
-The experimental implementation lives in `rondo-club/mobile/`, version **0.1.0**. It is a development
+The experimental implementation lives in `rondo-club/mobile/`, version **0.2.0**. It is a development
 proof, not a production authentication provider or a store-ready application.
 
 ## Isolation and installation
@@ -39,7 +39,7 @@ canonical club origin and a password fingerprint. Changed passwords or removed r
 invalidate it; existing endpoint permissions determine the available data on every request.
 An atomic WordPress option claim prevents concurrent authorization-code replay.
 
-The read adapter maps only `me` and `household` to the existing REST endpoints. It establishes
+The read adapter maps only `me`, `household`, `my-shifts`, `calendar` and `pass` to existing REST endpoints. It establishes
 the token user's context for `rest_do_request()` and restores the caller afterwards. It does not
 skip permission callbacks or field filters. The bearer token does not authenticate arbitrary
 WordPress REST routes, and the adapter cannot dispatch writes. Existing cookie/nonce authentication
@@ -51,12 +51,40 @@ and confidential FreeScout OIDC behavior remain unchanged.
 | `/token` | POST | One-use code and verifier exchange |
 | `/read?resource=me` | GET | Current user's original profile response |
 | `/read?resource=household` | GET | Original permission-filtered household response |
+| `/read?resource=my-shifts` | GET | Current member's original duties |
+| `/read?resource=calendar&month=YYYY-MM` | GET | Exactly one month, forced `signup` view |
+| `/read?resource=pass&person_id=…&role=…` | GET | Original QR issuance, additionally restricted to personal household passes |
 | `/revoke` | POST | Idempotent bearer-session deletion |
 
 The browser authorization action is `rondo_mobile_spike_authorize` on `wp-admin/admin-post.php`.
 Its public client is `rondo-mobile-spike`, scope `rondo:spike:read`, and callback
 `club.rondo.spike://oauth/callback`. Native HTTP follows no redirects. No browser CORS exception
 or global WordPress authentication filter is installed.
+
+## Member screens and navigation
+
+Start links to available household passes, the next upcoming own duty and My details. Passen
+uses the existing household pass summary and role options, then requests the existing QR route.
+Even administrators cannot request a pass outside that personal household through the adapter.
+The browser and mobile app share `src/hooks/usePassQr.js` for rendering the QR token.
+
+Vrijwillig displays one month with counts of eligible duties per day, separate own-duty markers,
+a selected day's available duties, My duties and duty detail. It uses `can_signup`, `is_signed_up`
+and the original server statuses instead of rebuilding eligibility or capacity rules. Dates use
+the club timezone and existing local WordPress shift timestamps. The adapter accepts only a valid
+`YYYY-MM`, calculates that month's range and never forwards an arbitrary view or date range.
+
+The passive header has a club logo beside Rondo, without a separate club-name row or dropdown.
+`/config` returns the club timezone and configured logo URL. Only a logo on the selected HTTPS
+club origin is rendered; missing or failed logos show the club initials with its accessible name.
+Club switching is exclusively under More → My clubs. Each login creates its own in-memory
+React Router history and TanStack Query client; logout/unmount cancels and clears the cache.
+Android Back follows the same history and minimizes the app at the initial root.
+
+Write actions and Wallet setup still open fixed `/vrijwillig` or `/mijn-gegevens` pages in the
+system browser. No app token or server-provided nonce is appended to those links. Browser return
+and app activation invalidate cached reads. A return is never treated as proof of a write or payment.
+A Wallet action is offered only when the household summary reports a configured Wallet provider.
 
 ## Limits and release gates
 
@@ -65,7 +93,7 @@ restart login. Offline logout drops local data immediately; failed server revoca
 by the five-minute expiry. Browser logout alone does not revoke the app token.
 
 The experiment does not implement secure persistent storage, refresh tokens, verified HTTPS
-callback links, a signed club directory, an installation UUID, push, Wallet handoffs or the full
-member screens. Those remain required work, with device and security verification before release.
+callback links, a signed club directory, an installation UUID, push, direct Wallet delivery or native member write actions.
+Guest passes, complete contribution controls and configurable capability navigation are also pending. Those remain required work, with device and security verification before release.
 The agreed first-release design remains in `docs/prd/mobile-app-first-release.md`; actual spike
 evidence and remaining device checks are recorded in `docs/prd/mobile-app-spike-results.md`.
