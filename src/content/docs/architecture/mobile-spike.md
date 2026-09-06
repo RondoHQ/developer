@@ -3,7 +3,7 @@ title: Capacitor mobile login experiment
 ---
 
 Rondo's planned public app uses Capacitor with locally packaged React assets for iOS and Android.
-The experimental implementation lives in `rondo-club/mobile/`, version **0.3.0**. It is a development
+The experimental implementation lives in `rondo-club/mobile/`, version **0.3.1**. It is a development
 proof, not a production authentication provider or a store-ready application.
 
 ## Isolation and installation
@@ -76,7 +76,11 @@ the club timezone and existing local WordPress shift timestamps. The adapter acc
 
 The passive header has a club logo beside Rondo, without a separate club-name row or dropdown.
 `/config` returns the club timezone and configured logo URL. Only a logo on the selected HTTPS
-club origin is rendered; missing or failed logos show the club initials with its accessible name.
+club origin is accepted from API metadata. A reviewed build-directory `logoUrl` may explicitly
+select an HTTPS image on the official club website; it takes precedence on login and restoration.
+Missing or failed logos show the club initials with its accessible name. Logos have no border,
+background, rounded frame or inner padding. AWC uses
+`https://www.svawc.nl/wp-content/uploads/2024/02/awc-logo.svg`.
 Club switching is exclusively under More → My clubs. Each login creates its own in-memory
 React Router history and TanStack Query client; logout/unmount cancels and clears the cache.
 Android Back follows the same history and minimizes the app at the initial root.
