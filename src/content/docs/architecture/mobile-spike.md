@@ -57,6 +57,7 @@ and confidential FreeScout OIDC behavior remain unchanged.
 | `/read?resource=profile` | GET | Own contact data, edit availability and pending email verification |
 | `/profile` | POST | Separately consented own-profile actions through existing services |
 | `/shift` | POST | Separately consented current-member signup/cancel through existing routes |
+| `/wallet` | POST | Export one accessible household pass through the existing Apple/Google generator |
 | `/revoke` | POST | Idempotent device-family revocation using access or refresh token |
 
 The browser authorization action is `rondo_mobile_spike_authorize` on `wp-admin/admin-post.php`.
@@ -88,7 +89,7 @@ Club switching is exclusively under More → My clubs. Each login creates its ow
 React Router history and TanStack Query client; logout/unmount cancels and clears the cache.
 Android Back follows the same history and minimizes the app at the initial root.
 
-Wallet setup and remaining household/contribution actions open the fixed `/mijn-gegevens` page in the
+Remaining household/contribution actions open the fixed `/mijn-gegevens` page in the
 system browser. No app token or server-provided nonce is appended to those links. Browser return
 and app activation invalidate cached reads. A return is never treated as proof of a write or payment.
 A Wallet action is offered only when the household summary reports a configured Wallet provider.
@@ -100,7 +101,7 @@ process termination for at most ten minutes in the native vault. No offline
 personal-data mode is implemented. Browser logout alone does not revoke an app session.
 
 Verified HTTPS callbacks, a signed club directory, installation UUID, background snapshot privacy,
-push, direct Wallet delivery, remaining native writes, guest passes, complete contribution controls and
+push, signed-pass Wallet device verification, remaining native writes, guest passes, complete contribution controls and
 configurable navigation remain release work. Physical-device, reinstall, locked-device and backup
 checks plus an independent security review are still required.
 The agreed first-release design remains in `docs/prd/mobile-app-first-release.md`; actual spike
@@ -236,7 +237,7 @@ in component memory only. Writes share one session guard with volunteer actions;
 queued or retried automatically. After an uncertain response, controls require a fresh profile
 read before allowing another submission. Logout rejects stale write results.
 
-Wallet, contribution and separate child/other-parent editing remain on the club site. The adapter
+Contribution and separate child/other-parent editing remain on the club site. The adapter
 still requires local/development opt-in, and all test email is captured locally.
 
 Validation for 0.6.0: 35 mobile JavaScript tests and 21 focused WordPress/MySQL tests (208 assertions)
@@ -252,3 +253,28 @@ was used. Shared-service household propagation and former-member rejection are c
 Version 0.6.1 separates the household action links with a wrapping gap and removes the province input. Existing `state` data remains in the complete address payload so saving another address field does not clear it.
 
 The address form uses a single Dutch country dropdown from pinned `i18n-iso-countries` data. Selecting a country sets its name and two-letter ISO code together. Existing Dutch/English names and three-letter codes are resolved on opening; unknown values require an explicit selection. Neither province nor country code has a separate input.
+
+
+## Direct native Wallet export (0.7.0)
+
+Pass detail offers the matching provider for the device, subject to the club's configuration and
+Apple's `canAddPasses()`. `POST /wallet` accepts only `person_id`, opaque `role` and `provider`.
+Existing read consent covers pass export. Token identity, personal household, visible-person access
+and pass selection are checked again at export; the original pass generators remain authoritative
+for eligibility, branding, QR and version. Even an administrator cannot select an unrelated person.
+
+Apple returns a bounded base64 `.pkpass` payload with `no-store`, passed in memory to the local
+`RondoWallet` bridge. PassKit validates it and presents Apple's add sheet; cancellation is never
+reported as a successful save. Google returns an exact signed `https://pay.google.com/gp/v/save/`
+URL checked on both sides before the app opens Capacitor Browser. No Rondo credential enters a
+handoff URL. Provider diagnostics never expose server paths or API exception details to the app.
+
+This explicit POST shares the session's one-write guard and is never retried/queued automatically.
+A late response after logout or navigation is discarded. Pass bytes and Google URLs never enter
+the query cache, device vault, logs or files. Previously saved Wallet passes are not deleted on
+Rondo logout; entitlement and pass-version validation remain enforced during scans.
+
+Local tests use synthetic data and unavailable/invalid provider configuration. No real certificate
+or issuer account is installed. Successful signed-pass addition remains a release gate requiring
+an approved Wallet test configuration and device verification; this development PR does not deploy
+the adapter, register an issuer or publish an app.
