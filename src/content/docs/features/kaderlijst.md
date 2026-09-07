@@ -13,17 +13,16 @@ The Kaderlijst feature provides a live roster sheet for youth staff roles, repla
 
 Columns:
 
-- `leeftijdsgroep`
-- `jaargroep`
+- `groep` (`leeftijdsgroep · jaargroep`, e.g. `Junioren · JO19`)
 - `team`
 - `naam` (`first_name + infix + last_name`)
 - `rol`
 - `mobiel`
 - `email`
 
-The age-group column has a compact 160px target width. The full-name column has a 180px target width, wraps long names, and sorts by last name, then first name. Spare width goes to the final email column so the name and role remain close together. Its text filter searches the complete name, including infixes.
+The combined group column has a compact 180px target width. Coordinator rows without a year show only their age group. The full-name column has a 180px target width, wraps long names, and sorts by last name, then first name. Spare width goes to the final email column so the name and role remain close together. Its text filter searches the complete name, including infixes.
 
-For readability, repeated values in `leeftijdsgroep`, `jaargroep`, and `team` are hidden on consecutive visible rows. A stronger horizontal border marks each new team or coordinator group. Group labels and separators are computed from the current filtered and sorted rows, so the first visible row always retains its context.
+For readability, repeated values in `groep` and `team` are hidden on consecutive visible rows. A stronger horizontal border marks each new team or coordinator group. Group labels and separators are computed from the current filtered and sorted rows, so the first visible row always retains its context.
 
 The shared `DataTable` passes `previousRow` (the previous visible original record, or `undefined`) to cell renderers and as the third argument of `rowClassName(row, index, previousRow)`.
 
@@ -90,6 +89,8 @@ Display ordering:
 - Then team and person name (natural alphanumeric sort)
 
 ## Filtering
+
+The DataTable retains separate age-group and year filters even though they share one visible column. The year filter uses a hidden, non-toggleable column (`year_group_filter`); the group column filters by age group.
 
 The DataTable exposes filters for:
 
