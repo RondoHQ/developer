@@ -98,6 +98,8 @@ Sort surname columns by `last_name`, not by the combined display value. This kee
 
 `GET /rondo/v1/people/filtered` accepts `first_name` and `last_name` text filters. The `last_name` filter matches the displayed surname, including the infix. Both `first_name` and `last_name` are valid `orderby` values.
 
+The `leeftijdsgroep` filter accepts one age group or a comma-separated list, for example `leeftijdsgroep=Onder%206,Onder%207,Onder%2013`. A person matches any selected group; other filters and the caller's access restrictions still apply. Omit the parameter for all permitted groups. Existing single-group URLs remain valid. The People filter offers checkboxes for these choices, preserves them during navigation, and uses the same selection for pagination and CSV exports.
+
 Pass `spelactiviteit_no_team=1` to return people with a non-empty `spelactiviteit` field who do not have a current player role linked to a team. Current staff or volunteer roles on a team do not exclude a person. The endpoint resolves these candidates through the native field layer before applying the normal row-level access filters.
 
 Deceased people are excluded from this endpoint by default, including CSV exports built from it.
