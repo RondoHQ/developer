@@ -25,6 +25,16 @@ The public page publishes a 1200×630 Open Graph image from
 
 Logic lives in `Rondo\Users\ActivationService`; `ActivationPage` only routes and renders.
 
+The identity step only asks for a choice when several people are available or a youth member has a
+parent/guardian option. For one person without a guardian option, it shows “Je maakt een account aan
+voor [name]” and the **Account aanmaken** button, submitting the same `self:{person_id}` identity as a
+hidden field. The service still validates the selected person against the token on submission.
+
+The picker labels distinguish **Voor mezelf** from **Voor mij als ouder/verzorger**. The parent name
+field appears only for a selected guardian identity; no parent field is rendered when no guardian
+option exists. The activation pages use a compact branded header, full-width action buttons and
+spaced choice cards. These styles are scoped to activation so payment page layouts stay unchanged.
+
 Former members are normally excluded from activation. There are two role-based exceptions:
 
 - a former member with a published, non-former child relationship;
