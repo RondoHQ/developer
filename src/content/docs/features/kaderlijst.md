@@ -16,13 +16,16 @@ Columns:
 - `leeftijdsgroep`
 - `jaargroep`
 - `team`
-- `voornaam`
-- `achternaam` (`infix + last_name`)
+- `naam` (`first_name + infix + last_name`)
 - `rol`
 - `mobiel`
 - `email`
 
-For readability, repeated values in `leeftijdsgroep`, `jaargroep`, and `team` are hidden on consecutive rows.
+The age-group column has a compact 160px target width. The full-name column receives spare table width and sorts by last name, then first name. Its text filter searches the complete name, including infixes.
+
+For readability, repeated values in `leeftijdsgroep`, `jaargroep`, and `team` are hidden on consecutive visible rows. A stronger horizontal border marks each new team or coordinator group. Group labels and separators are computed from the current filtered and sorted rows, so the first visible row always retains its context.
+
+The shared `DataTable` passes `previousRow` (the previous visible original record, or `undefined`) to cell renderers and as the third argument of `rowClassName(row, index, previousRow)`.
 
 ## Data sources and access scope
 
@@ -90,7 +93,7 @@ The DataTable exposes filters for:
 
 - `leeftijdsgroep` (select)
 - `jaargroep` (select)
-- `team`, `voornaam`, `achternaam`, `rol`, `mobiel`, `email` (text)
+- `team`, `naam`, `rol`, `mobiel`, `email` (text)
 
 ## Role semantics
 
