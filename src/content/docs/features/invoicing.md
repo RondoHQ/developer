@@ -69,6 +69,25 @@ Invoice list and detail responses expose a canonical `paid_at` timestamp for ful
 
 Payment statistics include two current-season contribution charts. The invoice chart separates fully paid invoices, partially paid installment invoices, and invoices with no collected amount. The amount chart compares collected contribution principal with the total invoiced contribution principal; per-installment administration fees are excluded. Drafts, cancelled invoices, and credits are excluded from both distributions.
 
+## Scheduled sending and due dates
+
+Draft invoices can be scheduled with `POST /rondo/v1/invoices/{id}/schedule`, using
+`scheduled_send_date` in `YYYY-MM-DD` or `Ymd` format. The invoice detail page and
+bulk scheduling action use this endpoint. Dates must be today or later in the
+WordPress site timezone; an empty value cancels the schedule.
+
+Setting or updating a schedule recalculates `due_date` as the scheduled send date
+plus the configured `payment_term_days`. The calculation uses calendar days in
+the site timezone and clears any existing draft PDF so it can be generated with
+the new due date. For example, 21 December with a 14-day term becomes 4 January.
+
+The draft creation and editing form also moves its due-date field when the send
+date changes. The backend applies the same rule on creation or a changed send
+date. With an unchanged send date, an explicit due-date edit is preserved.
+Cancelling a schedule leaves the due date unchanged. Scheduling does not send an
+email immediately; the invoice remains a draft until the scheduled-send sweeper
+runs the normal sending flow.
+
 ## Invoice Numbering
 
 **Class:** `Rondo\Finance\InvoiceNumbering`
