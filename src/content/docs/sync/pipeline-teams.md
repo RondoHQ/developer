@@ -99,6 +99,8 @@ The fast team-roster response used in step 1 does not expose the start and end d
 
 Before mapping, `lib/team-membership-periods.js` interprets an empty `RelationEnd` using `SeasonDescription`. A recognized closed season such as `2025/'26` gets June 30, 2026 as its inferred end date. The cutoff follows Europe/Amsterdam. Explicit source end dates remain authoritative; current/future seasons, unrecognized seasons, and contradictory start dates are left unchanged. A continuing current-season copy with the same team, role, and start date takes precedence over an inferred historical end. Multiple historical copies retain the latest season. The normal reconciliation closes the existing current row and keeps unrelated and already ended history.
 
+Sportlink's `Status: INACTIVE` takes precedence over an empty `RelationEnd`: the importer writes `is_current: false` and preserves the unknown end date. A status-only change is reconciled in place, retaining the team link and start date. Rondo excludes explicitly inactive undated roles from current team membership, counts, fee matching and staff views. Replaying the same source does not write again.
+
 The standalone monthly player-history run remains a safety net, but new team assignments no longer wait for it before their dates appear in Rondo Club.
 
 **Output:** `{ total, downloaded, synced, created, reconciled, skippedUnchanged, skippedQuarantined, errors }`
