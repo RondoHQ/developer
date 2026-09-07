@@ -49,3 +49,9 @@ The build preparation command emits both isolated plugin packages plus the nativ
 Since Rondo Club 35.55.1, the pilot can coexist with Novamira’s site-wide Bearer authenticator. It handles only Novamira’s HTTP 401 `rest_oauth_error`, and only after independently validating a live pilot token for the exact `GET /read`, `POST /wallet` or `POST /revoke` route in its own namespace. Other routes, methods, authentication errors, expired tokens and removed testers retain their denial.
 
 This does not authenticate the token as a global WordPress user. The gateway continues to scope each inner request to the token owner and enforce the existing household and field permissions. The Novamira plugin and its credentials remain unchanged. The correction is server-side and compatible with native build 0.9.0 (13).
+
+## Native consent screen
+
+The shared gateway renders a compact standalone consent page with the current club name and the logo configured in FinanceConfig, without a logo border or padding. It uses the Rondo website wordmark, Figtree headings and app colours. Permission text follows the requested scope and displays the adapter’s device-session lifetime. Approve and cancel remain nonce-protected POST actions; authorization and token policies are unchanged.
+
+Pilot packages include the existing brand assets under `shared/brand`; the development adapter uses the theme’s `mobile/public/brand` assets. Deploy the shared template, gateway and brand assets to each installed standalone pilot plugin as well as the theme. No new native build is required for this presentation change.
