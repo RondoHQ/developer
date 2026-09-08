@@ -4,9 +4,13 @@ description: The public self-service flow at /activeren, and the security model 
 ---
 
 Members create their own account at **`/activeren`**. No admin action, no mass mailing.
-The form tells members to use the same address that receives club newsletters and is used for the
-Voetbal.nl app. Client-side email validation messages are explicitly Dutch rather than relying on
-the browser locale.
+The opening screen uses the configured club display name in its heading and newsletter guidance.
+An illustrated list explains that members can view and edit contact details, sign up for volunteer
+tasks and find their digital membership pass. Icons are decorative; each benefit remains readable
+as text. The email hint asks for the address that receives club newsletters and is associated with
+the input through `aria-describedby`. A separate note explains that parents can choose their own
+parent account through the activation link. Client-side email validation messages are explicitly
+Dutch rather than relying on the browser locale.
 
 Activation mail uses an explicit `From` header for `ledenadministratie@svawc.nl`. Keep this scoped
 to `ActivationService::send_activation_email()` so other transactional mail retains its configured
