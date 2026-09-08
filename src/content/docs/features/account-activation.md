@@ -14,7 +14,11 @@ Dutch rather than relying on the browser locale.
 
 Activation mail uses an explicit `From` header for `ledenadministratie@svawc.nl`. Keep this scoped
 to `ActivationService::send_activation_email()` so other transactional mail retains its configured
-sender. The confirmation page tells members to search their spam folder for that address.
+sender. The confirmation page shows the submitted email address (HTML-escaped) and configured
+club name, with conditional wording that is identical for known, unknown and rate-limited
+addresses. It tells members to check their spam folder, provides an **Ander e-mailadres gebruiken**
+link back to `/activeren`, and links directly to the membership administration through `mailto:`.
+Long email addresses wrap within the card on narrow screens.
 
 The public page publishes a 1200×630 Open Graph image from
 `public/images/og-account-activation.png`. `ActivationPage` passes that image to the shared
