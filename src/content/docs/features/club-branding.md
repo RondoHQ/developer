@@ -26,6 +26,11 @@ consumed by every logged-out surface. The single source of truth is
   The heading below the logo deliberately shows the **site title** (the application name, e.g.
   "AWC Rondo"), not the club name from `branding()`.
 
+The password reset form's **Wachtwoord genereren** button uses a full-width secondary style
+with the club's derived border/text colours, rounded corners, and a visible keyboard focus outline.
+Its `.login .button.wp-generate-pw` selector overrides the WordPress blue button defaults without
+changing the password visibility toggle or primary save button.
+
 ## Colour derivation on the login page
 
 The login page needs more than one colour, so `rondo_login_mix_color()` mixes the accent colour
