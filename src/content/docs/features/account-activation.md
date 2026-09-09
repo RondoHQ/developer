@@ -12,6 +12,12 @@ the input through `aria-describedby`. A separate note explains that parents can 
 parent account through the activation link. Client-side email validation messages are explicitly
 Dutch rather than relying on the browser locale.
 
+The activation email introduces Rondo as the club's online environment and lists contact-detail
+editing, volunteer-task registration and the digital membership pass. Its subject is
+**Activeer je Rondo-account bij [club]**, with **Welkom bij Rondo van [club]** as the heading and no
+Account eyebrow. The activation steps precede the button; the two-hour validity and advice for
+unsolicited requests follow it. The existing shared email template supplies the shell and button.
+
 Activation mail uses an explicit `From` header for `ledenadministratie@svawc.nl`. Keep this scoped
 to `ActivationService::send_activation_email()` so other transactional mail retains its configured
 sender. The confirmation page shows the submitted email address (HTML-escaped) and configured
