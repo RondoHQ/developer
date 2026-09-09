@@ -42,7 +42,9 @@ Logic lives in `Rondo\Users\ActivationService`; `ActivationPage` only routes and
 The identity step only asks for a choice when several people are available or a youth member has a
 parent/guardian option. For one person without a guardian option, it shows “Je maakt een account aan
 voor [name]” and the **Account aanmaken** button, submitting the same `self:{person_id}` identity as a
-hidden field. The service still validates the selected person against the token on submission.
+hidden field. This single-person screen is titled **Activeer je Rondo-account** and explains below
+the button that password setup comes next. The one-use/next-account hint remains on the multi-choice
+screen only. The service still validates the selected person against the token on submission.
 
 The picker labels distinguish **Voor mezelf** from **Voor mij als ouder/verzorger**. The parent name
 field appears only for a selected guardian identity; no parent field is rendered when no guardian
