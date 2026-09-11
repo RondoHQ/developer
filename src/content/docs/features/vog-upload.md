@@ -5,6 +5,8 @@ title: VOG uploads and review
 Available since Rondo Club 35.60.0. Members submit a VOG at `/profile/vog`;
 coordinators review submissions at `/vrijwilligers/vog/beoordelen`.
 
+The file selector uses a visible Dutch button (PDF kiezen / Bestanden kiezen) with an upload icon. File limits and the selection count appear below it; choosing files does not submit them.
+
 ## Upload and approval
 
 - Original digital PDF: submit the unchanged bytes to Justid's GAAV endpoint,
