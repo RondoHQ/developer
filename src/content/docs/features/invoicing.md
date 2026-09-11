@@ -88,6 +88,15 @@ Cancelling a schedule leaves the due date unchanged. Scheduling does not send an
 email immediately; the invoice remains a draft until the scheduled-send sweeper
 runs the normal sending flow.
 
+Normal sends through `POST /invoices/{id}/send` reject future scheduled drafts
+with HTTP 409 (`invoice_send_scheduled`) before generating payment links, PDFs,
+or emails. To send early, explicitly cancel the schedule first. List and detail
+responses expose `scheduled_send_pending`, calculated in the WordPress site
+timezone, so the detail send button is disabled and bulk sending skips future
+scheduled invoices while keeping them selected. Dates due today or earlier can
+be sent normally. Preview emails with an explicit test `recipient` remain
+available and preserve the draft and its schedule.
+
 ## Invoice Numbering
 
 **Class:** `Rondo\Finance\InvoiceNumbering`
