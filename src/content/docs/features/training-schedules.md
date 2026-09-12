@@ -2,7 +2,7 @@
 title: "Training schedules"
 ---
 
-The **Trainingsschema** page plans recurring weekly training blocks. Administrators can create
+The **Teams → Trainingsschema** page plans recurring weekly training blocks. Administrators can create
 several independent, named versions per season, such as **Regulier** and **Slecht weer**, and copy
 an existing version as a starting point. Exactly one saved version can be active for team pages.
 There are no date-specific exceptions or automatic weather decisions.
