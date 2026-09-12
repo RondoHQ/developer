@@ -12,7 +12,7 @@ On two-column screens the third column spans the row below the first two. Tasks 
 
 ## Profile header
 
-The standalone Back button is omitted. The header uses a plain name, an 88-pixel photo with its existing sync indicator, and matching neutral role badges. Financial blocks have a separate red notice; membership warnings remain amber. Existing roles, team/committee links, demographic details and external service links remain available.
+The standalone Back button is omitted. The header uses a 112-pixel photo with its existing sync indicator. When a person also has a company name, it follows their name after an en dash; company-only contacts show the company once. Matching neutral role badges sit beside age and other demographic details, wrapping on smaller screens. Financial blocks have a separate red notice; membership warnings remain amber. Existing roles, team/committee links, demographic details and external service links remain available.
 
 The icon-only pencil at the top right opens `PersonEditModal` under the existing `canEditPeople` gate, including its former-member and deceased restrictions. **Beheerinstellingen** is collapsed initially and exposes `person_type` only to full people editors. Sponsor-only editors retain their existing identity editing scope and cannot change the person type. Saving sends only changed identity fields under the canonical `fields` payload; contact details and dates are not submitted by this editor.
 
