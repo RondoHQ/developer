@@ -140,7 +140,20 @@ treated as the deceased person's own address.
    - **Has `rondo_club_id`**: `PUT /wp/v2/people/{rondo_club_id}` (update existing)
 5. Stores returned WordPress post ID as `rondo_club_id`
 6. Updates `last_synced_hash` on success
-7. If a tracked WordPress ID was merged away, resolves `/rondo/v1/people/{id}/merge-target`, stores the surviving ID, and continues the update there instead of recreating the member
+7. If a tracked WordPress ID was merged away, resolves `/rondo/v1/people/{id}/merge-target` and checks the survivor's KNVB ID before changing the mapping or writing fields. The same KNVB ID, or a survivor without one, permits the normal update. A different KNVB ID retires the old source instead.
+
+Retired sources keep their original tracking row with `retired_into_knvb_id` and
+an empty active payload. Reimports cannot reactivate or remove this row, including
+after WordPress permanently deletes the old person. Former-member cleanup checks
+the survivor's identity too, so removal of the old Sportlink source cannot make
+the surviving membership inactive. A mismatched mapping without a confirmed merge
+blocks writes but does not automatically retire an identity.
+
+For a confirmed duplicate with two KNVB IDs, preserve the old ID and membership
+history in a Rondo note, retire its source with `retireMemberIdentity()`, and only
+then clear the old record's conflicting ID and merge it into the active person.
+Verify the primary ID, active membership, history, account and sponsor relations
+afterwards. Keep the retired tracking row; do not remap it to the survivor.
 8. Then processes **parent members** (from `rondo_club_parents` table):
    - Identified by email (no KNVB ID)
    - Linked to children via ACF `relationships` field
