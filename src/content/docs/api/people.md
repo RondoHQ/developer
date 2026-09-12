@@ -596,6 +596,8 @@ X-WP-Nonce: {nonce}
 
 ## Upload Profile Photo
 
+The person detail page opens the [photo crop editor](/features/photo-cropping/) before uploading. It sends the selected square as a JPEG up to 800 × 800 pixels through this existing endpoint.
+
 **Request:**
 ```http
 POST /rondo/v1/people/456/photo
