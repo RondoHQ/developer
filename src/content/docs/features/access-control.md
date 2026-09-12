@@ -524,3 +524,12 @@ Users with the `financieel` capability can access **Financien > Instellingen** (
 - [User Provisioning](./user-provisioning.md) - Creating WordPress accounts for members
 - [Data Model](./data-model.md) - Post types and field definitions
 - [REST API](../api/rest-api.md) - API endpoints
+
+### Training schedule management
+
+`manage_training` grants management of training schedules and training settings. Administrators
+receive it automatically and retain access through `manage_options`; other roles can be granted
+**Trainingsschema beheren** through the capability matrix. The current-user response exposes
+`can_manage_training`, which controls editing and the dedicated settings route. This capability
+does not itself grant general kader access or bypass person age-group restrictions. Schedule read
+endpoints remain public and training no longer uses a feature toggle.

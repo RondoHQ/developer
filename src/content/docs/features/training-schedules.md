@@ -2,20 +2,26 @@
 title: "Training schedules"
 ---
 
-The **Teams → Trainingsschema** page plans recurring weekly training blocks. Administrators can create
+The **Teams → Trainingsschema** page plans recurring weekly training blocks. Training managers can create
 several independent, named versions per season, such as **Regulier** and **Slecht weer**, and copy
 an existing version as a starting point. Exactly one saved version can be active for team pages.
 There are no date-specific exceptions or automatic weather decisions.
 
 ## Access
 
-The `training` feature toggle defaults to `admin_only` and controls access to the Rondo interface
-and management operations. `off` denies management access to everyone; `admin_only` and `on` allow
-administrators with `manage_options` to manage settings and schedules.
+Training no longer has a feature toggle. The dedicated `manage_training` capability controls
+schedule creation, editing, copying, activation, deletion, and training settings. Administrators
+receive this capability automatically and retain access through `manage_options`. Other roles can
+receive **Trainingsschema beheren** through **Instellingen → Beheer → Capabilities**.
 
-**All saved versions are always publicly readable through the training API**, even when the toggle
-is `off` or `admin_only`. Public reads require no login or REST nonce. No player or parent contact data
-is exposed. The toggle does not unpublish existing schedule data.
+Kader users can view the schedule under Teams. A training manager without general kader access
+gets a standalone Trainingsschema navigation item and can open `/settings/training` directly.
+The capability itself does not grant general kader access or bypass person age-group restrictions.
+Team and Mijn team pages show training times without a feature toggle.
+
+**All saved versions are publicly readable through the training API.** Public reads require no
+login or REST nonce. No player or parent contact data is exposed. Previously stored `training`
+flag values are ignored and no longer appear in the toggle settings.
 
 ## Settings
 
@@ -27,7 +33,7 @@ is exposed. The toggle does not unpublish existing schedule data.
 - Named age-group defaults for duration and pitch size, plus a configurable color.
 - Explicit age-group assignments per team, with optional duration and size overrides. Empty
   overrides inherit the age-group default. Without a configured default, new blocks use 60 minutes
-  and a quarter pitch; the administrator can change these values before saving.
+  and a quarter pitch; the training manager can change these values before saving.
 
 The first team selected in a new block supplies its defaults. Shared blocks have one duration and
 one pitch allocation, which the administrator can adjust for the participating teams. Changing

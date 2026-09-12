@@ -2,7 +2,7 @@
 title: "Feature toggles"
 ---
 
-Rondo Club has site-wide feature toggles for **Ruimtes**, **Kleding**, **Club TV**, and **Trainingsschema**. An
+Rondo Club has site-wide feature toggles for **Ruimtes**, **Kleding**, and **Club TV**. An
 administrator manages them at **Settings → Beheer → Feature toggles**.
 
 Each toggle has three states:
@@ -17,10 +17,8 @@ States are stored together in the `rondo_feature_toggles` WordPress option. Kled
 default to `on` to preserve existing installations. Ruimtes defaults to `off`; until the new option
 contains a Rooms state, the legacy `rondo_rooms_enabled` option is used as a compatibility fallback.
 
-Trainingsschema (`training`) defaults to `admin_only`. Its schedule read endpoints are always public,
-including when the flag is `admin_only` or `off`; they need no authentication or REST nonce. The flag
-controls the Rondo interface and management access. Settings and writes require administrators and
-are disabled when the flag is `off`. See [Training schedules](../training-schedules/).
+Training schedules no longer use a feature toggle. Their read API is public and management uses
+`manage_training`. Legacy stored `training` values are ignored. See [Training schedules](../training-schedules/).
 
 The frontend receives the effective state map as `rondoConfig.featureToggles`. Route guards and the
 sidebar evaluate the same states as the REST permission callbacks. Changing a toggle through the UI

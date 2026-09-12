@@ -7,14 +7,15 @@ Base path: `/wp-json/rondo/v1/training`.
 ## Permissions and caching
 
 Schedule read endpoints (`GET /schedules`, `GET /schedules/{id}`, and `GET /active`) are always public,
-including when the `training` feature toggle is `admin_only` or `off`. They need no login, nonce,
+without a feature toggle. They need no login, nonce,
 or application password and can be opened directly in a browser or used by the club website.
 All saved versions are available, including inactive versions.
 
-Settings and management operations require the `manage_options` capability and remain feature-gated:
-`off` denies management access even to administrators; `admin_only` and `on` allow administrators.
-Authenticate for these operations using a WordPress session with REST nonce, or an administrator's
-application password over HTTPS. The Rondo interface continues to obey the feature toggle.
+Settings and management operations require `manage_training` (or administrator `manage_options`).
+Administrators receive the capability automatically. Assign it to other roles through
+**Instellingen → Beheer → Capabilities**, under **Trainingsschema beheren**.
+Authenticate management requests with a WordPress session and REST nonce, or an authorized user's
+application password over HTTPS. The current-user response exposes `can_manage_training`.
 
 Responses use `Cache-Control: no-store, private`; consumers that cache must arrange their own refresh
 after changes. No calendar dates, personal contact details, or authentication tokens appear in the feed.
@@ -26,7 +27,7 @@ after changes. No calendar dates, personal contact details, or authentication to
 | `GET /schedules` | `{active_id, timezone, pitches, schedules}` with **all complete saved versions**. |
 | `GET /schedules/{id}` | `{active_id, timezone, pitches, schedule}` for the immutable numeric identifier. |
 | `GET /active` | `{timezone, pitches, schedule}`; `schedule` is `null` until a version is activated. |
-| `GET /settings` | Admin only: `{settings, teams}` with team directory entries `{id, name}`. |
+| `GET /settings` | Training managers only: `{settings, teams}` with team directory entries `{id, name}`. |
 
 `pitches` contains `{id, name}` entries. A schedule has this shape:
 
