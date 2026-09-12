@@ -53,7 +53,8 @@ hyphens or underscores), `knvb_id`, `observed_at` (RFC 3339 seconds with timezon
 stored fields/recipient set. A partial or failed check records false and blocks planning;
 it does not change the last confirmed membership state.
 
-Membership states are `not_member`, `preregistration`, `definitive`, `ended`.
+Membership states are `not_member`, `preregistration`, `definitive`, `ended`, and
+`unknown` (only valid with incomplete coverage).
 The first observed definitive member is baseline, not a new candidate. Only a
 subsequently confirmed transition from non-member, preregistration or a terminated
 period opens a round. A termination requires an actual end date; rejoining requires
@@ -65,12 +66,53 @@ data blocks the simulation. No record creation date is used to infer new members
 
 The producer must obtain source evidence before reading the hash and submit it
 after all relevant saves. The hash alone is not proof of a complete Sportlink fetch.
-The targeted Sync producer, initial population registration and definitive source
-status mapping are **not yet connected** in this first foundation increment. Therefore
-normal live records initially display unconfirmed coverage and no due time. Do not
-backfill a guessed observation merely to make the simulation look ready. Volunteer
-return rounds, final conditional templates and per-recipient account matching follow
-in subsequent milestones; current volunteer roles only inform the block inventory.
+The targeted Sync producer is connected to the regular **people** pipeline after the
+member and parent import. A successful full 26-letter Sportlink search registers
+an inventory; any failed/expanded term prevents inventory advancement. The first
+inventory establishes existing source identities as baseline, without welcome rounds
+or a mass refresh. Identities missing from later searches remain in the inventory.
+New identities and changed source fingerprints enter a persistent work queue, with
+up to ten targeted checks per people run. New identities have priority; unsuccessful
+checks remain pending and rotate by attempt time. A registered pending check blocks
+the simulation even when an older successful observation exists.
+
+`POST /rondo/v1/onboarding/sources` accepts `observed_at` and a non-empty `sources`
+array of `{knvb_id, fingerprint, membership_state}`. An optional `check_ids` list requests up to ten present identities explicitly;
+their baseline classification is preserved. Storage is the non-autoloaded
+native option `rondo_onboarding_sources`, protected by the same invariant option lock
+as observations. `POST /rondo/v1/onboarding/sources/finish` accepts `knvb_id`,
+`fingerprint`, `person_id`, `observation_id`; only a complete stored observation for
+that identity, unchanged current snapshot, and matching inventory fingerprint clears
+pending state. Both endpoints require `manage_options`.
+
+The observed definitive source combination is `TypeOfMember=CLUBMEMBER|KERNELMEMBER`,
+`MemberStatus=ACTIVE`, `Status=insync`, `StatusDescription=Definitief`, and a valid
+`MemberSince`. Transfer requests and unrecognized/pre-registration labels stay
+unknown and cannot start a round. No guessed pre-registration enum is accepted.
+A new identity first seen after baseline may open its first round only when the
+membership start is on or after baseline initialization. The same applies when an
+initially unconfirmed identity becomes definitive. Older recovery imports stay
+baseline. Confirmed baseline members require the existing proven-end/new-start
+transition; a new source hash or season alone is not enough.
+
+Strict targeted reads require successful person/contact/address/parent responses,
+both function and committee arrays, VOG free-field coverage, and an explicit team
+array. An absent team panel, failed response or malformed shape is not an empty list.
+Writes use the existing person, parent, function and team services. Parent link errors,
+missing mappings, skipped writes and differences in stored enrollment/contact/age/VOG
+values keep coverage incomplete. Empty teams conflicting with current stored team
+roles require review. No unrelated photos, invoice fetches or newsletters are part
+of these checks. The final snapshot is read after all saves.
+
+`node tools/check-onboarding-sources.js --inventory-only` is a production-only,
+source-only bootstrap/inspection command: it performs a fresh full Sportlink search
+and registers the baseline without checking or mailing people. Omitting the flag
+processes pending checks as well. `--knvb-id ID` limits execution to one explicitly
+requested identity while still obtaining a full fresh source inventory. Run as the `rondo` user and with the normal people
+lock to avoid concurrent browser/import work. Ordinary individual/function/team
+pipelines do not assert full coverage: their partial success cannot clear these
+pending checks. Volunteer return rounds, full conditional templates, per-recipient
+account matching and outbound transport remain subsequent milestones.
 
 ### Delivery reservations
 
@@ -94,7 +136,7 @@ parent email without a parent name. Siblings retain one shared mailbox record an
 their child links. A real source name takes precedence over a generated name, and a
 fallback never overwrites an existing known name. If even the child's first name is
 missing, the preparer still omits the record rather than inventing a child identity;
-this remains a source-data completeness issue for the forthcoming targeted check.
+the targeted check keeps parent coverage incomplete when its source addresses cannot be verified in the saved relationships.
 
 ### Verification
 
