@@ -49,3 +49,7 @@ node tools/sync-person-photo.js --person-id PERSON_ID --knvb-id KNVB_ID --revisi
 ```
 
 The initial two uploads were selected explicitly by the user after saving new Rondo crops. Their current attachment IDs, KNVB IDs and image hashes must still match before queueing; do not turn this into a general backfill. Visual crop verification in Sportlink is part of initial acceptance because Sportlink may re-encode the image.
+
+On 12 September 2026, both explicitly selected production photos were uploaded successfully and their stored Sportlink crops visually matched the Rondo exports. One profile had no existing Sportlink photo; the other replaced an older photo. The initial read-only dashboard redirect was corrected by reusing the existing checked-navigation helper before either upload. Both jobs have confirmed photo dates and image fingerprints.
+
+Automatic processing was then enabled with explicit approval for future manually changed photos of linked members within the permitted season. The production flag was read back as enabled and the deployed queue completed successfully with no pending jobs, confirming that the two completed uploads were not offered again. The existing five-minute cron schedule remains in use.
