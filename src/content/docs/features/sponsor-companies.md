@@ -109,6 +109,11 @@ remains primary even if Sponsit also links that person to another sponsor. The
 Sponsit sync clears its own primary-pass flag in that case instead of replacing
 the manual choice.
 
+When merged Sponsit contacts have different email addresses, Sync groups their
+pass choices by the resolved Rondo person ID. It preserves the existing primary
+relation while that relation remains eligible for a pass, so a later sync cannot
+move the primary pass back to another sponsor merely because source order changes.
+
 The Sponsit-to-Laposta step also includes active contacts from manual
 Businessclub sponsors. A manual Businessclub relation takes precedence over an
 AWC Sponsor relation for the `businessclub`, `bedrijfsnaam` and
