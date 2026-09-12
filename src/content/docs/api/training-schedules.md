@@ -43,6 +43,8 @@ trusted server; anonymous website clients can read the feed after the toggle is 
       "label": "",
       "team_ids": [1001, 1002],
       "team_names": ["O13-1", "O13-2"],
+      "age_group_id": "",
+      "color": "#b3de69",
       "pitch_id": "veld-2",
       "day": 1,
       "start": "18:00",
@@ -56,13 +58,18 @@ trusted server; anonymous website clients can read the feed after the toggle is 
 
 `day` is ISO weekday 1–7 (Monday–Sunday). `start` is local `HH:mm` in the returned site timezone;
 `duration` is 15–360 minutes in multiples of 15. Blocks must end on the same day, at or before 24:00.
-`size` is 1, 2, or 4 quarters. `offset` is zero-based and aligned to the size: A=0, B=1, C=2, D=3;
-halves use 0 (AB) or 2 (CD), and a whole pitch uses 0. A standalone block has empty `team_ids` and
+`size` is **0.5, 1, 2, 3, or 4 quarters** (eighth, quarter, half, three-quarter, full pitch).
+The unit remains quarters for compatibility with existing schedules. `offset` is zero-based and aligned to the allocation: A=0, B=1, C=2, D=3;
+halves use 0 (AB) or 2 (CD), three-quarter pitches use 0 (ABC) or 1 (BCD), and a whole pitch uses 0.
+Eighth pitches use offsets 0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5 (A1, A2, B1, B2, C1, C2, D1, D2). A standalone block has empty `team_ids` and
 a nonempty `label`. Multiple team IDs in one block mean those teams deliberately train together.
 
 The schedule ID survives renaming and changing its season. Copying creates a new schedule ID;
-block IDs are unique within a version and may be retained by the copy. `team_names` is read-only
-convenience data; omit it from writes.
+block IDs are unique within a version and may be retained by the copy. `team_names` and `color` are read-only convenience data; omit both from writes.
+`color` is derived from the first linked team with an age-group assignment, or the explicitly selected
+`age_group_id` on the block. Use an empty or omitted `age_group_id` to inherit from teams. This lets
+standalone blocks, such as keeper training, select a configured group color too. Missing colors default
+to `#cffafe`. Updating a group color affects every version immediately; render with contrasting text.
 
 ## Management endpoints
 
@@ -92,7 +99,7 @@ previous schedule.
 {
   "revision": 0,
   "pitches": [{"id": "veld-2", "name": "Veld 2"}],
-  "age_groups": [{"id": "o13", "name": "O13", "duration": 75, "size": 2}],
+  "age_groups": [{"id": "o13", "name": "O13", "duration": 75, "size": 2, "color": "#b3de69"}],
   "teams": [{"team_id": 1001, "age_group_id": "o13", "duration": 90, "size": null}]
 }
 ```
@@ -102,3 +109,6 @@ Pitch and age-group IDs must be unique within their respective lists. Each team 
 entry; its age group must exist (or be the empty string). `null` duration or size inherits the age-group
 default. Names may contain at most 100 characters, season labels 30. A settings list is limited to
 500 entries and a version to 1000 blocks. The response is the saved settings with its incremented revision.
+
+Age-group `color` accepts a six-digit hex value (`#RRGGBB`), normalized to lowercase. Omitted colors
+default to `#cffafe`. A group explicitly referenced by a saved block cannot be removed (HTTP 409).

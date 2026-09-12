@@ -19,22 +19,25 @@ remain restricted to `manage_options` in every state. No player or parent contac
 **Instellingen → Training** contains:
 
 - Named pitches. Each has a stable identifier and four quarters, A–D. Half pitches are AB or CD;
-  a full pitch occupies ABCD. Pitch names can change without breaking existing blocks.
-- Named age-group defaults for duration and pitch size.
+  three-quarter pitches are ABC or BCD; a full pitch occupies ABCD. Each quarter can also be split
+  into two eighths, A1/A2 through D1/D2. Pitch names can change without breaking existing blocks.
+- Named age-group defaults for duration and pitch size, plus a configurable color.
 - Explicit age-group assignments per team, with optional duration and size overrides. Empty
   overrides inherit the age-group default. Without a configured default, new blocks use 60 minutes
   and a quarter pitch; the administrator can change these values before saving.
 
 The first team selected in a new block supplies its defaults. Shared blocks have one duration and
 one pitch allocation, which the administrator can adjust for the participating teams. Changing
-settings never resizes or moves existing blocks. A pitch used by any saved version cannot be removed.
+settings never resizes or moves existing blocks. Colors update existing blocks in all versions immediately, with automatic black or white text for
+readability in both themes. A pitch used by any saved version cannot be removed.
 
 ## Planning
 
 Use the drag handle to move a block between pitches, pitch parts, and times. The grid snaps to
 15-minute intervals. Choose **Hele week** for all days, or select a single day. Clicking a block opens
 an accessible form for changing its day, time, duration, pitch, and participating teams; the form
-also supports touch and keyboard use. A standalone block requires a label, such as keeper training.
+also supports touch and keyboard use. A standalone block requires a label, such as keeper training. The block can select a color group;
+otherwise its color follows the first linked team with an assigned age group.
 
 The editor marks overlapping blocks and disables saving until the conflicts are resolved. The server
 independently rejects concurrent use of the same pitch part or team within the same version. Adjacent
@@ -57,7 +60,7 @@ See [Training API](../../api/training-schedules/) for the endpoints and payloads
 - `rondo_training`: private, non-public CPT without the generic WordPress REST endpoint.
 - Post title: version name. The immutable numeric post ID is the version identifier.
 - Native registry fields: `season`, `revision`, and the `blocks` repeater.
-- Repeater children: `block_id`, `label`, `team_ids`, `pitch_id`, `day`, `start`, `duration`, `size`, `offset`.
+- Repeater children: `block_id`, `label`, `age_group_id`, `team_ids`, `pitch_id`, `day`, `start`, `duration`, `size`, `offset`.
 - `rondo_training_settings`: site-wide pitch, age-group, team-override configuration and its revision.
 - `rondo_training_active`: active version ID, initially zero.
 
