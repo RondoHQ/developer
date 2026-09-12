@@ -30,7 +30,7 @@ Only administrators can use the queue and job endpoints:
 - `POST .../photo-sync-job`: `action=claim`, `complete` or `review`, with `revision` and `knvb_id`. Completion/review also require the returned `claim_token`; completion requires `sportlink_photo_date` and `verified_sha256`.
 - `POST /rondo/v1/people/{id}/photo`: existing upload endpoint with `source=manual` by default. `source=sportlink` is administrator-only and returns a successful skip for protected manual photos.
 
-The person REST response exposes a human-readable `photo_sync_status`. There is no reverse-photo-delete operation.
+The person REST response exposes a human-readable `photo_sync_status`. On the person page, a small icon at the bottom right of the photo replaces the status paragraph and seasonal upload notice: green check for `synced`, amber clock for `pending`, `waiting_window`, `sending` or `review`. The full status message remains the icon's accessible label and tooltip. No icon appears without a photo, KNVB ID or known sync status, or for `local_only`. There is no reverse-photo-delete operation.
 
 ## Deployment and first uploads
 

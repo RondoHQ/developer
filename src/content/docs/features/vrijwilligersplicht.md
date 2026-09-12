@@ -437,6 +437,12 @@ Note this is consistency checking, not cryptographic verification — the source
 signature or verification URL, so a deliberately forged PDF can pass. The manual review path and
 the private certificate file remain the audit trail.
 
+## IVA on person profiles
+
+The Profile tab at `/people/{id}` shows an **IVA / Sociale Hygiëne** card directly below Sportlink, only when `fields.iva_certificaat` contains an attachment. A date or approval alone does not show the card, and no IVA badge is added beside the person's name. The card is independent of current volunteer status.
+
+The card displays **Goedgekeurd** when approval and a completion date are present, otherwise **Wacht op beoordeling**, plus the completion date or **Niet geregistreerd**. Administrators, volunteer managers (including the IVA approver role) and the linked member can open the certificate using the existing authenticated `IvaCertificateLink`; the download endpoint continues to enforce its existing permissions.
+
 ## IVA approval notification
 
 After a successful `POST /rondo/v1/iva/upload`, Rondo sends a review request to every unique,
