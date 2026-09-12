@@ -4,6 +4,13 @@ title: "People Pipeline"
 
 Syncs member data from Sportlink Club to Laposta email marketing lists and Rondo Club, including photos.
 
+## Name fields
+
+Sportlink members keep `FirstName`, `Infix` and `LastName` in Rondo's
+`first_name`, `infix` and `last_name`. An empty source infix is sent explicitly
+so an old value can be cleared. Regular Laposta member lists retain their
+separate `tussenvoegsel` field.
+
 ## Schedule
 
 Runs **4x daily** at 8:00, 11:00, 14:00, and 17:00 (Amsterdam time).

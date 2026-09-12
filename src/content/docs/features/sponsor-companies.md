@@ -61,6 +61,20 @@ eligible it is selected automatically. With multiple eligible companies,
 exactly one must have `is_primary_pass=true`; otherwise no arbitrary pass is
 issued. Legacy person fields remain a temporary fallback during migration.
 
+## Names during synchronization
+
+Sportlink separates first name, Dutch infix and surname; Sponsit can include
+that infix in the surname. The sync compares the first name and complete
+surname, together with the email address when stable source IDs are unavailable.
+Multiple matches remain quarantined. Equivalent names retain their existing
+Rondo layout, preventing both duplicate contacts and repeated name rewrites.
+When a Sponsit-owned contact really changes its name, its obsolete separate
+infix is cleared. Member identity fields remain owned by Sportlink.
+
+Manual Businessclub contacts and Sponsit contacts use the same name comparison
+for the sponsor Laposta list. That list receives the complete surname in
+`achternaam`, including any separate infix.
+
 ## Migration
 
 `wp rondo sponsors migrate` is a read-only dry-run. It groups legacy sponsor

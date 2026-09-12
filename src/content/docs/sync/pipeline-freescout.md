@@ -2,6 +2,14 @@
 title: "FreeScout Pipeline"
 ---
 
+## Name fields
+
+FreeScout has no separate field for Dutch name prefixes. The sync exports
+`first_name` as `firstName` and joins Rondo's `infix` and `last_name` into
+`lastName`. Both `Roel` / `de` / `Bruijn` and `Roel` / `de Bruijn` therefore
+become `Roel` / `de Bruijn`. Existing name fallback for former members is
+preserved when their original member snapshot is unavailable.
+
 
 Syncs only the minimum customer identity needed by FreeScout: first name, last name, and email address. Live member context is supplied by the Rondo Integration sidebar instead of being copied into FreeScout customer profiles. The pipeline also downloads FreeScout conversations and creates activities in Rondo Club.
 
