@@ -104,6 +104,10 @@ Application shell behavior:
 - Applies extra mobile bottom padding on `<main>` (including `env(safe-area-inset-bottom)`) so pages with long content remain reachable above mobile browser chrome and fixed bottom UI elements.
 - Keeps member-facing links in a separate **Persoonlijk** group above the capability-filtered club navigation. The profile route is exposed through the linked name/avatar in the account area instead of as a duplicate navigation item.
 
+Club navigation places **Commissies** after the Relaties section and before Sponsoren. **Voetbal** follows Sponsoren and groups Teams, Kaderlijst, Trainingsschema, Toernooien, Toegangsstatistieken and Tuchtzaken. Its `/voetbal` landing page currently contains only the shell heading. `canAccessFootball()` shares the section access check between navigation and routing; each child retains its existing capability requirements and URL. **Jubilarissen** is the first child of Vrijwilligers and keeps its kader access.
+
+Sections are grouped before capability filtering. When a parent is hidden, accessible children appear as standalone links instead of joining the preceding section. Desktop and mobile use the same navigation structure, including persisted collapse state and automatic expansion for the active child.
+
 ## Routing
 
 ### Route Structure
