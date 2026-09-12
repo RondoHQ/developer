@@ -8,6 +8,20 @@ The prototype adds cropping to Rondo's person photo picker and an explicitly inv
 
 After selecting an image, the user can drag, pinch with two fingers, zoom with the slider, use arrow keys, reset or cancel the square crop. Pinching keeps the source point under the fingers' midpoint and supports continuing with one finger without jumping; zoom is limited to 1–4×. Touch gestures are captured only inside the crop viewport. Saving exports a JPEG up to 800 × 800 pixels, without enlarging a small crop. The uploaded crop becomes the Rondo profile photo and the source for the Sportlink job. GIF input becomes a still image. A local browser fixture at `tests/fixtures/photo-crop-preview.html` exercises the real component and displays the exported dimensions and format.
 
+## Mobile crop test
+
+The companion documentation preview serves a standalone test at `/photo-crop-test/`. Open it in Chrome on an iPhone and follow its four-step checklist: pinch in and out, continue panning after lifting one finger, rotate/reset, then compare the saved crop. It can generate a sample image or open an image from the device (up to 5 MB). Photos stay in browser memory; the page has no API client, upload, persistence or service worker, and its content security policy blocks network connections. Reloading clears the result.
+
+The preview bundles the actual `PhotoCropModal` and crop utilities from Rondo Club. It tests cropping only; uploading to WordPress, queuing and Sportlink are separate acceptance checks. Physical iPhone verification is pending until the tester reports the result.
+
+Rebuild the static preview in the Rondo Club repository:
+
+```bash
+npx vite build --config tests/fixtures/photo-crop-preview.config.mjs
+```
+
+Copy the generated `.cache/photo-crop-preview/assets/` and HTML to this documentation repository's `public/photo-crop-test/`, rename `photo-crop-preview.html` to `index.html`, and preserve the preview HTML's restrictive content security policy. Commit updated assets with the source fixture whenever the cropper changes. The current cropper is from Club commit `4df722ab` (35.61.1); the fixture adds the phone checklist and local image picker. Remove the standalone artifact after acceptance.
+
 ## Calendar and eligibility
 
 Both WordPress and the worker enforce **1 July through 31 October inclusive**, in `Europe/Amsterdam`, including the UTC boundary at Dutch midnight. The worker checks again before selecting the file and before clicking Upload. Outside the window, a photo stays in Rondo and its status explains the next 1 July. Reaching July makes the job eligible; the pilot still requires an operator invocation.
