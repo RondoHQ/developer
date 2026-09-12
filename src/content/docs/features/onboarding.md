@@ -18,6 +18,94 @@ The cohorts are mutually exclusive. Every current volunteer is excluded from **N
 
 `VolunteerStatus` derives a missing `vrijwilliger-sinds` value from the earliest start date among active staff and committee positions when work history makes someone a current volunteer. Sportlink team rosters do not expose a role start date; on a genuine non-volunteer-to-volunteer transition, Rondo therefore falls back to the synchronization date. Existing volunteer-start dates are never overwritten, and an already-current volunteer without a source date is not assigned a new date. This keeps newly synchronized staff eligible for the 60-day onboarding cohort without treating an established volunteer's later role change as a new start.
 
+## Automatic onboarding foundation (35.73.0)
+
+The existing manual sender above remains unchanged. The new **Instellingen →
+Beheer → E-mails → Onboarding simulatie** tab is a read-only administrator tool.
+It lists current records, recipient addresses, blocked addresses, source coverage,
+possible due times and mail-block decisions. It is not a full rendered email preview.
+No cron, transport call, automatic send toggle or generic follow-up task is added.
+
+`Rondo\Onboarding\Recipients` collects all own addresses and, only below age 18,
+addresses from explicit parent relationships. It deduplicates within the person,
+preserves plus-addressing, excludes deceased contacts and synthetic login addresses,
+and shows Lettermint suppressions. An unknown birthdate never authorizes parent mail.
+The same mailbox may legitimately receive separate messages for two children.
+
+`Foundation` stores internal observations in `_rondo_onboarding_observation` person
+meta and historical rounds in the private `rondo_onboard_round` CPT. Neither is a
+client-editable domain field. `Dispatch` uses the private `rondo_onboard_mail` CPT.
+They are not exposed through generic WordPress REST routes or exports.
+
+### Foundation API (all routes require `manage_options`)
+
+| Route | Behavior |
+|---|---|
+| `GET /rondo/v1/onboarding/simulation?page=1&search=Emma` | Read-only list, 20 records/page; current people, not a claim that every listed record is a new member |
+| `GET /rondo/v1/onboarding/simulation/{person_id}` | One current simulation, including `snapshot_hash` |
+| `POST /rondo/v1/onboarding/observations/{person_id}` | Source-owned observation; no sending, no scheduling |
+
+Observation JSON requires exactly `observation_id` (8–100 ASCII letters, digits,
+hyphens or underscores), `knvb_id`, `observed_at` (RFC 3339 seconds with timezone),
+`membership_state`, `snapshot_hash`, and `coverage`. Coverage has boolean entries
+`person`, `parents`, `teams`, `functions`, `vog`: true means successfully fetched
+**and** saved, including an explicitly empty result. The hash must match the current
+stored fields/recipient set. A partial or failed check records false and blocks planning;
+it does not change the last confirmed membership state.
+
+Membership states are `not_member`, `preregistration`, `definitive`, `ended`.
+The first observed definitive member is baseline, not a new candidate. Only a
+subsequently confirmed transition from non-member, preregistration or a terminated
+period opens a round. A termination requires an actual end date; rejoining requires
+a later start. Source disappearance alone must never be submitted as termination.
+Recognition uses server receipt time. The due time is 24 elapsed hours after the
+later of recognition and the membership start at midnight in the club timezone.
+Repeated observations do not postpone it. An open transfer or incomplete/newly changed
+data blocks the simulation. No record creation date is used to infer new membership.
+
+The producer must obtain source evidence before reading the hash and submit it
+after all relevant saves. The hash alone is not proof of a complete Sportlink fetch.
+The targeted Sync producer, initial population registration and definitive source
+status mapping are **not yet connected** in this first foundation increment. Therefore
+normal live records initially display unconfirmed coverage and no due time. Do not
+backfill a guessed observation merely to make the simulation look ready. Volunteer
+return rounds, final conditional templates and per-recipient account matching follow
+in subsequent milestones; current volunteer roles only inform the block inventory.
+
+### Delivery reservations
+
+`Dispatch::reserve()` creates one durable reservation per round, message kind and
+normalized address before future external work. A native unique option name enforces
+the claim; the complete request payload and its hash are frozen in the private CPT.
+Another claim is rejected, including after failure or acceptance. Crashed claims are
+not automatically expired. `accepted()` requires and preserves the provider message ID.
+No production code invokes these methods to send mail in this increment.
+
+Provider submission, the 24-hour Lettermint idempotency window, status reconciliation,
+partial retries, and webhook routing are not yet connected. A later sender must use
+the same key and payload, record its first actual provider-attempt time, and refuse
+blind retries after an uncertain outcome. A lock that survives a process crash needs
+operator inspection; it must not be deleted just because it is old.
+
+### Parent-name fallback in Sync
+
+The parent preparer now uses `Ouder van {FirstName}` when Sportlink supplied a valid
+parent email without a parent name. Siblings retain one shared mailbox record and
+their child links. A real source name takes precedence over a generated name, and a
+fallback never overwrites an existing known name. If even the child's first name is
+missing, the preparer still omits the record rather than inventing a child identity;
+this remains a source-data completeness issue for the forthcoming targeted check.
+
+### Verification
+
+`OnboardingFoundationTest` covers baseline/replay, future starts, proven rejoining,
+partial/stale observations, recipient age boundaries and suppressions, durable
+reservations, lock exclusion, API permissions and absence of email side effects.
+`VolunteerStatusTest` covers explicit dates overriding stale flags. The Sync parent
+tests cover generated names, real-name precedence and shared siblings. Local lint
+may need `composer lint -- --ignore='tests/_output/*'` to exclude downloaded WordPress
+test caches; production source remains fully checked.
+
 ## Access control
 
 The Onboarding screen is gated behind a dedicated capability: **`ledenadministratie`** (Ledenadministratie). Administrators auto-receive it; everybody else needs an admin to grant it via **Instellingen → Beheer → Capabilities** (Ledenadministratie column) or by being assigned the `rondo_ledenadministratie` / `rondo_bestuur` role.
