@@ -168,11 +168,13 @@ Below the obligation summary, the card lists every active future shift in chrono
 most the two most recent shifts whose start time has passed. Cancelled future shifts are omitted;
 cancelled historical shifts remain visible with their status.
 
+The compact card shows exemption or completed/required progress and the next upcoming shift. The duty breakdown, remaining upcoming shifts and nonempty recent history are behind **Details**. Each obligation includes `completed_count`, calculated by `VolunteerObligationCalculator::decorate_units()` so completed family shifts are attributed consistently.
+
 The card uses `GET /rondo/v1/people/{person_id}/shifts`. Its permission callback delegates to the
 normal person visibility check, so age-group and relationship scoping stay aligned with the rest of
 the person detail page. The response contains `season`, a privacy-trimmed `obligations` array, and
 `upcoming` and `recent` arrays with shift details. Obligation entries expose only their kind,
-required count, child count, and possible exemption. The response never contains unit membership
+required and completed counts, child count, and possible exemption. The response never contains unit membership
 IDs, assignee person IDs, fellow-volunteer names, phone numbers, or WhatsApp links.
 
 ### Temporary parent identity on a child account
@@ -439,9 +441,9 @@ the private certificate file remain the audit trail.
 
 ## IVA on person profiles
 
-The Profile tab at `/people/{id}` shows an **IVA / Sociale Hygiëne** card directly below Sportlink, only when `fields.iva_certificaat` contains an attachment. A date or approval alone does not show the card, and no IVA badge is added beside the person's name. The card is independent of current volunteer status.
+The Profile tab at `/people/{id}` shows an **IVA / Sociale Hygiëne** section in the shared **Documenten** card, only when `fields.iva_certificaat` contains an attachment. A date or approval alone does not show the card, and no IVA badge is added beside the person's name. The card is independent of current volunteer status.
 
-The card displays **Goedgekeurd** when approval and a completion date are present, otherwise **Wacht op beoordeling**, plus the completion date or **Niet geregistreerd**. Administrators, volunteer managers (including the IVA approver role) and the linked member can open the certificate using the existing authenticated `IvaCertificateLink`; the download endpoint continues to enforce its existing permissions.
+The section displays the shared **Geldig** badge when approval and a completion date are present, otherwise **Wacht op beoordeling**, plus the completion date or **Niet geregistreerd**. Administrators, volunteer managers (including the IVA approver role) and the linked member can open the certificate using the existing authenticated `IvaCertificateLink`; the download endpoint continues to enforce its existing permissions.
 
 ## IVA approval notification
 
