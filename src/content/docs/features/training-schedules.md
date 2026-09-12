@@ -62,6 +62,10 @@ is renamed. Editing an active version updates the training times presented to te
 name, season, weekday, times, pitch, and pitch parts. Both use the same reusable component and poll
 for changes every 30 seconds while open. The UI obeys the feature toggle, including during the admin pilot.
 
+On **Mijn team**, the component uses the roster card style: rounded corners, a subtle border,
+matching padding, and a plain heading, without a gradient stripe or shadow. The **Team** detail
+page keeps its existing card style.
+
 See [Training API](../../api/training-schedules/) for the endpoints and payloads.
 
 ## Storage and concurrency
