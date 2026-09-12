@@ -57,6 +57,7 @@ export default defineConfig({
 				{
 					label: 'Integrations',
 					items: [
+						{ label: 'WordPress Plugin', slug: 'integrations/wordpress-plugin' },
 						{ label: 'Demo Data', slug: 'integrations/demo-data' },
 					],
 				},
