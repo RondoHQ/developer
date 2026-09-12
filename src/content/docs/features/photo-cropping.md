@@ -10,4 +10,4 @@ Saving exports only the selected square as a JPEG up to 800 × 800 pixels, witho
 
 `src/components/PhotoCropModal.jsx` is loaded on demand by `PersonDetail.jsx`. Preview and export share `src/utils/photoCrop.js`; gesture calculations are covered by `tests/js/photoCrop.test.mjs`. The standalone fixture in `tests/fixtures/photo-crop-preview.html` uses the actual component and performs no API upload.
 
-The user confirmed the standalone practical test in Chrome on an iPhone on 12 September 2026, including the provided pinch, pan, reset and save checklist. This release adds cropping in Rondo; reverse photo uploads to Sportlink remain a separate draft pilot and are not enabled by this release.
+The user confirmed the standalone practical test in Chrome on an iPhone on 12 September 2026, including the provided pinch, pan, reset and save checklist. Cropping was released in 35.61.0; [automatic Sportlink photo sync](/sync/photo-sync/) follows in 35.62.0.
