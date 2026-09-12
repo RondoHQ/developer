@@ -267,7 +267,7 @@ which backfills on `init`. Version 2 gave `financieel_read` to every role alread
 record plus their children under 18, with the ACF payload already reduced to the allowlist.
 `GET /rondo/v1/people/household` always returns that household scope, independent of management
 privileges, and is the only data source for "Mijn gegevens". It additionally returns other
-parents/guardians connected to a visible minor child, but limits those rows to name and contact
+parents/guardians connected to a visible minor child, but limits those rows to name, profile photo, and contact
 fields and marks them `other_parent`; membership passes, sponsor data, birthdates, KNVB IDs, and
 VOG fields stay private. The linked person and child rows can contain a minimal `membership_pass`
 summary; eligibility is calculated by the central membership-pass service.

@@ -14,11 +14,11 @@ Bij het eigen profiel en minderjarige kinderen staat de profielfoto met **Foto w
 
 `POST /rondo/v1/people/{person_id}/household-photo` hergebruikt de bestaande foto-opslag, bestandsvalidatie, vergrendeling en Sportlink-fotowachtrij. De server forceert `source=manual`. De route accepteert uitsluitend het eigen gepubliceerde persoonsprofiel of een eigen minderjarig kind; ook beheerders krijgen via deze route geen ruimere toegang. Oud-leden en overleden personen zijn uitgesloten. De bestaande beheerroute `/photo` houdt zijn eigen rechten.
 
-De household-response bevat `thumbnail`, `can_edit_photo` en `photo_sync_status`. Voor de andere ouder zijn deze respectievelijk `null`, `false` en `null`. Na opslaan worden de foto en gekoppelde profielweergaven opnieuw opgehaald. Fotoverwerking gebruikt de bestaande PhotoSync-status; het contactwijzigingslog hieronder blijft voor contactgegevens.
+De household-response bevat `thumbnail`, `can_edit_photo` en `photo_sync_status`. Voor de andere ouder bevat `thumbnail` de bestaande profielfoto, of `null` als er geen foto is; `can_edit_photo` blijft `false` en `photo_sync_status` blijft `null`. De foto is zichtbaar in de persoonskeuze en op de kaart, zonder bewerkmogelijkheid. Na opslaan worden de foto en gekoppelde profielweergaven opnieuw opgehaald. Fotoverwerking gebruikt de bestaande PhotoSync-status; het contactwijzigingslog hieronder blijft voor contactgegevens.
 
 ## Gezin en andere ouder/verzorger
 
-De persoonlijke household-route toont het gekoppelde profiel, minderjarige kinderen en de andere ouder/verzorger die aan een van die kinderen is gekoppeld. Van die andere ouder worden alleen naam en contactgegevens teruggegeven; de kaart is volledig alleen-lezen en bevat geen ledenpas, sponsororganisatie, geboortedatum, KNVB-ID of VOG-gegevens.
+De persoonlijke household-route toont het gekoppelde profiel, minderjarige kinderen en de andere ouder/verzorger die aan een van die kinderen is gekoppeld. Van die andere ouder worden alleen naam, profielfoto en contactgegevens teruggegeven; de kaart is volledig alleen-lezen en bevat geen ledenpas, sponsororganisatie, geboortedatum, KNVB-ID of VOG-gegevens.
 
 `GET /rondo/v1/people/household` gebruikt een expliciete veldprojectie. De endpoint leest en formatteert alleen de profielvelden die deze pagina toont; voeg nieuwe zichtbare velden daarom aan die projectie toe in plaats van terug te vallen op de volledige persoonsserializer.
 
