@@ -10,6 +10,14 @@ The **Profiel** tab at `/people/{id}` uses one column on phones, two from the `m
 
 On two-column screens the third column spans the row below the first two. Tasks and account information remain available on narrow Profile screens; other tabs retain their existing sidebar and mobile task button. Only the Profile content uses plain card borders and headings; shared card styles elsewhere are unchanged.
 
+## Profile header
+
+The header uses a plain name, an 88-pixel photo with its existing sync indicator, and matching neutral role badges. Financial blocks have a separate red notice; membership warnings remain amber. Existing roles, team/committee links, demographic details and external service links remain available.
+
+The icon-only pencil at the top right opens `PersonEditModal` under the existing `canEditPeople` gate, including its former-member and deceased restrictions. **Beheerinstellingen** is collapsed initially and exposes `person_type` only to full people editors. Sponsor-only editors retain their existing identity editing scope and cannot change the person type. Saving sends only changed identity fields under the canonical `fields` payload; contact details and dates are not submitted by this editor.
+
+The adjacent **Meer persoonsacties** disclosure contains vCard export, Sportlink refresh for its existing permitted users and administrator-only merging. It closes after a selection, on outside clicks and with Escape. Refresh progress, success and errors remain visible outside the menu. The editor supports Escape, keyboard focus containment, restored focus and accessible field labels.
+
 ## Contact and membership
 
 The existing contact editor, address add/edit/delete actions, relationship editor and Google Maps links remain available under their existing permissions. A single Dutch home address omits the `Home` label and the country line. Other address labels and foreign countries remain visible.
