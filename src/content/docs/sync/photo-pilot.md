@@ -6,7 +6,7 @@ title: "Photo upload pilot: Rondo Club to Sportlink"
 
 The prototype adds cropping to Rondo's person photo picker and an explicitly invoked, single-person upload to Sportlink. It is **not connected to cron**, does not backfill existing Rondo photos, and has not yet completed an actual Sportlink upload. The current Sportlink photo dialog, file input, and upload button were inspected in an authenticated browser on 12 September 2026 without changing a photo.
 
-After selecting an image, the user can drag, zoom, use arrow keys, reset or cancel the square crop. Saving exports a JPEG up to 800 × 800 pixels, without enlarging a small crop. The uploaded crop becomes the Rondo profile photo and the source for the Sportlink job. GIF input becomes a still image. A local browser fixture at `tests/fixtures/photo-crop-preview.html` exercises the real component and displays the exported dimensions and format.
+After selecting an image, the user can drag, pinch with two fingers, zoom with the slider, use arrow keys, reset or cancel the square crop. Pinching keeps the source point under the fingers' midpoint and supports continuing with one finger without jumping; zoom is limited to 1–4×. Touch gestures are captured only inside the crop viewport. Saving exports a JPEG up to 800 × 800 pixels, without enlarging a small crop. The uploaded crop becomes the Rondo profile photo and the source for the Sportlink job. GIF input becomes a still image. A local browser fixture at `tests/fixtures/photo-crop-preview.html` exercises the real component and displays the exported dimensions and format.
 
 ## Calendar and eligibility
 
