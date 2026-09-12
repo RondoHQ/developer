@@ -22,7 +22,7 @@ VOG visibility still requires VOG access and a current volunteer. IVA appears on
 
 Both sections use `DocumentStatusBadge`: green **Geldig**, amber **Wacht op beoordeling** or **Verlopen**, and red **Ontbreekt**. IVA is valid only with approval and a completion date. VOG validity retains its existing three-year rule. The existing authenticated certificate link and download permissions are preserved.
 
-VOG dates are read-only by default. **Bewerken** opens the existing date controls; missing/expired VOGs retain application, email and reminder fields. Recorded application progress remains accessible under **Aanvraagstatus** without opening the editor.
+VOG dates are read-only by default. An icon-only pencil matching the address edit control opens and closes the existing date controls, with an accessible label, tooltip and expanded state; missing/expired VOGs retain application, email and reminder fields. Recorded application progress remains accessible under **Aanvraagstatus** without opening the editor.
 
 ## Shifts and administration
 
