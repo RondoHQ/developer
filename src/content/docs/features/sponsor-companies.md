@@ -20,6 +20,11 @@ relation is stored only on the company. `Rondo\Sponsors\Relations` builds the
 reverse person view, resolves pass eligibility and enforces one primary contact
 per company and one primary sponsor-pass relationship per person.
 
+Merging people transfers their company-owned contacts to the surviving profile,
+including contacts at archived companies. Roles, Sponsit IDs and pass settings
+are preserved. Matching rows at the same company are combined; conflicting
+source IDs, roles or primary-pass choices must be resolved before merging.
+
 Successful sponsor-contact logins, self-service logo replacements and actual
 changes to the Club TV opt-out are stored as private `rondo_sponsor_log` posts.
 Each entry keeps the sponsor, event type, timestamp and an actor-name snapshot.

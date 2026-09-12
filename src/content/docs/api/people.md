@@ -142,7 +142,9 @@ X-WP-Nonce: {nonce}
 
 Every conflict returned by the preview must have a `primary` or `duplicate` resolution. The service automatically combines unique emails, phones, addresses, relationships, work history, gallery/list values, person and sponsor roles, and empty scalar fields.
 
-References in relationships, shifts, todos, discipline cases, invoices, clothing assignments, comments, attachments, and linked user accounts are moved to the primary person. Per-person shift metadata is renamed as part of the same operation. A successful merge returns the surviving `person_id`.
+References in relationships, sponsor-company contacts (including archived companies), shifts, todos, discipline cases, invoices, clothing assignments, comments, attachments, and linked user accounts are moved to the primary person. The preview includes a `references.sponsors` count. Per-person shift metadata is renamed as part of the same operation. A successful merge returns the surviving `person_id`.
+
+Sponsor contacts retain their roles, Sponsit IDs and pass settings. Matching contacts at the same company collapse to one row, combining their contact/pass flags. Different non-empty Sponsit IDs or roles at the same company block the merge, as do multiple primary sponsor-pass relationships after combining the profiles. Resolve these differences on the sponsor records first. These checks run in both preview and execution, before writes. Sponsor-contact writes are verified before the duplicate is moved to trash.
 
 ### Resolve a previous person ID
 
