@@ -6,6 +6,16 @@ Leden met een gekoppeld persoonsprofiel kunnen via **Mijn gegevens** hun e-maila
 
 Op de kaart van ieder eigen minderjarig kind staat eveneens **Wijzigen**. Daarmee kan de ouder de e-mailadressen en telefoonnummers van dat specifieke kind beheren. De server accepteert hiervoor alleen het gekoppelde profiel en kinderen binnen de persoonlijke household-scope; de andere ouder/verzorger en personen buiten het gezin blijven alleen-lezen.
 
+## Pagina-indeling en profielfoto
+
+Mijn gegevens toont één persoon tegelijk. De persoonskeuze bovenaan bevat het gekoppelde lid, minderjarige kinderen en de andere ouder/verzorger. Contactgegevens staan standaard open; lidmaatschap, ledenpas/wallets en teamagenda’s zijn uitklapbaar. De contributiestatus van de gekozen persoon blijft direct zichtbaar.
+
+Bij het eigen profiel en minderjarige kinderen staat de profielfoto met **Foto wijzigen** of **Foto toevoegen**. Het bestaande bijsnijvenster laat de gebruiker slepen en zoomen en verstuurt alleen de gekozen vierkante JPEG-uitsnede (maximaal 800 × 800 pixels). De kiezer accepteert JPG, PNG, WebP en GIF tot 5 MB; annuleren verandert niets.
+
+`POST /rondo/v1/people/{person_id}/household-photo` hergebruikt de bestaande foto-opslag, bestandsvalidatie, vergrendeling en Sportlink-fotowachtrij. De server forceert `source=manual`. De route accepteert uitsluitend het eigen gepubliceerde persoonsprofiel of een eigen minderjarig kind; ook beheerders krijgen via deze route geen ruimere toegang. Oud-leden en overleden personen zijn uitgesloten. De bestaande beheerroute `/photo` houdt zijn eigen rechten.
+
+De household-response bevat `thumbnail`, `can_edit_photo` en `photo_sync_status`. Voor de andere ouder zijn deze respectievelijk `null`, `false` en `null`. Na opslaan worden de foto en gekoppelde profielweergaven opnieuw opgehaald. Fotoverwerking gebruikt de bestaande PhotoSync-status; het contactwijzigingslog hieronder blijft voor contactgegevens.
+
 ## Gezin en andere ouder/verzorger
 
 De persoonlijke household-route toont het gekoppelde profiel, minderjarige kinderen en de andere ouder/verzorger die aan een van die kinderen is gekoppeld. Van die andere ouder worden alleen naam en contactgegevens teruggegeven; de kaart is volledig alleen-lezen en bevat geen ledenpas, sponsororganisatie, geboortedatum, KNVB-ID of VOG-gegevens.
