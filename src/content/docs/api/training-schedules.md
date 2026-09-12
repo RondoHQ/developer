@@ -1,0 +1,104 @@
+---
+title: "Training schedules API"
+---
+
+Base path: `/wp-json/rondo/v1/training`.
+
+## Permissions and caching
+
+The `training` feature toggle applies to **every endpoint**:
+
+- `admin_only` (default): authenticate as an administrator using a WordPress session with REST nonce,
+  or an administrator's application password over HTTPS.
+- `off`: no access, including administrators.
+- `on`: GET requests for schedules and the active version are public. All management operations and
+  settings still require the `manage_options` capability.
+
+All saved versions are available through the API, including inactive versions. Responses use
+`Cache-Control: no-store, private`; consumers that cache must arrange their own refresh after changes.
+No calendar dates, personal contact details, or authentication tokens appear in the schedule feed.
+Never place an application password in website JavaScript. During the admin pilot, call from a
+trusted server; anonymous website clients can read the feed after the toggle is set to `on`.
+
+## Read endpoints
+
+| Method and path | Response |
+|---|---|
+| `GET /schedules` | `{active_id, timezone, pitches, schedules}` with **all complete saved versions**. |
+| `GET /schedules/{id}` | `{active_id, timezone, pitches, schedule}` for the immutable numeric identifier. |
+| `GET /active` | `{timezone, pitches, schedule}`; `schedule` is `null` until a version is activated. |
+| `GET /settings` | Admin only: `{settings, teams}` with team directory entries `{id, name}`. |
+
+`pitches` contains `{id, name}` entries. A schedule has this shape:
+
+```json
+{
+  "id": 12345,
+  "name": "Slecht weer",
+  "season": "2026/27",
+  "revision": 3,
+  "blocks": [
+    {
+      "block_id": "a1743249-90f3-497f-bcdd-994367c57753",
+      "label": "",
+      "team_ids": [1001, 1002],
+      "team_names": ["O13-1", "O13-2"],
+      "pitch_id": "veld-2",
+      "day": 1,
+      "start": "18:00",
+      "duration": 75,
+      "size": 2,
+      "offset": 0
+    }
+  ]
+}
+```
+
+`day` is ISO weekday 1–7 (Monday–Sunday). `start` is local `HH:mm` in the returned site timezone;
+`duration` is 15–360 minutes in multiples of 15. Blocks must end on the same day, at or before 24:00.
+`size` is 1, 2, or 4 quarters. `offset` is zero-based and aligned to the size: A=0, B=1, C=2, D=3;
+halves use 0 (AB) or 2 (CD), and a whole pitch uses 0. A standalone block has empty `team_ids` and
+a nonempty `label`. Multiple team IDs in one block mean those teams deliberately train together.
+
+The schedule ID survives renaming and changing its season. Copying creates a new schedule ID;
+block IDs are unique within a version and may be retained by the copy. `team_names` is read-only
+convenience data; omit it from writes.
+
+## Management endpoints
+
+Send JSON with the content type `application/json`.
+
+| Method and path | Body / effect |
+|---|---|
+| `POST /schedules` | `{name, season, revision: 0, blocks: []}` creates an inactive version. |
+| `PUT /schedules/{id}` | `{name, season, revision, blocks}` replaces one entire version after validation. |
+| `POST /schedules/{id}/copy` | `{name}` copies the current saved version, retaining its season and blocks. |
+| `POST /schedules/{id}/activate` | `{revision}` selects the version for team pages. |
+| `DELETE /schedules/{id}` | `{revision}` moves an inactive version to WordPress trash. |
+| `PUT /settings` | Complete settings document described below. |
+
+A successful schedule write returns the saved schedule with the new revision. Submit that revision
+on the next change. Unknown fields, invalid team references, and invalid times receive HTTP 400.
+Unknown or trashed version IDs receive HTTP 404. Resource conflicts, stale revisions, attempts to
+delete the active version, and removal of a referenced pitch receive HTTP 409.
+
+An overlap response uses `rondo_training_conflict` and includes both offending IDs in
+`data.block_ids`. Validation finishes before changing the version, so rejected moves preserve the
+previous schedule.
+
+## Settings document
+
+```json
+{
+  "revision": 0,
+  "pitches": [{"id": "veld-2", "name": "Veld 2"}],
+  "age_groups": [{"id": "o13", "name": "O13", "duration": 75, "size": 2}],
+  "teams": [{"team_id": 1001, "age_group_id": "o13", "duration": 90, "size": null}]
+}
+```
+
+IDs for pitches, age groups, and blocks are strings of 1–64 letters, digits, underscores, or hyphens.
+Pitch and age-group IDs must be unique within their respective lists. Each team may have one override
+entry; its age group must exist (or be the empty string). `null` duration or size inherits the age-group
+default. Names may contain at most 100 characters, season labels 30. A settings list is limited to
+500 entries and a version to 1000 blocks. The response is the saved settings with its incremented revision.
