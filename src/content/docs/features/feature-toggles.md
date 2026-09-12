@@ -17,9 +17,10 @@ States are stored together in the `rondo_feature_toggles` WordPress option. Kled
 default to `on` to preserve existing installations. Ruimtes defaults to `off`; until the new option
 contains a Rooms state, the legacy `rondo_rooms_enabled` option is used as a compatibility fallback.
 
-Trainingsschema (`training`) defaults to `admin_only`. When set to `on`, all saved schedule versions
-become publicly readable through its API; settings and editing always require an administrator.
-See [Training schedules](../training-schedules/).
+Trainingsschema (`training`) defaults to `admin_only`. Its schedule read endpoints are always public,
+including when the flag is `admin_only` or `off`; they need no authentication or REST nonce. The flag
+controls the Rondo interface and management access. Settings and writes require administrators and
+are disabled when the flag is `off`. See [Training schedules](../training-schedules/).
 
 The frontend receives the effective state map as `rondoConfig.featureToggles`. Route guards and the
 sidebar evaluate the same states as the REST permission callbacks. Changing a toggle through the UI

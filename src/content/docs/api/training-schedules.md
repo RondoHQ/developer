@@ -6,19 +6,18 @@ Base path: `/wp-json/rondo/v1/training`.
 
 ## Permissions and caching
 
-The `training` feature toggle applies to **every endpoint**:
+Schedule read endpoints (`GET /schedules`, `GET /schedules/{id}`, and `GET /active`) are always public,
+including when the `training` feature toggle is `admin_only` or `off`. They need no login, nonce,
+or application password and can be opened directly in a browser or used by the club website.
+All saved versions are available, including inactive versions.
 
-- `admin_only` (default): authenticate as an administrator using a WordPress session with REST nonce,
-  or an administrator's application password over HTTPS.
-- `off`: no access, including administrators.
-- `on`: GET requests for schedules and the active version are public. All management operations and
-  settings still require the `manage_options` capability.
+Settings and management operations require the `manage_options` capability and remain feature-gated:
+`off` denies management access even to administrators; `admin_only` and `on` allow administrators.
+Authenticate for these operations using a WordPress session with REST nonce, or an administrator's
+application password over HTTPS. The Rondo interface continues to obey the feature toggle.
 
-All saved versions are available through the API, including inactive versions. Responses use
-`Cache-Control: no-store, private`; consumers that cache must arrange their own refresh after changes.
-No calendar dates, personal contact details, or authentication tokens appear in the schedule feed.
-Never place an application password in website JavaScript. During the admin pilot, call from a
-trusted server; anonymous website clients can read the feed after the toggle is set to `on`.
+Responses use `Cache-Control: no-store, private`; consumers that cache must arrange their own refresh
+after changes. No calendar dates, personal contact details, or authentication tokens appear in the feed.
 
 ## Read endpoints
 

@@ -9,10 +9,13 @@ There are no date-specific exceptions or automatic weather decisions.
 
 ## Access
 
-The `training` feature toggle defaults to `admin_only`. Both the frontend and every training API
-route enforce it. Setting it to `off` denies everyone, including administrators. Setting it to `on`
-makes **all saved versions publicly readable through the training API**. Management and settings
-remain restricted to `manage_options` in every state. No player or parent contact data is exposed.
+The `training` feature toggle defaults to `admin_only` and controls access to the Rondo interface
+and management operations. `off` denies management access to everyone; `admin_only` and `on` allow
+administrators with `manage_options` to manage settings and schedules.
+
+**All saved versions are always publicly readable through the training API**, even when the toggle
+is `off` or `admin_only`. Public reads require no login or REST nonce. No player or parent contact data
+is exposed. The toggle does not unpublish existing schedule data.
 
 ## Settings
 
