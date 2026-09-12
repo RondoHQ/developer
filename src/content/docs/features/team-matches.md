@@ -25,7 +25,7 @@ The calendar link is a shareable capability granting access only to fixture info
 
 `GET /rondo/v1/people/household` adds `teams: [{ id, name, calendar_url }]` for each existing household person (self, minor children, and other parents). Only published teams from currently dated work-history roles are included, with duplicate player/staff roles collapsed. Past and future roles, committees, and external teams are omitted. An end date equal to today is still current. Explicit dates override a stale `is_current` flag.
 
-This derived list does not expose raw work history, expand the household graph, or change the other parent's contact, pass, or invoice permissions. URL generation uses `TeamMatches::calendar_url()` and makes no Sportlink requests. The shared `TeamCalendarActions` component renders the same subscription popover and copy action on household cards and the team match tab.
+This derived list does not expose raw work history, expand the household graph, or change the other parent's contact, pass, or invoice permissions. URL generation uses `TeamMatches::calendar_url()` and makes no Sportlink requests. The shared `TeamCalendarActions` component renders the same subscription popover and copy action on **Mijn team** and the team match tab. **Mijn gegevens** no longer renders calendar actions. The household API retains its existing `teams` field for compatibility; `/rondo/v1/my-teams` now provides `calendar_url` for each team already authorized by the personal roster access rules.
 
 ## Calendar behavior
 

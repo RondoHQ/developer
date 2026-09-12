@@ -8,6 +8,8 @@ A separate **Staf** list shows staff photos, current roles, and expandable phone
 
 People with multiple current teams switch between tabs built with the shared `TabButton` component used on person profiles. Tabs support arrow keys, Home, and End. A single team shows its name without tabs. Switching teams closes the previous team's contact rows. Photos use a 64-pixel square crop with rounded corners; absent or failed photos show initials, and contact columns stack on mobile.
 
+Each selected team shows its training times and a **Teamagenda** card with the shared subscription popover and copy action. Switching teams switches the calendar link too. Calendar subscriptions have moved here from **Mijn gegevens**. The `/rondo/v1/my-teams` response includes a signed `calendar_url` for each authorized team, generated without a Sportlink request. Calendar availability does not depend on player contact permissions.
+
 ## Access
 
 `Rondo\Teams\MyTeam::teams_for_user()` resolves the logged-in user's `rondo_linked_person_id` and current `work_history`. The linked person must be published. Own assignments and child assignments qualify only for published, non-former people and published teams. Roles from `VolunteerStatus::get_player_roles()` grant access to names and photos. Contact access is granted only by Trainer, Coach, Trainer/coach, Hoofdtrainer, Assistent-trainer, Assistent-coach, Assistent-trainer/coach, Leider, Teamleider, and Teammanager (case-insensitive, trimmed). Other staff roles do not grant access.
