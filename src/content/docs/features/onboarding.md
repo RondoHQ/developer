@@ -99,8 +99,12 @@ Strict targeted reads require successful person/contact/address/parent responses
 both function and committee arrays, VOG free-field coverage, and an explicit team
 array. An absent team panel, failed response or malformed shape is not an empty list.
 Writes use the existing person, parent, function and team services. Parent link errors,
-missing mappings, skipped writes and differences in stored enrollment/contact/age/VOG
-values keep coverage incomplete. Empty teams conflicting with current stored team
+missing current-team mappings, skipped writes and differences in stored enrollment/contact/age/VOG
+values keep coverage incomplete. Historical teams saved by name (`external_team`)
+are valid completed history and do not require a current Rondo team mapping. The
+team writer reports these separately from unresolved current teams, after applying
+Sportlink end dates, closed seasons and explicit inactive statuses. Save failures
+still block completion for any team row. Empty teams conflicting with current stored team
 roles require review. No unrelated photos, invoice fetches or newsletters are part
 of these checks. The final snapshot is read after all saves.
 
