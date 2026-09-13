@@ -29,7 +29,7 @@ Phase 2: Sync to Sportlink (when unsynced changes exist)
     rondo_club_change_detections → lib/reverse-sync-sportlink.js → Sportlink Browser (Playwright)
 
 Parent-slot track:
-    New relationships + audited parent e-mail replacements → parent_slot_sync_jobs
+    New relationships + audited parent contact replacements → parent_slot_sync_jobs
     → MemberParentalInfo editor → verified Sportlink parent slot
     → status callback to Rondo Club
 ```
@@ -40,11 +40,11 @@ Parent relationships use a separate incremental cursor and durable SQLite queue.
 
 New UI-created parent relationships queue a full parent slot containing the current name, primary e-mail address and optional phone number. Parent addresses are not part of this track because `MemberParentalInfo` has no address fields.
 
-Existing Sportlink parent relationships are updated only from a pending Rondo profile-change audit entry containing an exact old-to-new e-mail replacement. A generic mismatch is ignored because a child slot may intentionally use the parent's current `email_2`. The audit event is applied to every current child relationship; historical mappings and unrelated person modifications cannot authorize an overwrite.
+Existing Sportlink parent relationships are updated only from a pending Rondo profile-change audit entry containing an exact old-to-new contact replacement. A generic mismatch is ignored because a child slot may intentionally use the parent's current `email_2`. New audit events snapshot their current child targets; historical mappings and unrelated person modifications cannot authorize an overwrite.
 
 Immediately before writing, the browser reads the child's current `MemberParentalInfo`. For an audited replacement it must find exactly one slot containing the old e-mail and a compatible parent name. It changes only `EmailAddressParent1/2`; name and phone remain untouched and are verified after saving. If the old address is absent, duplicated or attached to a conflicting name, the job stays blocked for review. New relationship jobs retain their separate compatible-partial-or-empty-slot behavior and may fill all three fields.
 
-After every child job for a parent has been resolved, the verified parent-slot writes complete the matching parent contact entries in Rondo's profile-change audit. A callback failure is logged separately and never retries an already completed Sportlink write.
+Verified writes complete the matching child-specific parent contact keys in Rondo's profile-change audit. Legacy e-mail jobs complete their older field keys after every child job for that parent has resolved. A callback failure is logged separately and never retries an already completed Sportlink write.
 
 Jobs retry transient failures with bounded backoff. Two occupied slots become a visible blocked/error status in Rondo. Relationship removal cancels pending work but does not clear an already written Sportlink slot in version 1.
 
@@ -262,3 +262,11 @@ Per-field modification timestamps added to the existing table:
    - Verifies saved value
    - Marks change as synced, updates `email_sportlink_modified`, sets `sync_origin = 'sync_rondo_club_to_sportlink'`
 5. **Next forward sync**: downloads email from Sportlink (now matches Rondo Club value) → no change detected → no API call
+
+### Audited parent contact replacements
+
+New profile audits contain a `parent_sync` snapshot for each effective parent e-mail or phone change, including the exact child IDs. `reconcileParentContactChanges()` combines pending audited values into the existing per-parent/per-child queue (`replace_contact`). A later phone change preserves an outstanding e-mail replacement in that job. Legacy e-mail-only audits remain supported.
+
+Immediately before writing, the worker rechecks the reciprocal parent/child relationship, the child's active KNVB identity and the parent's current target values. The browser locates one existing slot using the parent name and known old/current e-mail identities; it applies only audited contact changes whose old values match. Names, unrelated contact fields and the other parent's slot remain intact. Ambiguity or conflicting old values requires manual attention.
+
+Successful writes are read back from `MemberParentalInfo` and reported separately for each `parent_{child_id}_{field}` audit key. Failed writes retain the retry policy and report `failed` or `action_required`. Existing historical `local_only` audits require an explicitly scoped repair, rather than a global replay.
