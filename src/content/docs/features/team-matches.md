@@ -33,7 +33,19 @@ Use **Abonneren op agenda** to open a subscription popover with a copyable HTTPS
 
 Each event has a stable match/team UID, persistent SEQUENCE and LAST-MODIFIED values, UTC start time, location, and cancellation status. Unknown kickoff times produce an all-day entry rather than inventing a time. No end time is invented. Scores are included when published. Renames and rescheduling update the existing event, and expiring logo signatures do not increment revisions. Calendar text uses RFC 5545 escaping, CRLF line endings, and UTF-8-safe folding at 75 octets.
 
-## Verification
+## Provisional KNVB matchdays
+
+Team subscriptions include all-day provisional events from the [KNVB Oost 2026/27 calendar](https://www.knvb.nl/downloads/sites/bestand/knvb/29862/speeldagenkalender-veld-oost-2026-2027) when no active fixture exists on the reserved date. Titles identify the team, the kind of day (for example **Speeldag - Fase 2**, **Beker poule**, **Inhaal / beker**, or **Toernooi 7x7**) and **(voorlopig)**. Descriptions retain the original KNVB cell text and source URL. Pure **Vrij** cells and empty cells do not create events. Catch-up, cup, playoff and Final League reservations do not imply qualification or a confirmed match.
+
+`KnvbMatchdays` selects the column using the resolved union team's regular Sportlink competition, age, class and playing day. Local aliases use their linked union team. Senior category A pools require a verified 12- or 14-team `poulestand`; the pool size is cached for a day. National competitions, unlinked local teams, futsal, unsupported schedules and ambiguous mappings receive no district placeholders. AWC 1 zondag and O23-1 use national calendars and are outside this dataset. The dataset applies only to district Oost and season 2026/27; it must be reviewed/replaced for a subsequent season or another district.
+
+The reviewed source snapshot is `includes/data/knvb-oost-2026-2027.json`. Weekend dates use the team's Saturday or Sunday. Explicit Easter dates are retained, Sunday category A senior teams use Whit Monday rather than Whit Sunday, and midweek windows stay multi-day events. Friday 7x7 uses the ten separately printed Friday dates. The source's contradictory annotation **1 mei 2026: Bekerfinale stand.teams** within the May 2027 row is not converted into a speculative final; the unambiguous **Inhaal** cells are retained.
+
+The existing `_rondo_team_matches_cache` stores `matchdays` separately from actual matches. The authenticated overview also returns this collection, but the match table continues to show only fixtures. Only future/today placeholders are introduced; already emitted events retain their UID, revision and modification time. When a real non-cancelled match appears on a reserved date (or anywhere in a midweek window), the old placeholder is emitted as `STATUS:CANCELLED` with a higher `SEQUENCE`. A later cancellation or move of that match can restore the placeholder using the same UID. Source outages preserve the last-known-good fixtures and placeholders. Provisional events use `STATUS:TENTATIVE`, `TRANSP:TRANSPARENT` and an exclusive all-day `DTEND`; no kickoff time is invented.
+
+## Calendar tests
+
+`KnvbMatchdaysTest` covers supported and unsupported competition mappings, season boundaries, cup and catch-up labels, holidays, Friday tournaments, midweek windows, and the placeholder cancellation/reinstatement lifecycle. `TeamMatchesTest` also exercises cached placeholders through fixture publication and a Sportlink outage.
 
 `vendor/bin/codecept run Wpunit TeamMatchesTest` covers team/day disambiguation, local match inclusion, season filtering, result merging, outage retention, cancellation tombstones, event revisions, Unicode folding, unknown times, and signed subscription permissions.
 
