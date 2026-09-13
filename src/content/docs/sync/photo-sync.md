@@ -10,6 +10,29 @@ Both WordPress and the worker enforce **1 July through 31 October inclusive**, u
 
 Rondo remains authoritative for a manually uploaded photo. Forward imports use `source=sportlink` and preserve these photos even after successful confirmation, preventing stale imports and echo loops. Later Sportlink-side edits therefore do not replace a manually managed Rondo photo; make subsequent changes in Rondo. Photos that were never manually queued retain their existing Sportlink import behaviour.
 
+## Photo change logs
+
+Successful photo saves appear in **Relaties → Wijzigingslog** (`/people/wijzigingslog`).
+Each entry keeps the person, actor, time, previous/new attachment IDs and a source:
+`rondo` for manual Rondo uploads (including household self-service), or `sportlink`
+for imports, displayed as **Sportlink/voetbal.nl**. The import cannot determine
+whether the original edit was made in Sportlink or voetbal.nl.
+
+Protected imports return HTTP 200 with `skipped: true`; this is a processed skip,
+not a saved photo. They create no photo audit entry and increment the People
+pipeline's skipped count, not its changed count. Invalid or unconfirmed responses
+remain errors. Historical counters are not rewritten because their responses were
+not retained.
+
+Rondo photo log entries show the separate PhotoSync delivery status. A later
+replacement is labelled **Later vervangen**. Photo audit entries never enter the
+contact-field reverse-sync queue. Existing contact audit entries retain source Rondo.
+
+People and reverse-sync run details also show individual photo outcomes with KNVB
+ID, Rondo person ID, source, destination and result. Text logs use the same source
+labels; reverse export keeps source Rondo even after Sportlink confirms the save.
+These detailed records begin with this deployment; no historical events are invented.
+
 ## Queue and concurrency
 
 Jobs live in native person metadata: `_rondo_photo_sync` contains the revision UUID, attachment ID, KNVB ID, state and timestamps; `_rondo_photo_sync_state` is the query index. States are `pending`, `sending`, `review`, `synced` and `local_only`. A new manual upload supersedes pending work. Eligibility, thumbnail and KNVB identity are rechecked before export and claim.

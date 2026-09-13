@@ -201,13 +201,17 @@ runs are idempotent and a later Sportlink correction can be reconciled safely.
 2. Uploads each photo to `POST /wp-json/rondo/v1/people/{rondo_club_id}/photo` (multipart form-data)
 3. Updates `photo_state` to `'synced'` on success
 4. Also handles photo **deletion**: members with `photo_state = 'pending_delete'` get their Rondo Club photo removed
+5. Rate limited: 2s between uploads/deletes
 
 The normal People log records each successful photo upload or deletion with a
 timestamp, KNVB ID and Rondo person ID. Skipped or failed operations and photos
 already absent are identified separately. These entries do not require verbose
 mode and accompany the existing aggregate photo counts. They record operations
 from deployment onward; earlier logs only contain totals and error summaries.
-5. Rate limited: 2s between uploads/deletes
+Every entry identifies its source as Sportlink/voetbal.nl and its destination as
+Rondo. Protected manual-photo responses (`skipped: true`) count as skipped, not
+uploaded. The same per-person outcomes are saved in the run summary and shown in
+the dashboard. Rondo-origin exports appear in the reverse-sync run with source Rondo.
 
 **Output:** `{ upload: { synced, skipped, errors }, delete: { deleted, errors } }`
 

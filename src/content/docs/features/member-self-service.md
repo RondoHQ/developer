@@ -14,7 +14,7 @@ Bij het eigen profiel en minderjarige kinderen staat de profielfoto met **Foto w
 
 `POST /rondo/v1/people/{person_id}/household-photo` hergebruikt de bestaande foto-opslag, bestandsvalidatie, vergrendeling en Sportlink-fotowachtrij. De server forceert `source=manual`. De route accepteert uitsluitend het eigen gepubliceerde persoonsprofiel of een eigen minderjarig kind; ook beheerders krijgen via deze route geen ruimere toegang. Oud-leden en overleden personen zijn uitgesloten. De bestaande beheerroute `/photo` houdt zijn eigen rechten.
 
-De household-response bevat `thumbnail`, `can_edit_photo` en `photo_sync_status`. Voor de andere ouder bevat `thumbnail` de bestaande profielfoto, of `null` als er geen foto is; `can_edit_photo` blijft `false` en `photo_sync_status` blijft `null`. De foto is zichtbaar in de persoonskeuze en op de kaart, zonder bewerkmogelijkheid. Na opslaan worden de foto en gekoppelde profielweergaven opnieuw opgehaald. Fotoverwerking gebruikt de bestaande PhotoSync-status; het contactwijzigingslog hieronder blijft voor contactgegevens.
+De household-response bevat `thumbnail`, `can_edit_photo` en `photo_sync_status`. Voor de andere ouder bevat `thumbnail` de bestaande profielfoto, of `null` als er geen foto is; `can_edit_photo` blijft `false` en `photo_sync_status` blijft `null`. De foto is zichtbaar in de persoonskeuze en op de kaart, zonder bewerkmogelijkheid. Na opslaan worden de foto en gekoppelde profielweergaven opnieuw opgehaald. Fotoverwerking gebruikt de bestaande PhotoSync-status; geslaagde foto-uploads staan ook in het wijzigingslog, met bron Rondo of Sportlink/voetbal.nl. Overgeslagen imports worden niet als wijziging vastgelegd.
 
 ## Gezin en andere ouder/verzorger
 
