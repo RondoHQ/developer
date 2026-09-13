@@ -56,7 +56,7 @@ Leden kunnen `mobile_1`, `mobile_2`, `telephone_1` en `telephone_2` onafhankelij
 
 Dezelfde vier velden zijn per minderjarig kind afzonderlijk te beheren vanaf de kaart van dat kind.
 
-`telephone_2` is Rondo-only. Dit veld wordt niet naar Sportlink gestuurd, omdat Sportlink geen betrouwbaar tweede vaste-telefoonveld ondersteunt. De andere drie telefoonslots gaan wel door de normale reverse-sync.
+`telephone_2` is Rondo-only voor het eigen lidrecord. Dit veld wordt niet naar Sportlink gestuurd, omdat Sportlink geen betrouwbaar tweede vaste-telefoonveld ondersteunt. De andere drie telefoonslots gaan wel door de normale reverse-sync.
 
 ## Gezinsadres
 
@@ -71,3 +71,13 @@ Elke zelfserviceactie maakt een privaat `rondo_profile_change`-record met actor,
 Alleen gebruikers met de capability `ledenadministratie` en beheerders kunnen de log via **Relaties → Wijzigingslog** lezen. Rondo verwijdert logregels na 24 maanden met een dagelijkse retentietaak.
 
 De reverse-sync meldt het resultaat terug via `POST /rondo/v1/profile-change-log/sync-status`. Deze route vereist een beheeraccount, zoals de bestaande Rondo-applicatiegebruiker van de synchronisatie. Een definitieve Sportlink-formuliervalidatie wordt als `action_required` gemeld en blijft herstelbaar; een latere geslaagde retry zet dezelfde logregel alsnog op `synced`.
+
+### Oudercontactgegevens via kinderen
+
+Een ouder heeft geen eigen KNVB-ID nodig voor synchronisatie van oudercontactgegevens. De log legt bij een e-mailwijziging en bij een wijziging van het effectieve oudertelefoonnummer de wederzijdse relaties vast met gepubliceerde, niet-voormalige kinderen met een KNVB-ID. De oudervelden van deze kinderen worden apart gevolgd, ook wanneer hun eigen e-mailadres verschilt van dat van de ouder.
+
+Sportlink heeft per ouderplaats één telefoonnummer. De selectievolgorde is `mobile_1`, `telephone_1`, `mobile_2`, `telephone_2`; alleen een wijziging van het geselecteerde nummer maakt een oudertaak. Een ongebruikt extra telefoonnummer blijft lokaal, tenzij het ook via het eigen lidrecord synchroniseert.
+
+De audit bewaart `parent_sync` met `child_ids`, `kind`, `old` en `new`. Elke kindtaak krijgt een aparte sleutel `parent_{child_id}_{field}` in de bestaande statuscallback. Een callback voor het eigen lidrecord kan deze taken niet afhandelen. De volledige actie wordt pas `synced` wanneer alle betrokken taken zijn bevestigd.
+
+Oude `local_only`-regels worden niet automatisch opnieuw uitgevoerd. Herstel gebeurt gericht, na controle van de actuele ouder/kindrelaties, de oude auditwaarden en de bestaande Sportlink-ouderplaats.
