@@ -74,7 +74,7 @@ The child must have a KNVB ID and may have at most two parents/guardians, matchi
 
 The relationship card shows `Wacht op Sportlink`, the verified Sportlink field number, or the last synchronization error. Removing the relationship cancels pending work, but version 1 deliberately does not clear an already populated Sportlink parent field.
 
-These labels reflect synchronization callbacks for changes made through Rondo; the regular Sportlink import does not populate this status list. An absent label therefore does not mean the parent is absent from Sportlink. Confirmed field numbers use small, muted text without a badge background; pending and failed synchronization keep their colored badges.
+Field numbers come from verified Rondo writes or complete, dated Sportlink import observations, including unchanged existing parents. Import observations match only current linked parents by email (primary or secondary) and compatible name; ambiguous matches receive no field number. Pending and failed writes retain their status, and newer write confirmations take precedence over an older import. A newer complete import can move or clear an old field number. Confirmed labels use small gray text on a light gray background; pending and failed synchronization keep their colored badges.
 
 ### Via Frontend
 

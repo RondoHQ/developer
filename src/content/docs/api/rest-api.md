@@ -1288,6 +1288,16 @@ The response includes `child_id`, `parent_id`, `created`, and `status: "pending"
 
 Administrator-only integration callback used by `rondo-sync` after a verified Sportlink write. Payload fields are `parent_id`, `state` (`pending`, `synced`, or `error`), optional `slot` (`1` or `2`), and optional `message`. Person responses expose the resulting list as top-level `parent_sync_statuses`.
 
+### Import Sportlink parent slot observations
+
+**POST** `/rondo/v1/people/parent-slot-observations`
+
+Administrator-only import endpoint. Send `observations` (1–100 entries), each with `person_id`, the child's `knvb_id`, `observed_at` (RFC 3339 source snapshot date), and `slots`: exactly two objects containing `slot` (1 or 2), `email`, and `name`. Empty source values must be explicit empty strings. Partial source responses must not be submitted.
+
+The endpoint verifies the child's identity and matches source slots only against existing published parent relationships using email and name. It stores only the resolved parent IDs, slot numbers and observation date in native post metadata. It does not change contacts, relationships, modification dates, or reverse-sync callbacks. Older observations cannot replace newer ones. `parent_sync_statuses` includes imported results with `source: "sportlink_import"`; pending/error callbacks and newer write confirmations take priority.
+
+The response contains a `results` entry for each child, with `observed` and `matched`, a skip `reason` (`stale` or `inactive`), or a per-child `error`. Invalid payloads receive HTTP 400; callers must check per-child results even on HTTP 200.
+
 ### Person Relationships Expansion
 
 The `rest_prepare_person` filter automatically expands relationship data in person responses:

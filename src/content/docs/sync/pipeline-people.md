@@ -162,6 +162,18 @@ afterwards. Keep the retired tracking row; do not remap it to the survivor.
    - Historical parent mappings that point to one of the known children are forced through synchronization even when their source hash is unchanged. The invalid mapping is cleared before parent discovery runs, preventing a child from being written back as a parent of its siblings.
    - Existing members, contacts, and sponsors can also be linked as parents. Active members, contacts, and sponsors keep their managed name and contact fields. A former member who is still a current parent keeps the historical identity and membership fields, while current parent contact and address data is refreshed from the child's Sportlink data. Standalone parent profiles continue to receive their full name and contact profile from Sportlink.
 
+9. Publishes parent field observations from the same dated Sportlink snapshot, including unchanged parent records. Complete source slots are submitted in batches of at most 100 children; the Rondo endpoint verifies current identities and parent links, keeps pending/error states, and protects newer write confirmations. This records field numbers only and does not write to Sportlink.
+
+To backfill existing labels without running contact, relationship, photo or email synchronization, run on the sync server as `rondo`:
+
+```bash
+node tools/sync-parent-slot-labels.js                         # preview source coverage
+node tools/sync-parent-slot-labels.js --knvb-id <id> --apply  # one child
+node tools/sync-parent-slot-labels.js --apply                 # all complete mapped sources
+```
+
+The tool uses the stored snapshot's timestamp, never its execution time. Partial source records and duplicate KNVB IDs are excluded. An unknown/ambiguous parent remains unlabeled until a later import can resolve it.
+
 **Output:** `{ total, synced, created, updated, skipped, errors, parents: { ... } }`
 
 **Important:** `first_name` and `last_name` are required on every PUT request, even for partial ACF updates.
