@@ -292,3 +292,59 @@ Each successful send also writes a timeline entry on the person via `CommentType
 - [User Provisioning](./user-provisioning.md) — the third welkomstmail template (account-creation email)
 - [Email Delivery](./email-delivery.md) — `wp_mail` / SMTP infrastructure
 - [People API](../api/people.md) — list endpoint and shared filters
+
+## Editable draft blocks and full situation previews (35.76.0)
+
+Administrators can prepare automatic welcome emails in **Instellingen → Beheer →
+E-mails → Welkomstmailblokken**. This is a separate draft from the existing manual
+member and volunteer templates. The latter remain unchanged and are returned as
+read-only reference text, including any existing HTML. No automatic splitting or
+migration of arbitrary club copy takes place. Member contribution, clothing,
+training and volunteering information starts empty, visibly marked for editorial
+review; empty optional blocks are omitted. Review and transfer club copy before
+switching any sender to these templates.
+
+`Rondo\Onboarding\Templates` owns the block definitions, conditions and defaults.
+All subjects, greetings, introductions, member information, volunteer information,
+VOG variants, clothing/return variants, recipient account copy, button labels and
+closing are independently editable. Blocks use plain text with paragraphs and only
+`{first_name}`, `{club_naam}` and `{email}` substitutions; links in the copy become
+clickable. Unknown placeholders, invalid types, oversized values and empty required
+blocks are rejected atomically. Eligibility is not a template field. Account button
+URLs remain `/activeren` and `/login`; rendering creates no tokens or accounts.
+
+| Endpoint (requires `manage_options`) | Contract |
+|---|---|
+| `GET /rondo/v1/onboarding/templates` | Definitions, draft blocks, content revision, supported variables and legacy reference templates; no default option writes |
+| `POST /rondo/v1/onboarding/templates` | `{blocks, revision}`; saves the complete draft in non-autoloaded `rondo_onboarding_template_blocks`; stale revisions or simultaneous saves receive HTTP 409 |
+| `POST /rondo/v1/onboarding/templates/preview` | `{blocks, scenario}`; renders unsaved draft text without writes, mail, cron scheduling, dispatch reservation or account activation |
+
+The preview scenario has exactly these fields:
+
+- `type`: `member`, `volunteer`, `combined`.
+- `age`: `adult`, `minor`; `recipient`: `self`, `parent`. Adult plus parent is rejected.
+- `account`: `activate`, `exists`, describing **this recipient**, not the linked member.
+- `vog`: `none`, `missing`, `requested`, `review`, `valid`, `renew`, `resubmit`.
+- `clothing` and `returning`: `no`, `yes`.
+
+These are fictional scenario controls, **not verified current person states**. The
+preview always uses Emma/Robin and `.invalid` example recipient addresses. Only a
+volunteer or combined mail includes volunteer blocks. At most one VOG block appears;
+`none` omits it. Clothing readiness in the example follows no VOG requirement or a
+valid VOG; review/renewal/request/resubmission waits. Returning volunteers receive
+copy about assessing remaining clothing needs, not a promised new package.
+Resubmission and returning-clothing copy are editorial proposals for review before
+activation. IVA approval retains its existing separate email settings.
+
+Responses include `sending_enabled: false`; previews also return `simulation_only`,
+`subject`, `recipient`, `block_ids`, full branded `html` and `template_version` (the
+SHA-256 revision of normalized block contents). The iframe is sandboxed and disallows
+scripts and external resources. All successful template responses use `no-store`.
+Future sending must pass verified person/recipient conditions and reserve the final
+rendered content plus this version with `Dispatch`; this milestone does not connect
+the draft renderer to any sender or prove actual recipient-account matching.
+
+Validation covers conditional composition, under-18 parent scenarios, recipient
+account variants, unchanged legacy content, atomic validation and save conflicts,
+REST administrator permissions, and zero mail/scheduling side effects. The browser
+editor and branded iframe are exercised locally with backend-rendered fixtures.
