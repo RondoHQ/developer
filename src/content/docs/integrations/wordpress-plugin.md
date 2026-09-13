@@ -12,6 +12,8 @@ The standalone `rondo-wordpress-plugin` publishes a Rondo Club training schedule
 
 Both insertion methods use the same administrator-configured endpoint. A fixed schedule uses `/wp-json/rondo/v1/training/schedules/{id}`; `/wp-json/rondo/v1/training/active` automatically follows Rondo's active version. No account, application password or nonce is needed to read either endpoint. The plugin never writes back to Rondo Club.
 
+Since version 1.0.1, neither insertion method adds a visible heading, schedule name or scroll explanation above the schedule. Authors can place their own heading or paragraph blocks above it. Day and view controls remain available, as do accessible labels and notices for stale, empty or unavailable schedules.
+
 The Gutenberg block is registered as `rondo/training-schedule`, with a server-rendered preview and wide/full alignment support. Multiple instances have independent day filters and view controls, with unique accessible IDs. Version 1.0 supports one source endpoint per WordPress installation.
 
 ## Rendering contract
