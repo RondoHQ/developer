@@ -664,8 +664,11 @@ Active committee and staff roles use `VolunteerStatus::is_position_current()` as
 policy. Work-history dates are normalized from either the compact `YYYYMMDD` storage format or the
 canonical `YYYY-MM-DD` wire format before comparison. A role whose end date is today is no longer
 current and therefore no longer grants an exemption or access to a committee-restricted shift pool.
-The default staff-role list recognizes `Trainer`, `Trainer/coach`, `Assistent-trainer`, and
-`Assistent-trainer/coach`. The exemption resolver loads a person's work history once and applies
+The default staff-role list recognizes `Trainer`, `Trainer/coach`, `Assistent-trainer`,
+`Assistent-trainer/coach`, `Scheidsrechter`, and `Verenigingsscheidsrechter`, among other staff
+roles. Referee titles grant exemption only while the assignment is active. A youth referee's
+exemption does not exempt the shared family obligation of their responsible adults.
+The exemption resolver loads a person's work history once and applies
 committee and staff checks to that shared value. Eligibility views use generation-based transient
 keys, so a relationship or role change is visible immediately when WordPress uses a persistent
 object cache; old generations expire after the normal five-minute TTL.
