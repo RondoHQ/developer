@@ -155,7 +155,7 @@ php artisan rondo:reconcile-conversation-customer 123 --apply
 ```
 
 The repair refuses non-sidebar mailboxes, missing customers, and ambiguous recipients. Applying a
-change queues the normal customer-change activity so existing Rondo pointers are reconciled too.
+change queues the normal customer-change event, which requests a new activity choice and preserves existing Rondo pointers.
 
 For a conversation whose exact subject is `Overschrijvingsverzoek`, the FreeScout module also
 checks that the first published incoming email comes from
@@ -181,8 +181,25 @@ accent colors.
 The activity service uses the same internal-sender recipient selection in integration scope. It stores one native
 `rondo_activity` comment for the conversation start and one for every published incoming or sent
 reply. The configured FreeScout instance, conversation ID, event type, and immutable reply thread
-ID form the idempotency key. Explicit customer changes move, hide, or restore all pointers for the
-conversation together.
+ID form the idempotency key. Existing pointers are immutable during delivery: customer changes and
+retries never move, hide, rewrite, or restore historical activities. Legacy hidden pointers require
+a separately reviewed repair.
+
+For mapped mailboxes, the native FreeScout sidebar includes **Activiteiten koppelen aan…** and an
+explicit **Keuze opslaan** button. This choice is independent of the read-only profile viewer.
+The signed `activity_link` endpoint rechecks the bound agent, required mailbox capability,
+registered instance, exact email candidates and person visibility. A customer ID plus normalized
+email-set fingerprint rejects a stale sidebar; FreeScout reloads the conversation before saving.
+The choice is stored in a non-autoloaded WordPress option keyed by instance, mailbox and conversation.
+It contains an opaque context fingerprint, person ID, selecting user ID and timestamp, never emails.
+
+Unique first matches remain automatic. Shared addresses, changed customer contexts and invalidated
+choices return `needs_link`. These events remain in FreeScout's existing delivery queue, without
+creating unapproved comments. Saving a choice makes matching pending retries due immediately;
+the bounded scheduler processes them. Changing the FreeScout customer requires a fresh choice for
+new activities, while a late repeated event for an already selected context preserves that choice.
+The current candidate set is revalidated for every new activity. Data changes never silently switch
+the selected person to another member of a household.
 
 Reply events contain direction, subject, timestamp, and a server-generated conversation link, but
 never message text, attachments, or agent email. Only the selected matching email addresses are
