@@ -23,13 +23,48 @@ The file selector uses a visible Dutch button (PDF kiezen / Bestanden kiezen) wi
 - Unknown origin or scanned digital VOG: request the original PDF; the member
   replaces the previous submission. Version checks prevent stale approvals.
 
-Automatic rules are empty by default. An administrator can configure exact
-organization/function pairs and required screening codes in VOG settings. Only
-GAAV code 0, a complete first-page extraction, exact normalized names and birthdate,
-an applicable rule, and an issue date within the club's three-year window allow
-automatic approval. The reverse-page legend is never treated as selected codes.
-Other authentic originals go to manual content review. A future or older registered
-date cannot replace the existing VOG date.
+Automatic rules are empty by default. An administrator enters the full organization
+name in VOG settings. New entries use function `Vrijwilliger` and code `84` (care
+for minors); these need no repeated coordinator confirmation. Matching ignores
+case and repeated whitespace, but does not use fuzzy or substring matching.
+Existing configured functions and additional codes are preserved. Code `84` is
+always required, including for legacy rules. Only GAAV code 0, complete first-page
+extraction, matching identity, an applicable rule, and an issue date within the
+club's three-year window allow automatic approval. The reverse-page legend is
+never treated as selected codes. Missing codes, an unrecognized document, a wrong
+organization or an invalid date cannot be overridden with an identity confirmation.
+A future or older registered date cannot replace the existing VOG date.
+
+## Identity differences and inquiries
+
+Since 35.82.0, the review surface compares extracted identity fields with the member
+profile and, where available, previously verified legal names. A coordinator must
+explicitly confirm a mismatch and record the evidence method: `original_id` (original
+identity document seen in person) or `verified_records` (previously verified identity
+records consulted). The application does not infer a birth surname from a different
+display surname. No ID upload, BSN or ID-document number is collected.
+
+With the separate **remember names** checkbox, approval saves the extracted given
+names, infix and birth surname in private workflow meta
+`_rondo_vog_verified_identity` on the person, alongside reviewer, method, timestamp,
+source submission ID and a hash of the current profile identity. No duplicate birthdate
+is stored. This evidence is not part of the general person field API or Sportlink
+sync and cannot be written by members. Display names stay unchanged. A future VOG
+uses these names only if the profile identity hash still matches; changed names or
+birthdate require review again. A fresh explicit check without remembering clears
+prior retained evidence. Person deletion removes the private meta through WordPress.
+
+Review payloads recalculate checks against the current settings and profile, including
+older queued submissions. Digital approval requires the displayed `assessment_revision`
+as well as submission `version`, and repeats all checks server-side. Approval records
+the method/reviewer/time, removes the upload, and shows a confirmation. The member sees
+when their identity still needs confirmation instead of a claim that review is active.
+
+**Eerst navraag doen** stores a member-visible note and status `awaiting_member`.
+The submission remains active, with its original expiry date and files. Prior VOG
+validity remains unchanged. Notes appear in **Mijn VOG**; this action does not send
+email. Approval and rejection remain possible after inquiry, with normal version checks.
+The member screen refreshes pending review states every 30 seconds.
 
 Approval writes canonical `datum_vog` through `Fields`, then touches the person's
 post modification timestamp for existing Sportlink reverse sync. The API confirms
@@ -59,7 +94,9 @@ review and expiry. No custom database tables or public media attachments are use
 Documents stream through authenticated REST requests with `private, no-store`,
 `nosniff` and a sandbox CSP. The UI uses nonce-authenticated blob downloads.
 
-Approval, rejection and replacement remove source files and extracted identities.
+Approval, rejection and replacement remove source files and extracted identities
+from the submission. Explicitly retained verified names remain in the private
+identity record described above.
 Open submissions become inaccessible after 30 days; daily `rondo_vog_cleanup`
 deletes expired files (100 submissions per run) and orphaned files older than 31
 days. Minimal receipts retain hashes, dates, validation code, rule version and
@@ -84,13 +121,16 @@ are required for browser requests.
 | `GET /vog/me` | Existing validity response plus `can_upload` and minimal latest `submission`. |
 | `GET /vog/submissions?page=1` | Active review items, 25 per page, filtered by accessible people. |
 | `GET /vog/submissions/{id}/files/{file_id}` | Zero-based file position; private bytes, never a filesystem path in JSON. |
-| `POST /vog/submissions/{id}/review` | `version`, `action` (`approve`/`reject`), member-visible `note` (3–500 characters). Approval also requires boolean `confirmed`, `method` (`gaav_manual`/`paper_original`), and `date` if extraction has no date. |
+| `POST /vog/submissions/{id}/review` | `version`, `action` (`approve`/`inquire`/`reject`). `inquire` and `reject` require a member-visible `note` (3–500 characters); approval uses a default confirmation if blank. Approval requires boolean `confirmed` and `method` (`gaav_manual`/`paper_original`). Paper requires `date`. Digital requires `assessment_revision`; identity differences additionally require `identity_confirmed: true` and `identity_method` (`original_id`/`verified_records`). Optional `remember_identity: true` requires the same explicit identity check. Identity values come from the stored extraction, never the request. |
 | `POST /vog/submissions/{id}/retry` | Technical digital failures only; coordinator permission and attempt cap enforced. |
 | `GET /vog/approval-rules` | Administrator only: `rules` and `reader_available`. |
 | `POST /vog/approval-rules` | Administrator only: `rules` array, each with `organization`, `function`, nonempty two-digit `codes`; at most ten rules. |
 
-Statuses: `checking`, `technical`, `review`, `needs_original`, `waiting_paper`,
-`approved`, `rejected`, `replaced`, `expired`. The first five are active.
+Statuses: `checking`, `technical`, `review`, `awaiting_member`, `needs_original`,
+`waiting_paper`, `approved`, `rejected`, `replaced`, `expired`. The first six are active.
+Reviewer payloads include an `assessment` with identity comparison rows, content
+checks and revision. Member payloads expose only `identity_check_required` and
+`identity_remembered` booleans, not extracted identity values or reviewer details.
 
 ## Runtime and testing
 
