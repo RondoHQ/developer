@@ -31,7 +31,29 @@ This derived list does not expose raw work history, expand the household graph, 
 
 Use **Abonneren op agenda** to open a subscription popover with a copyable HTTPS URL and instructions for Google Calendar, Outlook, and device calendar apps. A `webcal:` link is offered inside the device-app instructions; the popover remains useful when the browser has no protocol handler. **Kopieer ICS-link** copies the same shareable URL. Importing an ICS file once does not create a subscription. Refresh timing is controlled by the calendar application; the hourly hints are advisory.
 
-Each event has a stable match/team UID, persistent SEQUENCE and LAST-MODIFIED values, UTC start time, location, and cancellation status. Unknown kickoff times produce an all-day entry rather than inventing a time. No end time is invented. Scores are included when published. Renames and rescheduling update the existing event, and expiring logo signatures do not increment revisions. Calendar text uses RFC 5545 escaping, CRLF line endings, and UTF-8-safe folding at 75 octets.
+Each event has a stable match/team UID, persistent SEQUENCE and LAST-MODIFIED values, UTC start time, location, and cancellation status. Unknown kickoff times produce an all-day entry rather than inventing a time. Known kickoff times include a planned UTC end time when a supported KNVB duration can be resolved. Each match exposes nullable `duration_minutes`. Scores are included when published. Renames and rescheduling update the existing event, and expiring logo signatures do not increment revisions. Calendar text uses RFC 5545 escaping, CRLF line endings, and UTF-8-safe folding at 75 octets.
+
+## Planned match duration
+
+From theme 35.82.3, `TeamMatches::duration_minutes()` uses the linked union team's regular Sportlink competition metadata: age category, game type, gender and division. Local aliases inherit that union classification. Display names and team numbers are not used to guess age or match length.
+
+The end time reserves playing time plus the maximum published halftime break and both pupil time-outs:
+
+| Category | Playing time | Breaks | Calendar duration |
+| --- | --- | --- | --- |
+| O8–O9 | 40 minutes | 10 + 2 × 2 minutes | 54 minutes |
+| O10 | 50 minutes | 10 + 2 × 2 minutes | 64 minutes |
+| O11–O12, including MO11 | 60 minutes | 15 + 2 × 2 minutes | 79 minutes |
+| O13 / MO13 | 60 minutes | 15 minutes | 75 minutes |
+| O14–O15 / MO15 | 70 minutes | 15 minutes | 85 minutes |
+| O16–O17 / MO17 | 80 minutes | 15 minutes | 95 minutes |
+| O19–O23 and seniors | 90 minutes | 15 minutes | 105 minutes |
+
+O13 divisions 1–2, O15 divisions 1–3 and O17 divisions 1–3 add ten minutes of playing time. These division exceptions do not apply to girls' competitions. The reviewed KNVB 2026/27 sources are [O8–O10](https://www.knvb.nl/downloads/sites/bestand/knvb/12343/infographic-6-tegen-6), [O11–O12](https://www.knvb.nl/downloads/sites/bestand/knvb/14647/infographic-8-tegen-8), [O13](https://www.knvb.nl/downloads/sites/bestand/knvb/30089/infographic-wedstrijdvorm-o13-11x11-vernieuwde-spelregels), [O14](https://www.knvb.nl/downloads/sites/bestand/knvb/30091/infographic-wedstrijdvorm-o14-cata-11x11), [O15 and older](https://www.knvb.nl/downloads/sites/bestand/knvb/28869/infographic-11x11), and [girls O15–O20](https://www.knvb.nl/downloads/sites/bestand/knvb/30093/infographic-wedstrijdvorm-mo15-mo17-mo20-11x11). Review these rules when KNVB changes its match formats.
+
+This is a planning estimate: cup/friendly fixtures use the team's regular duration; locally agreed shorter halves, stoppage time, extra time and penalties are not included. The event description states that limitation. O7 activities, tournaments, 7x7, 9x9, walking football, futsal, unlinked local teams and ambiguous/unknown classifications retain no inferred end time and explicitly report that their duration is unknown. Unknown kickoff times and provisional days remain all-day entries.
+
+The cache duration version triggers a refresh of legacy caches without discarding fixture history. Adding or changing the duration increments each affected event's `SEQUENCE` and updates `LAST-MODIFIED`, while preserving its UID. Retained historical fixtures and cancellation tombstones also gain a duration during the initial migration. Unchanged refreshes keep the same revision; source outages preserve the existing feed and backoff. Calendar applications decide when to refresh subscriptions, so existing phone entries can lag behind the corrected feed.
 
 ## Provisional KNVB matchdays
 
@@ -47,6 +69,6 @@ The existing `_rondo_team_matches_cache` stores `matchdays` separately from actu
 
 `KnvbMatchdaysTest` covers supported and unsupported competition mappings, season boundaries, cup and catch-up labels, holidays, Friday tournaments, midweek windows, and the placeholder cancellation/reinstatement lifecycle. `TeamMatchesTest` also exercises cached placeholders through fixture publication and a Sportlink outage.
 
-`vendor/bin/codecept run Wpunit TeamMatchesTest` covers team/day disambiguation, local match inclusion, season filtering, result merging, outage retention, cancellation tombstones, event revisions, Unicode folding, unknown times, and signed subscription permissions.
+`vendor/bin/codecept run Wpunit TeamMatchesTest` covers team/day disambiguation, local match inclusion, season filtering, result merging, outage retention, cancellation tombstones, event revisions, Unicode folding, unknown times, signed subscription permissions, KNVB age/division durations, legacy subscription migration, stable revisions and end times across daylight-saving changes.
 
 `ParentRelationshipRestTest` covers household team scope, date boundaries, duplicate roles, excluded entities, and the restricted other-parent payload.
