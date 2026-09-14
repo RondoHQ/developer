@@ -66,6 +66,15 @@ validity remains unchanged. Notes appear in **Mijn VOG**; this action does not s
 email. Approval and rejection remain possible after inquiry, with normal version checks.
 The member screen refreshes pending review states every 30 seconds.
 
+Since 35.82.2, an existing submission provides the primary member status; the page
+no longer simultaneously claims that no VOG was submitted. Previous approved VOG
+validity is shown within that status. Upload controls are collapsed behind
+**Andere VOG inleveren** during processing, review, inquiry and paper inspection,
+and behind **Nieuwe VOG inleveren** after approval. The replacement action explains
+that uploading replaces the current submission. First uploads, rejected or expired
+submissions, and requests for the original PDF show the upload form immediately.
+Submission status remains visible even when the member cannot upload.
+
 Approval writes canonical `datum_vog` through `Fields`, then touches the person's
 post modification timestamp for existing Sportlink reverse sync. The API confirms
 the Rondo registration; it does not claim that Sportlink has already synchronized.
