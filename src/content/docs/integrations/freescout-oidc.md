@@ -59,7 +59,9 @@ Updating a client can change `label`, `redirect_uris`, `freescout_base_url`, and
 
 ## Eligible identities
 
-An administrator is eligible when the account has an acceptable external email. A normal user additionally needs the `ledenadministratie` or `financieel` capability and a linked, published person record. `financieel_read` alone does not qualify, because that role may not receive access to the Contributie mailbox. The capability list can be extended through the `rondo_oidc_freescout_capabilities` filter when another managed mailbox is approved.
+An administrator is eligible when the account has an acceptable external email. A normal user needs a Rondo role and a linked, published person record. Existing integrations that grant `ledenadministratie` or `financieel` directly remain eligible through the `rondo_oidc_freescout_capabilities` filter. Identity eligibility is separate from managed mailbox access: only `ledenadministratie` grants the Ledenadministratie mapping and only `financieel` grants Contributie.
+
+FreeScout module 1.14.0 and newer can bind an existing active FreeScout account for the basic sidebar without either managed mapping. The account must already have an active mailbox, or be a FreeScout administrator. Basic sidebar access never creates an account, reactivates a disabled account, or grants mailbox access. A first sign-in still requires proof of the exact email address and the existing one-to-one identity-binding checks. All sidebar records and fields keep the bound user's normal Rondo visibility.
 
 Rondo resolves `rondo_contact_email` first and otherwise uses the WordPress account email. Synthetic `@members.rondo.invalid` addresses, addresses inconsistent with the linked person, and addresses shared by another FreeScout-eligible user are rejected.
 
@@ -107,7 +109,10 @@ URL belonging to an enabled OIDC client. The access service resolves the exact i
 subject, then checks the user's current capability for each managed mapping. `freescoutUserId` is `null` during the
 pre-binding access check and a positive integer after a local user exists. It is used only for
 audit correlation; access is always resolved from the signed issuer and subject, never from the
-local ID or an email address.
+local ID or an email address. The response keeps `active` tied to non-empty `managed_mailboxes`
+for compatibility, and returns a separate `sidebar_access` boolean for eligible identities. Older
+FreeScout modules continue to require a managed mapping; newer modules accept basic access only
+for an existing active account with local mailbox access.
 
 FreeScout administrators select independently in which active mailboxes the sidebar appears; this
 never grants mailbox access. An unmapped selected mailbox requests `basis.v1`, while active managed
