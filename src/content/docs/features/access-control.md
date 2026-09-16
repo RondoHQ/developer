@@ -360,7 +360,7 @@ Create a role such as Coordinator O13 and map the exact active Sportlink functio
 
 `AccessControl::get_permitted_team_ids()` reads team assignments across the user's roles. `is_scoped_member()` is true only when neither age groups nor teams grant access. `person_scope()`, `can_view_person()`, `scope_person_query_args()` and `visible_person_ids_or_null()` share the union. A missing/trashed team grants no player access. Only current player roles qualify, using `VolunteerStatus::get_player_roles()` and `is_position_current()`; trainers, committees, historical and future assignments do not grant access through a player relation.
 
-The native REST collection, filtered list, global search, CSV export and record abilities use this boundary. Additional list filters still narrow it, so selecting only Onder 13 manually can hide an Onder 14 dispensation player. The UI does not apply such a filter automatically. Individual field and write permissions remain independent; the coordinator role adds no editing or finance/support privileges. Existing club-wide management access still takes precedence. Isolated Kaderlijst roles cannot grant general member-directory access; coordinators' Kaderlijst scope includes staff of explicitly assigned teams as well as the existing age-derived team selection.
+The native REST collection, filtered list, global search, CSV export and record abilities use this boundary. Additional list filters still narrow it, so selecting only Onder 13 manually can hide an Onder 14 dispensation player. The UI does not apply such a filter automatically. Individual field and write permissions remain independent; the coordinator role adds no editing or finance/support privileges. Existing club-wide management access still takes precedence. Isolated Kaderlijst roles cannot grant general member-directory access. Coordinators may read the full club-wide Kaderlijst, including staff of other teams, through its limited contact-field payload; general person and team detail access remains restricted.
 
 The player selection cache is request-local, keyed by team IDs, player-role settings, the club date and the WordPress posts cache generation. Person/team/meta changes therefore invalidate it. Deleting a custom role removes its saved age-group and team selections.
 
@@ -369,6 +369,14 @@ The player selection cache is request-local, keyed by team IDs, player-role sett
 Capability reconciliation and initial provisioning use the shared work-history date/status predicate. Future starts and expired end dates override a stale `is_current`; an inactive assignment without an end date remains historical. An end date is exclusive. For supplied Sportlink function lists, a known function with only inactive local history is excluded; new function names still use the supplied source.
 
 `rondo_reconcile_user_roles` runs hourly through WP-Cron and re-evaluates only coordinator roles with age-group or team assignments on linked accounts from local work history, including when the upstream payload has not changed. Unrelated account roles are not granted or revoked by this hourly task. Effective latency includes WP-Cron execution delay and the source synchronization interval. Existing manual grants/revokes remain authoritative; administrators are exempt. Theme deactivation clears the scheduled hook.
+
+### Teams access
+
+General kader status does not grant Teams access. The independent `teams` capability, labeled **Alle teams** in the capability matrix, grants the full team directory and detail pages. Administrators and the board receive it by default; other roles need an explicit grant. Coordinator age-group/team assignments continue to grant their configured teams. Personal **Mijn team** access is independent.
+
+`can_access_teams` controls navigation and the Teams overview route. The server also enforces collection and direct record access, search results, record abilities, and dashboard counts through `visible_team_ids_or_null()`. Without full-team access this returns only assigned teams and personal Mijn team IDs. Signed public match calendars retain their token checks.
+
+The Kaderlijst receives all published team names and parents from its own limited response; it no longer needs broad `/wp/v2/teams` access. Each label has a request-specific `can_access` flag, so other-team names remain plain text.
 
 ## User Roles
 
