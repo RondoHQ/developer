@@ -52,7 +52,7 @@ GET /wp-json/wp-abilities/v1/abilities/rondo/get-record/run?input[id]=123&input[
 
 `id` is required. `fields` is an optional array of canonical field names; omitting it returns every field visible to the current user.
 
-Person access uses the same three-tier policy as the REST API: management users can read the whole club, coordinators are restricted to configured age groups, and plain members can read only their household. Canonical output also passes through the normal sensitive-field filters for finance, support, and sponsor data.
+Person access uses the same three-tier policy as the REST API: management users can read the whole club, coordinators are restricted to configured age groups or current players of assigned teams, and plain members can read only their household. Canonical output also passes through the normal sensitive-field filters for finance, support, and sponsor data.
 
 Requesting an unknown field or a field hidden from the current user returns `rondo_ability_field_unavailable`.
 

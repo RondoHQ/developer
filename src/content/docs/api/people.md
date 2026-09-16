@@ -810,3 +810,7 @@ curl -X DELETE "https://your-site.com/wp-json/wp/v2/people/456" \
 ---
 
 *Documentation generated: 2026-01-25*
+
+## Coordinator scope
+
+From 35.83.0, an assigned team's current players are visible in addition to the coordinator's permitted age groups. This union applies to both the filtered list and core person collection/single-record endpoints, including pagination and CSV export. Explicit age-group filters still narrow the union. The current-user payload exposes `permitted_team_ids` alongside the existing `permitted_age_groups`; `null` age groups continues to mean unrestricted management access.

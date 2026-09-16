@@ -155,7 +155,7 @@ which person. Three tiers:
 | Tier | Who | Sees |
 |---|---|---|
 | Management | A capability in `AGE_GROUP_BYPASS_CAPS` | Everyone |
-| Coordinator | A role with a non-empty `rondo_age_group_access` entry | Their configured age groups |
+| Coordinator | A role with a non-empty `rondo_age_group_access` or `rondo_team_access` entry | Their configured age groups or current players of assigned teams |
 | Scoped member | Everyone else | Themselves, plus their children under 18 |
 
 Every enforcement point routes through it — the REST collection filter (`rest_person_query`), the
@@ -327,6 +327,24 @@ Read access to individual *fields* is a separate matter: see
 support or sponsor fields without the matching capability.
 
 The former `suppress_age_group` request bypass has been removed. The Kaderlijst now has a dedicated server-side scoped endpoint.
+
+## Coordinator access by age group or team
+
+Since 35.83.0, **Settings → Beheer → Capabilities → Ledendata** can assign both age groups and teams to a custom role. A person is visible when their own age group matches **or** they currently play for one of the assigned teams. Results are deduplicated before counting and pagination. This includes dispensation players, younger players in an older team, and members of the configured age group without a team.
+
+Create a role such as Coordinator O13 and map the exact active Sportlink function names to it under **Functies**. Teams are explicit existing team IDs, stored in `rondo_team_access`; `rondo_age_group_access` keeps its existing format. Review team selections when a season changes. Team names and other players' ages do not implicitly grant access.
+
+`AccessControl::get_permitted_team_ids()` reads team assignments across the user's roles. `is_scoped_member()` is true only when neither age groups nor teams grant access. `person_scope()`, `can_view_person()`, `scope_person_query_args()` and `visible_person_ids_or_null()` share the union. A missing/trashed team grants no player access. Only current player roles qualify, using `VolunteerStatus::get_player_roles()` and `is_position_current()`; trainers, committees, historical and future assignments do not grant access through a player relation.
+
+The native REST collection, filtered list, global search, CSV export and record abilities use this boundary. Additional list filters still narrow it, so selecting only Onder 13 manually can hide an Onder 14 dispensation player. The UI does not apply such a filter automatically. Individual field and write permissions remain independent; the coordinator role adds no editing or finance/support privileges. Existing club-wide management access still takes precedence. Isolated Kaderlijst roles cannot grant general member-directory access; coordinators' Kaderlijst scope includes staff of explicitly assigned teams as well as the existing age-derived team selection.
+
+The player selection cache is request-local, keyed by team IDs, player-role settings, the club date and the WordPress posts cache generation. Person/team/meta changes therefore invalidate it. Deleting a custom role removes its saved age-group and team selections.
+
+### Function dates and reconciliation
+
+Capability reconciliation and initial provisioning use the shared work-history date/status predicate. Future starts and expired end dates override a stale `is_current`; an inactive assignment without an end date remains historical. An end date is exclusive. For supplied Sportlink function lists, a known function with only inactive local history is excluded; new function names still use the supplied source.
+
+`rondo_reconcile_user_roles` runs hourly through WP-Cron and re-evaluates only coordinator roles with age-group or team assignments on linked accounts from local work history, including when the upstream payload has not changed. Unrelated account roles are not granted or revoked by this hourly task. Effective latency includes WP-Cron execution delay and the source synchronization interval. Existing manual grants/revokes remain authoritative; administrators are exempt. Theme deactivation clears the scheduled hook.
 
 ## User Roles
 
