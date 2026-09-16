@@ -7,12 +7,15 @@ User provisioning allows administrators to create WordPress user accounts direct
 
 ## Overview
 
-When an administrator provisions a user account for a person:
+When an administrator or the self-service activation flow creates a user account for a person:
 
 1. A WordPress user is created with the **Rondo User** role
 2. The person record is linked to the WP user (and vice versa)
 3. The member's KNVB ID is stored on the WP user
-4. A configurable welcome email can be sent with login instructions
+4. Roles from current functions and committee memberships are applied immediately through `CapabilitySync::sync_user_by_person_id()`
+5. A configurable welcome email can be sent with login instructions
+
+This uses the same role mappings and date/status checks as later synchronization. Members of a committee mapped to a custom role (for example Jubilarissen) can use that access on their first sign-in; expired, future, and inactive memberships do not grant it.
 
 ## Person-User Linking
 
