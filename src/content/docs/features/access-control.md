@@ -52,6 +52,7 @@ The class intercepts data access at multiple levels:
 
 | Capability | Protected surfaces | Current-user flag |
 |---|---|---|
+| `teams` | Full team directory and details; assigned coordinator teams remain independently scoped | `can_access_teams` |
 | `commissies` | Committee list, detail, members, counts, local information writes, entity lookup, and record abilities | `can_access_commissies` |
 | `jubilarissen` | Anniversaries endpoint, page, dashboard card, and card customization | `can_access_jubilarissen` |
 | `feedback` | Feedback overview and other users' feedback threads | `can_access_feedback` |
@@ -66,7 +67,7 @@ Scoped year-group coordinators start on **Relaties** instead of Dashboard. `can_
 
 Accounts with a configured age-group or team selection see the union of their assigned `rondo_team_access` teams and their personal teams from `MyTeam::teams_for_user()`. This applies equally to technical and organizational coordinators, including O10 and girls' teams assigned to a combined year group.
 
-`AccessControl::visible_team_ids_or_null()` returns an ID list for these coordinators, `[]` when no teams are available, and `null` for existing unrestricted access. Existing management bypass capabilities still give club-wide access. Removing or trashing all selected teams does not expand access.
+`AccessControl::visible_team_ids_or_null()` returns an ID list for these coordinators, `[]` when no teams are available, and `null` only with the explicit `teams` capability or administrator access. General staff and person-management capabilities do not grant club-wide team access. Removing or trashing all selected teams does not expand access.
 
 The scope applies before pagination to team lists and search, and to direct team pages, nested team endpoints, `/entity/{id}`, record abilities, and dashboard counts. Signed `.ics` subscriptions retain their existing token gate for public fixture data. A direct URL or `include` filter cannot expand the scope. Personal team visibility does not grant additional people-directory access; Mijn team keeps its own roster permissions.
 
