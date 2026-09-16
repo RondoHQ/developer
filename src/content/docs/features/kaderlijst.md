@@ -7,8 +7,7 @@ The Kaderlijst feature provides a live roster sheet for youth staff roles, repla
 ## Route and UI
 
 - Route: `/kaderlijst`
-- Navigation: `Teams -> Kaderlijst` for general kader accounts; a standalone `Kaderlijst` item for
-  accounts with only the dedicated capability.
+- Navigation: `Voetbal -> Kaderlijst`, independent of the Teams overview.
 - UI: shared `DataTable` component
 
 Columns:
@@ -29,10 +28,7 @@ Phone numbers are clickable `tel:` links with a separate WhatsApp icon beside th
 
 ## Data sources and access scope
 
-The page combines two data sources:
-
-- `GET /wp-json/wp/v2/teams` for team names and parent hierarchy.
-- `GET /wp-json/rondo/v1/kaderlijst/people` for the scoped kader records and contact fields.
+The page uses `GET /wp-json/rondo/v1/kaderlijst/people`. Its `people` array contains the limited staff/contact fields; `teams` contains only `id`, `parent`, `name`, and `can_access` for published teams. A team name links to its detail page only when `can_access` is true. Team labels do not grant access to the team directory or roster.
 
 The Kaderlijst endpoint is the security boundary. It returns only the canonical fields rendered by
 the table: names, work history, email addresses, mobile numbers, and telephone numbers. It applies
@@ -41,8 +37,7 @@ the current user's person scope before building the response:
 - the dedicated `kaderlijst` capability receives all active kader records without widening general
   person visibility;
 - management capabilities receive all active kader records;
-- coordinators receive kader linked to teams whose current player roster matches one of their
-  permitted age groups;
+- coordinators receive the full club-wide kader roster, regardless of their assigned age groups or teams;
 - household-scoped members receive only their visible household IDs, with the normal member field
   allowlist still applied.
 
@@ -58,9 +53,10 @@ to this role when the account needs the roster but not the member directory.
 The scoped person response is stored in a WordPress transient for one day. Cache entries are shared
 only when the complete visibility scope is identical:
 
-- one shared key for unrestricted management users;
-- one key per exact set of permitted age groups;
+- one shared key for full-roster viewers, including coordinators, management, and the dedicated Kaderlijst role;
 - one key per exact household person-ID set.
+
+Team labels and per-user link permissions are added outside this shared people cache so one viewer never inherits another viewer's access.
 
 The transient key also contains the cache generation, current local date, and configured player-role
 list. The date prevents an ended work-history row from surviving into the next day. Person and team
