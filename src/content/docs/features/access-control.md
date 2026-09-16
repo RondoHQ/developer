@@ -62,6 +62,8 @@ Navigation and route guards use the current-user flags. REST permission callback
 
 ### Coordinator team visibility
 
+Scoped year-group coordinators start on **Relaties** instead of Dashboard. `can_access_dashboard` is false for these accounts, so the sidebar hides Dashboard and the root route redirects to `/people`. Existing management roles retain their dashboard.
+
 Accounts with a configured age-group or team selection see the union of their assigned `rondo_team_access` teams and their personal teams from `MyTeam::teams_for_user()`. This applies equally to technical and organizational coordinators, including O10 and girls' teams assigned to a combined year group.
 
 `AccessControl::visible_team_ids_or_null()` returns an ID list for these coordinators, `[]` when no teams are available, and `null` for existing unrestricted access. Existing management bypass capabilities still give club-wide access. Removing or trashing all selected teams does not expand access.
