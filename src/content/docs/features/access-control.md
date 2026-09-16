@@ -7,7 +7,7 @@ This document describes the access control system in Rondo Club.
 
 ## Overview
 
-Rondo Club uses a least-privilege access model. Members can read their own household plus shared team and committee reference data. Specialist roles receive only the custom post type and REST capabilities needed for their work.
+Rondo Club uses a least-privilege access model. Members can read their own household and shared team reference data; committee access requires its own capability. Specialist roles receive only the custom post type and REST capabilities needed for their work.
 
 **Key principles:**
 
@@ -45,6 +45,28 @@ The class intercepts data access at multiple levels:
 | `pre_get_posts` | Blocks unauthenticated users from seeing any posts |
 | `rest_{post_type}_query` | Fails closed without that post type's read capability and applies record scope |
 | `rest_prepare_{post_type}` | Enforces single-record access even for published posts |
+
+### Independent section capabilities
+
+`commissies`, `jubilarissen`, and `feedback` are separate role-matrix columns. Only administrators receive them automatically on upgrade; grant them explicitly to other roles under **Instellingen → Beheer → Capabilities**. They do not bypass coordinator person or team scopes.
+
+| Capability | Protected surfaces | Current-user flag |
+|---|---|---|
+| `commissies` | Committee list, detail, members, counts, local information writes, entity lookup, and record abilities | `can_access_commissies` |
+| `jubilarissen` | Anniversaries endpoint, page, dashboard card, and card customization | `can_access_jubilarissen` |
+| `feedback` | Feedback overview and other users' feedback threads | `can_access_feedback` |
+
+All authenticated users retain **Feedback verzenden** and can read and discuss their own submissions. Existing admin-only feedback management operations remain admin-only. Committee information editing still requires an administrator or a board role, plus section access.
+
+Navigation and route guards use the current-user flags. REST permission callbacks, `rest_pre_dispatch`, record access checks, and query filters enforce the same rules on the server. Dashboard responses omit restricted anniversaries and counts; the dashboard cache key incorporates section permissions and the visible team IDs.
+
+### Coordinator team visibility
+
+Accounts with a configured age-group or team selection see the union of their assigned `rondo_team_access` teams and their personal teams from `MyTeam::teams_for_user()`. This applies equally to technical and organizational coordinators, including O10 and girls' teams assigned to a combined year group.
+
+`AccessControl::visible_team_ids_or_null()` returns an ID list for these coordinators, `[]` when no teams are available, and `null` for existing unrestricted access. Existing management bypass capabilities still give club-wide access. Removing or trashing all selected teams does not expand access.
+
+The scope applies before pagination to team lists and search, and to direct team pages, nested team endpoints, `/entity/{id}`, record abilities, and dashboard counts. Signed `.ics` subscriptions retain their existing token gate for public fixture data. A direct URL or `include` filter cannot expand the scope. Personal team visibility does not grant additional people-directory access; Mijn team keeps its own roster permissions.
 
 ### Todo Visibility Rule
 
