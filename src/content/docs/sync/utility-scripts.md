@@ -251,6 +251,10 @@ node tools/detect-rondo-club-changes.js --verbose
 ### sync-individual.js
 
 Syncs a single member to Rondo Club by KNVB ID. Useful for debugging or fixing individual records.
+With `--fetch`, the sync also searches Sportlink for this exact KNVB ID to refresh
+game activity and age class before merging the general member details. The stored
+bulk snapshot is used when `--fetch` is omitted. Incomplete or failed fresh searches
+stop the sync before person updates instead of reusing stale activity values.
 On success it records the computed source hash from the local tracking upsert, so the next People run does not repeat the same update.
 
 ```bash
