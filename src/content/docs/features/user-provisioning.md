@@ -17,6 +17,19 @@ When an administrator or the self-service activation flow creates a user account
 
 This uses the same role mappings and date/status checks as later synchronization. Members of a committee mapped to a custom role (for example Jubilarissen) can use that access on their first sign-in; expired, future, and inactive memberships do not grant it.
 
+### Account names
+
+Accounts normally use `first.last` as their login and the personal name as their display name.
+For sponsor contacts without a personal name, provisioning uses the canonical `company_name`
+field: for example, `van Dal Assurantien` becomes login `van-dal-assurantien` and display name
+`van Dal Assurantien`. Personal name fields remain empty.
+
+The generated login must also produce a non-empty WordPress nicename. If neither the personal
+name nor the company name can do so (for example, names containing only punctuation), the login
+falls back to `gebruiker-{person_id}`. Logins are limited to 60 characters, including any numeric
+suffix needed for uniqueness. These rules apply to administrator provisioning and self-service
+activation; existing accounts keep their names.
+
 ## Person-User Linking
 
 Provisioning creates a bidirectional link between person records and WordPress users:
