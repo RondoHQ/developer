@@ -44,6 +44,8 @@ There is no assignment post type. A shift's `assigned_persons` meta holds an arr
 | `_shift_signup_user_{person_id}` | Which WordPress account made it — a parent using a child's account, for instance. |
 | `_shift_assigned_by_{person_id}` | The coordinator who assigned this person, when it was not a self-signup. Survives cancellation. |
 | `_shift_assigned_at_{person_id}` | When that assignment happened. |
+| `_shift_assignment_mode_{person_id}` | `assigned` for an explicit duty; `signup` or missing preserves normal self-cancellation rules. |
+| `_shift_email_assignment_sent_{person_id}` | Successful delivery time of the duty assignment notice. |
 | `_no_show_{person_id}` | No-show marker, set by an admin within the 72-hour window after the shift. |
 | `_shift_customized` | The shift was edited by hand, so template re-rollout must never overwrite or delete it. |
 
@@ -182,9 +184,23 @@ Team membership, parent links and accounts are always current; only the duties a
 registrations use the selected season. This scope is stated on the page. The browser
 receives no person or account IDs, and team names do not link to restricted team pages.
 
-An assignment made by a coordinator writes the same `_shift_signup_at_` timestamp a
-self-signup would, so the member keeps their normal cancellation rights — nobody is
-trapped in a dienst somebody else planned for them.
+The coordinator editor offers **Indelen** (record an agreement using the normal signup rules)
+and **Dienst toewijzen** (an explicit duty that the member cannot cancel themselves).
+`POST /rondo/v1/shifts/{id}/assignees` accepts `assignment_mode: "signup" | "assigned"`,
+defaulting to `signup` for existing callers. Both modes enforce capacity, certificate and pool
+requirements, overlap checks and coordinator permissions. Existing assignments are not converted
+by retrying the endpoint in another mode; remove and re-add deliberately instead.
+
+Both modes write `_shift_signup_at_` for reporting. For `assigned`, member cancellation returns
+`409 shift_assignment_required`, even before the 21-day deadline or during the 30-minute grace
+period. Member list and calendar responses expose `is_duty_assigned` and `can_cancel: false`,
+and the UI directs replacements and swaps to the accommodatiemanager. Coordinators can still
+remove the person; removal clears the mode and any pending confirmation. Ordinary signups and
+all existing assignments retain their cancellation rights. Person merges and guardian relinking
+preserve the mode; an explicit duty takes precedence over a regular signup.
+
+The shift editor response includes `duty_assigned_person_ids` alongside `assigned_person_names`
+so coordinators can distinguish the two kinds of assignment.
 
 `assigned_persons` cannot be written through the generic REST route: it is REST-exposed,
 but `prevent_direct_assignee_writes()` refuses any change to it, because that path skips
@@ -197,6 +213,19 @@ and detaches template-managed shifts from their sjabloon.
 quick claims produce one mail), with an iCal attachment; reminders at 14, 7 and 2 days;
 cancellation notices; and a post-shift survey when the diensttype configures one.
 Templates live on the `dienst_type`.
+
+Explicit duty assignments use `assignment_email_subject` and `assignment_email_body` under
+canonical `fields`, editable in the task-type form's **Toewijzingsmail** section. Variables:
+`{naam}`, `{dienst}`, `{datum}`, `{tijd}`, `{eindtijd}`, `{medevrijwilligers}`. Empty values use the
+registry defaults, which explain the member's responsibility, arranging cover or a swap, notifying
+the accommodatiemanager, and the absence of self-cancellation. Content is rendered as escaped
+plain text inside the shared branded email template.
+
+Duty notices use the same ten-minute queue but send one email per duty, including its calendar
+attachment, so each task type can supply its own wording. Ordinary signups remain combined in
+one separate confirmation. Failed notices remain queued for retry; successful notices and removed
+or cancelled assignments leave the queue. This prevents a mixed signup/assignment batch from
+sending the wrong template or resending its successful part.
 
 The **Mijn inschrijftaken** tab also links to
 `GET /rondo/v1/my-shifts/calendar`. This authenticated endpoint downloads
