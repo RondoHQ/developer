@@ -22,7 +22,9 @@ Purpose:
 
 Emails rendered through `Rondo\Notifications\EmailTemplate` use the configured club logo from `FinanceConfig::get_club_logo_id()` in their header. The logo links to the existing `brand_url` and replaces the header's text label. The email heading appears beside the logo in a vertically aligned, two-column table; the message body starts in the card underneath. It uses the WordPress medium image size with explicit proportional dimensions, capped at 64 pixels high and 160 pixels wide. The club display name is included as alternative text for mail clients that block images.
 
-If no usable logo is configured, the existing `brand_name` text remains visible. The decorative accent stripe above the email heading is removed; message content, buttons, colors and delivery behavior are unchanged.
+If no usable logo is configured, the existing `brand_name` text remains visible. The decorative accent stripe above the email heading is removed; message content and delivery behavior are unchanged.
+
+The configured club accent (`FinanceConfig::get_accent_color()`) controls template links and buttons, including standalone payment and activation buttons. It takes precedence over sender-specific accent arguments. If no valid club accent is set, a valid sender accent is used, then `#0f766e`. The configured accent background (`get_accent_background_color()`) provides a solid email background, falling back to `#f3f7f6`. Plain-text URLs converted by the template receive the club accent inline; the shared stylesheet also colors unstyled message links.
 
 Current adopters:
 - Finance invoice mails (`InvoiceEmailSender`)
