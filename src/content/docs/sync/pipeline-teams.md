@@ -81,7 +81,7 @@ sudo -u rondo flock -n /home/rondo/.sync-teams.lock node tools/retire-missing-te
 sudo -u rondo flock -n /home/rondo/.sync-teams.lock node tools/retire-missing-teams.js --apply
 ```
 
-Both commands fetch a fresh Sportlink snapshot. Preview updates only the local source cache and reports candidates and historical reference counts; `--apply` preserves history and archives the verified teams. Failed, malformed and empty snapshots cannot trigger cleanup. Individual roster failures do not make an existing team disappear from the source list.
+Both commands fetch only the fresh Sportlink team lists, without downloading rosters or changing the local source cache. Preview reports candidates and historical reference counts without writing to WordPress; `--apply` preserves history and archives the verified teams. Failed, malformed and empty snapshots cannot trigger cleanup. Individual roster failures do not make an existing team disappear from the source list.
 
 ### Step 3: Sync Work History
 
