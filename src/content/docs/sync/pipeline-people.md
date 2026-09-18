@@ -28,6 +28,7 @@ pipelines/sync-people.js
 ├── Step 1b: steps/download-inactive-members.js      → deceased-member safety input
 ├── Step 2: steps/prepare-laposta-members.js         → data/laposta-sync.sqlite (members table)
 ├── Step 3: steps/submit-laposta-list.js             → Laposta API
+├── Step 3a: steps/sync-former-members-to-laposta.js → former-member unsubscribe reconciliation
 ├── Step 3b: steps/sync-deceased-members.js          → Laposta unsubscribe reconciliation
 ├── Step 4: steps/submit-rondo-club-sync.js          → Rondo Club API (members + parents + birthdate)
 ├── Step 4b: steps/sync-deceased-members.js          → Rondo Club death dates
@@ -125,6 +126,44 @@ relations whose address belongs to a deceased person. It changes those relations
 `unsubscribed`; it never deletes them. An address remains active when the freshly prepared local
 list still needs that same address for another, living relation. Parent email fields are not
 treated as the deceased person's own address.
+
+### Former-member mailing cleanup
+
+`sync-former-members-to-laposta.js` runs after a successful Laposta submission on every
+People pipeline run. It uses the same selection as the one-time cleanup tool:
+
+- Candidate addresses belong to Sportlink's `Oud bondslid` / `Oud verenigingslid`
+  records (own, alternative and both parent email fields), or the current email fields
+  of a Rondo person with `former_member=true`.
+- Every email field of every active Sportlink member protects that address across
+  all four member lists, including shared mailboxes and parents of another active child.
+- Only matching active Laposta subscriptions are changed to `unsubscribed`.
+  Unmatched subscriptions, existing opt-outs and the dedicated sponsor list are untouched.
+- Cleanup requires a complete, nonempty active Sportlink download less than one hour
+  old, a successful inactive-member download and a complete paginated Rondo read.
+  A source or submission failure prevents cleanup. Source freshness is checked again
+  before each write.
+- Intentional removals are journaled in the existing deliverability events table with
+  reason `former-member-cleanup` before calling Laposta. These events cannot generate
+  a misleading contact-check todo. Uncertain requests are verified by a separate
+  read of unsubscribed relations; remaining active candidates are retried next run.
+- Run tracking stores candidates, protected subscriptions, verified unsubscribes,
+  per-address outcomes and errors under `summary_json.formerMembers` and step
+  `former-members-laposta`. Subscriptions and unique email counts are reported separately.
+
+Run the one-time tool **on the production sync server only**, while holding the same
+lock as the People pipeline. Both modes refresh Sportlink first; preview does not
+change LaPosta subscriptions:
+
+```bash
+cd /home/rondo
+flock -n .sync-people.lock node tools/cleanup-laposta-former-members.js
+flock -n .sync-people.lock node tools/cleanup-laposta-former-members.js --apply
+```
+
+The tool prints a JSON audit of its selection/results. Store that output with restricted
+permissions when it is needed for review. Existing unsubscribe suppression remains in
+effect, including if a former member later returns; reactivation requires a separate decision.
 
 ### Step 4: Sync to Rondo Club
 
