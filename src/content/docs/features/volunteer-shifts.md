@@ -258,3 +258,13 @@ hide an outstanding family duty. Existing season, no-show, cancellation-credit,
 and player-before-family attribution rules remain the source of truth. “Afgerond”
 includes credit for late club cancellations. Filters are applied before pagination
 and total calculation; only the resulting page receives full person data.
+
+## Weekend recruitment mail scheduling
+
+`WeekendVolunteerMail` schedules a Sunday 19:00 Europe/Amsterdam digest for open
+shifts on the weekend thirteen and fourteen days later. Its `init` registration
+and `rondo_weekend_volunteer_mail` callback both accept zero WordPress hook
+arguments. The optional `DateTimeImmutable` parameter on the underlying methods
+is a test clock, not a hook argument: WordPress can pass an empty string for an
+action invoked without arguments, which otherwise causes a fatal type error.
+Regression tests exercise both registrations through WordPress action dispatch.
