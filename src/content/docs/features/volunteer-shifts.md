@@ -150,6 +150,34 @@ accounts no longer contribute. The season selector does not filter this series; 
 its all-time scope. The chart shares the signup chart component and shows both the cumulative
 total and the number created today. No account IDs, names, or email addresses are returned.
 
+The `by_team` array powers **Overzicht per team** on the same page. Rondo Bestuur,
+Rondo Vrijwilligers and administrators can read it through the existing statistics
+permission; full Teams access is not required. Rows expose only `id`, `name`,
+`people_count`, `account_count`, `required_count` and `assignment_count`, ordered
+naturally by team name. Published teams without members remain visible with zeroes.
+
+- `people_count` counts current players and staff plus their linked parents, each
+  person once per team. Duplicate roles, siblings with the same parents and a parent
+  who is also on the roster do not inflate this count. Former/deceased team members,
+  unpublished people, ended or future memberships, and inactive undated memberships
+  do not contribute as team members. Existing parent records can still count even
+  when the parent is a former club member.
+- `account_count` counts distinct existing WordPress accounts linked to those people.
+  Both `_rondo_wp_user_id` and `rondo_linked_person_id` are supported; duplicate
+  links and deleted accounts do not inflate the count.
+- `required_count` sums the season obligation of each roster member after the shared
+  exemption policy. A child's family obligation counts in full for that child, even
+  when siblings are in the same team. This is the total requirement, not the remainder.
+- `assignment_count` sums current non-cancelled season assignments for those roster
+  members or their associated family obligation. Completed assignments and no-shows
+  remain registrations; withdrawn assignments and cancelled shifts do not count.
+  Exempt members' registrations still count. Family registrations can repeat for
+  each child, so team rows must not be summed into a unique club total.
+
+Team membership, parent links and accounts are always current; only the duties and
+registrations use the selected season. This scope is stated on the page. The browser
+receives no person or account IDs, and team names do not link to restricted team pages.
+
 An assignment made by a coordinator writes the same `_shift_signup_at_` timestamp a
 self-signup would, so the member keeps their normal cancellation rights — nobody is
 trapped in a dienst somebody else planned for them.
