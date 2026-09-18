@@ -63,8 +63,8 @@ pipelines/sync-teams.js
 4. Updates `last_synced_hash` on success
 5. Detects tracked teams missing from the fresh, complete, non-empty Sportlink snapshot. Missing teams are excluded from create/update, including force runs.
 6. Verifies each missing team's WordPress ID, post type, title and `publicteamid`. Untracked teams are never automatically removed.
-7. Reads all persons, including former members and unpublished records. A missing team with an unended role is deferred and reported for source-history reconciliation; disappearance alone never invents an end date.
-8. Converts historical references to `team_id: null`, `team_name_text` and `entity_type: external_team`, retaining roles, dates and other row values. Each save is independently read back, followed by a complete reference scan.
+7. Reads all accessible non-deleted persons, including former members and unpublished records. Trashed persons remain outside REST access; their original team references stay recoverable because archived team posts are retained. A missing team with an unended role is deferred and reported for source-history reconciliation; disappearance alone never invents an end date.
+8. Converts historical references to `team_id: null`, `team_name_text` and `entity_type: external_team`, retaining roles, dates and other row values. Each save is independently read back, followed by a complete scan of accessible references. Verification also accounts for the existing former-member lifecycle: saving history can close other still-current roles at the membership end date (or today when that date is unavailable). Any other difference stops archival.
 9. Moves only verified, unreferenced teams to **draft**, verifies their status and then removes their local sync mapping. The team post is retained; normal published-team lists no longer include it.
 
 **Output:** `{ total, synced, created, updated, skipped, archived, errors }`
