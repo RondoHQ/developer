@@ -215,3 +215,46 @@ shift response so it does not depend on loading the full calendar.
 `VolunteerObligationCalculator` reads `assigned_persons` directly and does not care who
 wrote it, so a coordinator-made assignment counts exactly like a self-signup. Any
 mutation must call `VolunteerObligationCalculator::invalidate_cache()`.
+
+## People list obligation progress
+
+Since 35.87.0, Relaties offers an **Inschrijftaken** filter and optional status,
+Ingepland, Afgerond, and Vereist columns for the current sports season. Selecting
+a status temporarily shows these columns next to the person's name, without
+changing stored column preferences. The CSV export uses the same filter and includes
+the counts when these columns or the filter are active.
+
+Access requires the explicit `rondo_bestuur` or `rondo_vrijwilligers` role. The
+`can_view_people_shift_progress` current-user flag controls the UI, and
+`PeopleShiftProgress::can_view()` also guards the API and available-column metadata.
+An administrator or IVA approver without either role does not receive this feature.
+Other people-list access rules and filters continue to apply.
+
+`GET /rondo/v1/people/filtered` accepts `include_shift_progress=true` and/or
+`shift_status=not_started|insufficient|planned|completed|exempt`. Requesting either
+without an authorized role returns HTTP 403. Ordinary list requests omit the
+summary entirely. Authorized responses include `shift_season` and each returned
+person's `shift_progress` (`required`, `completed`, `planned`, `family`, `status`),
+or null when the person carries no obligation.
+
+`PeopleShiftProgress` batches the existing eligibility, obligation calculator,
+and exemption resolver. Family duties appear for responsible adults, not their
+youth children; both parents see the shared counts, marked “Inclusief gezin”.
+These are obligation counts, not independent personal attendance totals: do not
+sum family rows to calculate a club total. Exempt duties are excluded from counts;
+fully exempt people display “Vrijgesteld” and dashes. People without a duty display
+“Geen verplichting” and dashes and do not appear in the five status filters.
+
+- `not_started`: an active duty, with no completed credit or planned assignment.
+- `insufficient`: some completed credit or planned work, but an active duty is still
+  underbooked.
+- `planned`: every active duty is covered by completed credit plus future bookings,
+  with some work still to complete.
+- `completed`: every active duty has enough completed credit.
+- `exempt`: all of the person's duties are exempt.
+
+Coverage is capped separately per duty so surplus on a personal obligation cannot
+hide an outstanding family duty. Existing season, no-show, cancellation-credit,
+and player-before-family attribution rules remain the source of truth. “Afgerond”
+includes credit for late club cancellations. Filters are applied before pagination
+and total calculation; only the resulting page receives full person data.
