@@ -20,7 +20,7 @@ Purpose:
 - Supports both prebuilt HTML fragments (`body_html`) and plain-text templates converted with `EmailTemplate::format_plain_text()`
 - Keeps existing sender-specific placeholder replacement logic inside each mailer, then wraps the final content
 
-Emails rendered through `Rondo\Notifications\EmailTemplate` use the configured club logo from `FinanceConfig::get_club_logo_id()` in their header. The logo links to the existing `brand_url` and replaces the header's text label. It uses the WordPress medium image size with explicit proportional dimensions, capped at 64 pixels high and 160 pixels wide. The club display name is included as alternative text for mail clients that block images.
+Emails rendered through `Rondo\Notifications\EmailTemplate` use the configured club logo from `FinanceConfig::get_club_logo_id()` in their header. The logo links to the existing `brand_url` and replaces the header's text label. The email heading appears beside the logo in a vertically aligned, two-column table; the message body starts in the card underneath. It uses the WordPress medium image size with explicit proportional dimensions, capped at 64 pixels high and 160 pixels wide. The club display name is included as alternative text for mail clients that block images.
 
 If no usable logo is configured, the existing `brand_name` text remains visible. The decorative accent stripe above the email heading is removed; message content, buttons, colors and delivery behavior are unchanged.
 
