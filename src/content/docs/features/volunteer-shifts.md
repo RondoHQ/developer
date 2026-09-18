@@ -150,11 +150,15 @@ accounts no longer contribute. The season selector does not filter this series; 
 its all-time scope. The chart shares the signup chart component and shows both the cumulative
 total and the number created today. No account IDs, names, or email addresses are returned.
 
-The `by_team` array powers **Overzicht per team** on the same page. Rondo Bestuur,
+The `by_team` array powers **Overzicht per team** in the **Per team** tab on the same page.
+The default **Algemeen** tab contains the existing aggregate statistics and charts.
+`tab=teams` selects the team tab in the URL; changing tabs preserves `seizoen`, and
+changing seasons preserves the active tab. The table hides rows with `people_count=0`
+and shows an empty state when no populated teams remain. Rondo Bestuur,
 Rondo Vrijwilligers and administrators can read it through the existing statistics
 permission; full Teams access is not required. Rows expose only `id`, `name`,
 `people_count`, `account_count`, `required_count` and `assignment_count`, ordered
-naturally by team name. Published teams without members remain visible with zeroes.
+naturally by team name. The API still includes published teams without members with zeroes; the table filters them out.
 
 - `people_count` counts current players and staff plus their linked parents, each
   person once per team. Duplicate roles, siblings with the same parents and a parent
