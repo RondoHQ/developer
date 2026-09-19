@@ -5,6 +5,10 @@ title: "Teams API Documentation"
 
 This document describes how to use the Rondo Club REST API to manage teams (organizations, companies, etc.).
 
+## Team list sorting
+
+The Teams screen sorts the displayed, decoded names using Dutch natural sorting in both directions: JO7-1, JO7-2, JO7-10, JO10-1. This is client-side display ordering; REST collection ordering is unchanged. The team list and volunteer statistics share the activity-to-playing-day label formatter.
+
 ## Base URL
 
 All endpoints are relative to your WordPress installation:
