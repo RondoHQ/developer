@@ -158,9 +158,9 @@ The default **Algemeen** tab contains the existing aggregate statistics and char
 changing seasons preserves the active tab. The table hides rows with `people_count=0`
 and shows an empty state when no populated teams remain. Rondo Bestuur,
 Rondo Vrijwilligers and administrators can read it through the existing statistics
-permission; full Teams access is not required. Rows expose only `id`, `name`,
+permission; full Teams access is not required. Rows expose only `id`, `name`, `activiteit`,
 `people_count`, `account_count`, `required_count` and `assignment_count`, ordered
-naturally by team name. The API still includes published teams without members with zeroes; the table filters them out.
+naturally by team name. The UI shows the playing day from `activiteit` beside the name, so Saturday and Sunday teams with the same name remain distinguishable; missing activity adds no label. The API still includes published teams without members with zeroes; the table filters them out.
 
 - `people_count` counts current players and staff plus their linked parents, each
   person once per team. Duplicate roles, siblings with the same parents and a parent
@@ -213,6 +213,8 @@ and detaches template-managed shifts from their sjabloon.
 quick claims produce one mail), with an iCal attachment; reminders at 14, 7 and 2 days;
 cancellation notices; and a post-shift survey when the diensttype configures one.
 Templates live on the `dienst_type`.
+
+Reminder emails automatically append links to published `taakuitleg` entries whose canonical `dienst_types` relationship includes the task type. Links use the existing public `/uitleg/{slug}` pages and remain accessible without a Rondo login. Draft, password-protected and unrelated instructions are excluded. When no matching explanation exists, no empty section appears. Custom reminder text is preserved; survey and cancellation mail do not receive the instruction section. The task-type editor explains this automatic behavior.
 
 Explicit duty assignments use `assignment_email_subject` and `assignment_email_body` under
 canonical `fields`, editable in the task-type form's **Toewijzingsmail** section. Variables:
