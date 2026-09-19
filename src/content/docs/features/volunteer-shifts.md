@@ -209,6 +209,22 @@ and detaches template-managed shifts from their sjabloon.
 
 ## Notifications
 
+`ShiftChangeNotification` sends an automatic change notice when an existing, published,
+upcoming shift changes `dienst_type_id`, `start_datetime`, `end_datetime` or `notes` through
+the native field layer. The notice includes both old and new details, keeps the volunteer's
+assignment, and links to **Mijn inschrijftaken**. Capacity, assignment and status-only changes,
+initial creation, completed shifts and past shifts do not trigger a change notice.
+
+The `rondo_fields_saved_post` hook queues one event after the complete field update.
+WordPress cron runs `rondo_send_shift_change_notification` after one minute. Each event is
+stored in native post meta (`_shift_change_notice_{uuid}`), with recipient progress.
+Failed deliveries retry after fifteen minutes; successful recipients are not resent.
+Before sending, the service checks that the shift still matches the notice, remains upcoming
+and active, and that the recipient is still assigned. Superseded and cancelled events are skipped.
+Missing email addresses are recorded without sending. Existing cancellation notifications and
+credit rules remain handled by the separate cancellation action.
+
+
 `ShiftEmailScheduler` sends a batched confirmation ten minutes after signup (so three
 quick claims produce one mail), with an iCal attachment; reminders at 14, 7 and 2 days;
 cancellation notices; and a post-shift survey when the diensttype configures one.
