@@ -4,7 +4,8 @@ title: "Room reservations and presentation access"
 
 Rondo Club stores rooms and reservations as private WordPress posts with native field-registry post
 meta. Members can inspect availability, but can reserve only for a commissie or year group for which
-their linked person currently has a qualifying volunteer position. Player positions do not qualify.
+their linked person currently has a qualifying volunteer position, or for Bestuur when their account
+has the `rondo_bestuur` role. Player positions do not qualify.
 
 ## Feature toggle
 
@@ -18,6 +19,14 @@ Every signed-in user can read safe availability. The booking-context endpoint de
 commissies from current `work_history` positions and year groups from the canonical
 `leeftijdsgroep` values of current players in the volunteer's team. Submitted context IDs are
 validated against that server-derived result on every create or context change.
+
+The `board` context is labelled **Bestuur** and derives directly from the holder's `rondo_bestuur`
+account role. It requires no linked committee or volunteer position. Submit
+`booking_context_type: "board"`, `commissie_id: null`, and `age_group_key: ""`; the stored committee
+and eligibility-team references remain empty. Administrator or accommodation-manager permissions
+alone do not grant this context, including when booking for another holder. Existing confirmed
+bookings retain their context snapshot after a role change; selecting a different context or holder
+requires current eligibility.
 
 The `accommodatiebeheer` capability and built-in `rondo_accommodatiebeheerder` role grant the
 operational day/week overview and management actions. A manager may book for another user only when
@@ -80,6 +89,6 @@ Creation, edits, cancellation, and extensions send the holder a branded email. N
 presenters receive the room and time. A missing contact email does not block the write and is returned
 as a UI warning.
 
-`tests/Wpunit/RoomBookingsTest.php` covers commission eligibility, player exclusion, roster-derived
+`tests/Wpunit/RoomBookingsTest.php` covers commission and board eligibility, holder-based manager checks, role changes, player exclusion, roster-derived
 year groups, privacy, conflicts, management blocks, audit entries, and controlled-display access.
 `tests/js/roomUtils.test.mjs` covers context serialization and local calendar grouping.
