@@ -33,6 +33,21 @@ operational day/week overview and management actions. A manager may book for ano
 that holder qualifies for the selected context. A holderless `management_block` is the explicit
 exception. Administrators additionally configure and archive rooms.
 
+## Reservations outside opening hours
+
+An acting user with the current `rondo_bestuur` role may create, change, or extend a room
+reservation outside its opening windows, for any context the holder is eligible for. This also
+works in the ordinary member reservation form. The server derives the exception from the actor's
+account on every write; it cannot be enabled by a submitted flag or inherited from another holder.
+Administrator or accommodation-manager permissions alone do not grant this exception.
+
+The `/user/me` response exposes `can_book_rooms_outside_hours` while the Rooms feature is accessible.
+The form explains the exception and tells board members to arrange building access themselves.
+Conflicts, changeover buffers, booking eligibility, and all other applicable interval rules remain
+in force. Extension duration limits still apply. Losing the board role removes the exception for
+subsequent edits and extensions, without cancelling existing reservations. Holderless management
+blocks retain their existing opening-hours exemption.
+
 ## Data model
 
 `rondo_room` stores member-facing room details, facilities, weekly opening windows, duration and
