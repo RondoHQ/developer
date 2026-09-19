@@ -213,21 +213,23 @@ Behavior:
 - When that verification email bounces, webhook processing assigns the follow-up todo to the sender and marks the person email inactive
 
 
-## Weekly volunteer weekend email
+## Fortnightly volunteer weekend email
 
-`WeekendVolunteerMail` registers `rondo_weekend_volunteer_mail` on admin, REST and cron requests. A single WordPress cron event starts on Sunday at **19:00 Europe/Amsterdam**; subsequent events process at most 25 addresses per minute. Calendar-based scheduling preserves local time across summer/winter time changes. Actual execution depends on the site's WP-Cron runner. Delivery is limited to Sunday evening; delayed jobs on Monday do not catch up with old mail.
+`WeekendVolunteerMail` registers `rondo_weekend_volunteer_mail` on admin, REST and cron requests. A single WordPress cron event starts every other Sunday at **19:00 Europe/Amsterdam**, anchored to **20 September 2026**; subsequent events process at most 25 addresses per minute. Calendar-based scheduling preserves local time across summer/winter time changes. Actual execution depends on the site's WP-Cron runner. Delivery is limited to the scheduled Sunday evening; delayed jobs on Monday do not catch up with old mail.
+
+Sending dates begin 20 September, 4 October and 18 October 2026. Alternate Sundays are rejected by the sender even if a previous round was empty or missed. Registration replaces any old weekly cron event on an off-week. The mail footer describes the fortnightly frequency.
 
 The selection is the Saturday thirteen days and Sunday fourteen days after the sending Sunday. For example: 20 September 2026 sends the open shifts for 3–4 October. Only published, open shifts with remaining capacity and an open signup window appear. The email groups equal task types and start/end times, summing their available places; unlimited capacity is labelled without a numeric limit.
 
 Recipients come from `PeopleShiftProgress`: responsible players and parents with status `not_started` or `insufficient`. This includes planned as well as completed work, family attribution, scaled family duties and exemptions. Children do not receive their parents' obligation mail. The primary contactable email per responsible person is used, normalized and deduplicated across all units. Shared addresses receive one digest containing shifts that at least one of those responsible people may claim. IVA (including waivers), VOG and pool restrictions reuse `ShiftSignupEligibility`, also used by member signup and coordinator assignment. Overlap warnings remain overridable in the signup flow.
 
-At each batch, duty counts and recipients are refreshed. Relevant cache-generation changes during a batch trigger another recipient refresh; the destination, publication/contact policy, capacity and signup requirements are checked before each message. Fulfilled/exempt duties, changed addresses and empty personal shift selections are skipped. The initial queue is fixed for that Sunday; newly eligible addresses wait until the following week.
+At each batch, duty counts and recipients are refreshed. Relevant cache-generation changes during a batch trigger another recipient refresh; the destination, publication/contact policy, capacity and signup requirements are checked before each message. Fulfilled/exempt duties, changed addresses and empty personal shift selections are skipped. The initial queue is fixed for that Sunday; newly eligible addresses wait until the next fortnightly round.
 
 Messages use the shared club-branded `EmailTemplate`, an actual first-name greeting and the `/vrijwillig` signup link. They go through `wp_mail()` and the configured Lettermint transport with tag `volunteer-weekend`.
 
 ### Delivery state and failure recovery
 
-The non-autoloaded option `rondo_weekend_volunteer_mail_state` holds the current Sunday's date, pending addresses, next-batch timestamp and per-address outcomes (`skipped`, `reserved`, `accepted`, `failed`, `uncertain`). It is replaced on the next sending Sunday, bounding retained personal data. `accepted` means accepted by the transport, not confirmed inbox delivery.
+The non-autoloaded option `rondo_weekend_volunteer_mail_state` holds the current Sunday's date, pending addresses, next-batch timestamp and per-address outcomes (`skipped`, `reserved`, `accepted`, `failed`, `uncertain`). It is replaced on the next sending Sunday, two weeks later, bounding retained personal data. `accepted` means accepted by the transport, not confirmed inbox delivery.
 
 A unique, invariant-value option `rondo_weekend_mail_lock_YYYY-MM-DD` serializes callbacks. A recipient is durably removed from the queue and marked `reserved` before the provider is called. Failed or ambiguous sends are never automatically retried, because a transport timeout can occur after provider acceptance. Normal completion releases the lock. A fatal process termination can leave it behind: inspect the current state and Lettermint events, ensure no worker remains active, then remove only that date's lock to allow remaining pending addresses to continue. Do not put reserved/accepted addresses back into the queue without establishing the provider outcome. Old locks are removed when a new Sunday's state replaces the previous one.
 

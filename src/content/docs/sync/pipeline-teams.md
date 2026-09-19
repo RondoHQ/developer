@@ -44,7 +44,9 @@ pipelines/sync-teams.js
 6. Stores team membership in `data/rondo-sync.sqlite` → `sportlink_team_members`:
    - `sportlink_team_id`, `sportlink_person_id`, `role_description`
 
-**Output:** `{ success, teamCount, memberCount }`
+**Output:** `{ success, teamCount, memberCount, currentSportlinkIds }`
+
+`currentSportlinkIds` comes directly from validated UnionTeams and ClubTeams responses. Both pipelines pass this snapshot to the team sync; the accumulated tracking database must never be used as the current source list.
 
 **Rate limiting:** 500ms-1.5s random jitter between member scrapes.
 
@@ -59,11 +61,27 @@ pipelines/sync-teams.js
    - **Has `rondo_club_id`**: `PUT /wp/v2/teams/{rondo_club_id}` (update existing)
 3. Stores returned WordPress post ID as `rondo_club_id`
 4. Updates `last_synced_hash` on success
-5. Detects **orphan teams** (teams in Rondo Club DB but not in current Sportlink download) and optionally removes them
+5. Detects tracked teams missing from the fresh, complete, non-empty Sportlink snapshot. Missing teams are excluded from create/update, including force runs.
+6. Verifies each missing team's WordPress ID, post type, title and `publicteamid`. Untracked teams are never automatically removed.
+7. Reads all accessible non-deleted persons, including former members and unpublished records. Trashed persons remain outside REST access; their original team references stay recoverable because archived team posts are retained. A missing team with an unended role is deferred and reported for source-history reconciliation; disappearance alone never invents an end date.
+8. Converts historical references to `team_id: null`, `team_name_text` and `entity_type: external_team`, retaining roles, dates and other row values. Each save is independently read back, followed by a complete scan of accessible references. Verification also accounts for the existing former-member lifecycle: saving history can close other still-current roles at the membership end date (or today when that date is unavailable). Any other difference stops archival.
+9. Moves only verified, unreferenced teams to **draft**, verifies their status and then removes their local sync mapping. The team post is retained; normal published-team lists no longer include it.
 
-**Output:** `{ total, synced, created, updated, skipped, deleted, errors }`
+**Output:** `{ total, synced, created, updated, skipped, archived, errors }`
 
 **Team renames:** Uses `sportlink_id` as the conflict key, so renamed teams update the existing WordPress post instead of creating duplicates.
+
+### Preview or apply missing-team cleanup
+
+Run on the production sync host as the service account, under the teams lock:
+
+```bash
+cd /home/rondo
+sudo -u rondo flock -n /home/rondo/.sync-teams.lock node tools/retire-missing-teams.js
+sudo -u rondo flock -n /home/rondo/.sync-teams.lock node tools/retire-missing-teams.js --apply
+```
+
+Both commands fetch only the fresh Sportlink team lists, without downloading rosters or changing the local source cache. Preview reports candidates and historical reference counts without writing to WordPress; `--apply` preserves history and archives the verified teams. Failed, malformed and empty snapshots cannot trigger cleanup. Individual roster failures do not make an existing team disappear from the source list.
 
 ### Step 3: Sync Work History
 
@@ -146,7 +164,7 @@ The ACF `work_history` is a repeater field on person posts:
 
 ## Error Handling
 
-- Team download failure doesn't prevent team sync (uses cached data)
+- Team download failure allows cached team updates but never cleanup; standalone submission without fresh source IDs also skips cleanup
 - Individual team sync failures don't stop the pipeline
 - Work history sync skips members not yet in Rondo Club (counted as `skipped`)
 - Player-history detail sync skips unchanged members and reports quarantined or failed Sportlink detail records
