@@ -68,7 +68,7 @@ separate from the active-member import: former members are not re-imported, but 
 1. Reads latest Sportlink results from `data/laposta-sync.sqlite` → `sportlink_runs`
 2. Applies field mappings from `config/field-mapping.json` to transform Sportlink fields to Laposta custom fields
 3. Reads the current-season obligation units from `GET /rondo/v1/volunteer-obligations`
-4. Maps each Rondo person ID to its tracked KNVB ID or standalone-parent email and adds the numeric `vrijwilligersplicht` field
+4. Maps each Rondo person ID to its tracked KNVB ID or standalone-parent email and adds the three numeric volunteer counters
 5. Handles parent extraction: creates separate list entries for `EmailAddressParent1` / `EmailAddressParent2`
 6. Deduplicates parent entries across lists
 7. Computes `source_hash` for each member (SHA-256 of email + custom fields)
@@ -80,7 +80,22 @@ separate from the active-member import: former members are not re-imported, but 
 - `GenderCode`: "Male" → "M", "Female" → "V"
 - `UnionTeams`: comma-separated team list
 - Parent entries: creates person entries with `oudervan` (child names) field
-- `vrijwilligersplicht`: `-1` when exempt or not applicable, `0` when completed, otherwise the summed number of duties still to complete
+- `vrijwilligersplicht`: total required duties across active obligations (`required_count`), independent of completed or planned shifts; `-1` when all obligations are exempt or not applicable
+- `vrijwilligersingepland`: current-season planned duties (`pending_count`)
+- `vrijwilligersafgerond`: current-season completed/credited duties (`completed_count`), including Rondo's qualifying cancellation credits, excluding no-shows
+
+The counts use Rondo's shared-family and player-before-family attribution. Exempt
+units still contribute any progress, but no requirement. People outside all
+obligation units have zero progress. A requirement of 2 with one planned and one
+completed duty is exported as **2 / 1 / 1**, never as a reduced requirement. Missing
+or invalid source counts cause all three fields to be omitted, preserving the
+last known Laposta values. The four member lists need all three numeric fields,
+with `in_form=false` so subscribers cannot change these derived values.
+
+Example recruitment segment: `vrijwilligersplicht > 0`,
+`vrijwilligersingepland = 0`, `vrijwilligersafgerond = 0`.
+Existing segments that interpreted `vrijwilligersplicht = 0` as completed must
+be revised: the field now describes the full requirement.
 
 ### Parent names in Laposta
 
@@ -250,7 +265,9 @@ See `config/field-mapping.json` for the complete mapping. Key fields:
 | `team` | `UnionTeams` |
 | `geslacht` | `GenderCode` (Male→M, Female→V) |
 | `relatiecode` | `PublicPersonId` (KNVB ID) |
-| `vrijwilligersplicht` | Derived current-season Rondo obligation (`-1`, `0`, or a positive integer) |
+| `vrijwilligersplicht` | Total active current-season requirement; `-1` for exempt/not applicable |
+| `vrijwilligersingepland` | Current-season Rondo pending count |
+| `vrijwilligersafgerond` | Current-season Rondo completed/credited count |
 
 ### Sportlink → Rondo Club Members
 
