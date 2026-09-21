@@ -308,8 +308,15 @@ and total calculation; only the resulting page receives full person data.
 
 ## Weekend recruitment mail scheduling
 
-`WeekendVolunteerMail` schedules a Sunday 19:00 Europe/Amsterdam digest for open
-shifts on the weekend thirteen and fourteen days later. Its `init` registration
+`WeekendVolunteerMail` schedules a digest every other Sunday at 19:00
+Europe/Amsterdam, anchored on 20 September 2026. It includes suitable open shifts
+on the next three Saturdays and Sundays, six through twenty-one calendar days
+after the mailing. Weekday shifts are excluded. For example, the 4 October mailing
+covers 10–11, 17–18 and 24–25 October; the 18 October mailing covers 24–25 October,
+31 October–1 November and 7–8 November. Local calendar dates preserve the window
+across daylight-saving changes. The subject and introduction show the full date
+range; available shifts are grouped by day. Existing recipient eligibility,
+capacity checks, batching and duplicate-send protection remain unchanged. Its `init` registration
 and `rondo_weekend_volunteer_mail` callback both accept zero WordPress hook
 arguments. The optional `DateTimeImmutable` parameter on the underlying methods
 is a test clock, not a hook argument: WordPress can pass an empty string for an
