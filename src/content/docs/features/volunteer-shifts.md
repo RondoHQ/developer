@@ -322,3 +322,51 @@ arguments. The optional `DateTimeImmutable` parameter on the underlying methods
 is a test clock, not a hook argument: WordPress can pass an empty string for an
 action invoked without arguments, which otherwise causes a fatal type error.
 Regression tests exercise both registrations through WordPress action dispatch.
+
+
+## Outstanding-duty assignment overview
+
+`/vrijwilligers/indelen` (Nog in te delen) is a private worklist for the current
+sports season. It requires both volunteer-management access and the existing
+people-progress audience: an explicit `rondo_bestuur` or `rondo_vrijwilligers`
+role. An administrator-only or IVA-approver-only account does not gain access.
+Navigation, page protection and REST permissions use that same restriction.
+
+Each row represents one player or one family obligation. Families appear once,
+with the responsible adults as assignment candidates. Every person in a unit
+must be visible to the current user. Exempt units and units whose completed plus
+planned duties already cover the requirement are omitted. Counts use the existing
+obligation calculator, including cancellation credits and player-before-family
+attribution; assigning a playing parent can therefore satisfy their own duty first.
+
+Defaults are **0 diensten afgerond** and **Nog niets ingepland**. Coordinators can
+select exactly one completed duty, all completion counts, and with/without planned
+duties, search by member or parent name and page through the results. The view
+shows required, completed, planned and still-needed counts. There is no export.
+
+**Dienst toewijzen** expands an inline form. Choose the responsible adult, date
+range (up to 90 days) and an available shift. The options omit closed/full shifts,
+existing assignments and shifts blocked by certificate or pool requirements.
+The final confirmation names the person, shift and time and explains the duty and
+automatic email. Missing email addresses produce an explicit manual-contact notice.
+
+### Private assignment API
+
+- `GET /rondo/v1/volunteer-assignments`: `completed=0|1|all`,
+  `planning=none|planned|all`, `search`, `page` and `per_page` (1–50, default 25).
+  Returns `season`, `rows`, `total`, `total_pages`. Rows contain an opaque HMAC
+  `unit_id`, kind, responsible-person names/IDs and email availability, plus counts.
+  No contact addresses, raw household keys or other shift participants are returned.
+- `GET /rondo/v1/volunteer-assignments/shifts`: `unit_id`, `person_id`,
+  `from=YYYY-MM-DD`, `to=YYYY-MM-DD`. Returns published eligible future shifts
+  in the current season, with type label, times and remaining capacity.
+- `POST /rondo/v1/volunteer-assignments`: `unit_id`, `person_id`, `shift_id`.
+  Rechecks the outstanding obligation and responsible person, then delegates to
+  the existing shift-assignee endpoint with `assignment_mode=assigned`. Existing
+  capacity locking, certificate checks, overlap rejection, audit and delayed
+  responsibility-email queue remain authoritative. Stale units return HTTP 409.
+
+Reads return `Cache-Control: private, no-store`. The service worker uses
+`NetworkOnly` for these routes. The client removes inactive query data and never
+retries assignment writes automatically; success refreshes the worklist and people
+progress. This page creates explicit assignments, not automatic bulk allocation.
