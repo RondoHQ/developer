@@ -22,7 +22,21 @@ do not make a team eligible for this list. Players do not need a Rondo account. 
 options API includes `player_count` for this filter and retains all teams so managers can still
 maintain staff assignments on existing registrations after a team loses its last player.
 
-Assigned staff use `/mijn-toernooien`. Multiple assignees edit the same draft with optimistic
+Every signed-in user sees **Mijn toernooien** in the personal menu and can open
+`/mijn-toernooien`, even without an assignment. The list still contains only that user's assigned
+registrations. An empty list explains that no tournament is currently available for registration
+and invites the user to contact a tournament coordinator.
+
+The empty state loads `GET /rondo/v1/tournaments/coordinators`, an authenticated contact directory
+returning only `id`, `name`, `email` and `phone`. It includes published, non-former people with a
+current `Coördinator toernooien` role, whether or not they have an account. Each person appears once;
+ended and future roles are excluded. Email prefers `email_1` then `email_2`; phone prefers mobile
+numbers then landlines. Email and phone are clickable, and missing contacts and loading failures
+have explicit states. This narrow directory is available even when a member cannot open the
+coordinator's full person record. It does not grant access to other people's registrations or to
+tournament management.
+
+Assigned staff use the same page to open their registrations. Multiple assignees edit the same draft with optimistic
 locking, so an outdated browser cannot overwrite a newer version. There is deliberately no decline
 or no-participation state: an entry can only remain open or become a positive registration.
 
