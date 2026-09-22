@@ -52,6 +52,14 @@ The editor marks overlapping blocks and disables saving until the conflicts are 
 independently rejects concurrent use of the same pitch part or team within the same version. Adjacent
 slots and independent versions may use the same resources. Multiple teams may explicitly share one block.
 
+Saving an existing version preserves team links on the same block when a team has since been
+archived (`draft`). Those links do not block unrelated changes. New links to inactive teams,
+including links on new blocks, are rejected; missing or trashed teams remain invalid.
+
+Save errors appear in the sticky action bar next to **Schema opslaan**, explicitly saying the
+changes were not saved. The local draft remains available for correction and retry. Overlap
+warnings also appear beside the disabled save button.
+
 Changes remain local until **Schema opslaan**. Copying, activating, and deleting require a saved version.
 Only an inactive version can be moved to WordPress trash. Identifiers remain unchanged when a version
 is renamed. Editing an active version updates the training times presented to teams when saved.
