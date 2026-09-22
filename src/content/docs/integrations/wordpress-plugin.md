@@ -10,11 +10,15 @@ The standalone `rondo-wordpress-plugin` publishes a Rondo Club training schedule
 2. Open **Instellingen → Rondo**, enter a public schedule endpoint and save.
 3. Insert the **Rondo trainingsschema** Gutenberg block, or `[rondo_trainingsschema]` in a shortcode block.
 
-Both insertion methods use the same administrator-configured endpoint. A fixed schedule uses `/wp-json/rondo/v1/training/schedules/{id}`; `/wp-json/rondo/v1/training/active` automatically follows Rondo's active version. No account, application password or nonce is needed to read either endpoint. The plugin never writes back to Rondo Club.
+By default, both insertion methods use the administrator-configured endpoint. Since version 1.1.0, each block can select a different schedule under **Blokinstellingen → Trainingsschema → Toon trainingsschema**. **Standaardschema** (the default `scheduleId: 0`) follows the configured endpoint; a positive `scheduleId` fixes that block to a schedule on the same Rondo site. The editor preview uses the saved selection. Shortcodes support the equivalent `[rondo_trainingsschema schedule_id="12024"]`. Existing blocks and shortcodes keep their default behavior. A fixed schedule uses `/wp-json/rondo/v1/training/schedules/{id}`; `/wp-json/rondo/v1/training/active` automatically follows Rondo's active version. No account, application password or nonce is needed to read either endpoint. The plugin never writes back to Rondo Club.
 
 Since version 1.0.1, neither insertion method adds a visible heading, schedule name or scroll explanation above the schedule. Authors can place their own heading or paragraph blocks above it. Day and view controls remain available, as do accessible labels and notices for stale, empty or unavailable schedules.
 
-The Gutenberg block is registered as `rondo/training-schedule`, with a server-rendered preview and wide/full alignment support. Multiple instances have independent day filters and view controls, with unique accessible IDs. Version 1.0 supports one source endpoint per WordPress installation.
+The Gutenberg block is registered as `rondo/training-schedule`, with a server-rendered preview and wide/full alignment support. Multiple instances have independent day filters and view controls, with unique accessible IDs. All choices remain within the administrator-configured Rondo site. A deleted selection shows an unavailable notice instead of silently rendering a different schedule.
+
+## Editor choices
+
+`GET /wp-json/rondo-website/v1/training/schedules` on the consuming WordPress site requires `edit_posts` or `edit_pages`. It fetches the public Rondo collection server-side and returns only `{id, name, season}` per schedule, cached for five minutes. It accepts no destination URL from the editor. Loading, empty, missing-selection and retry states leave the saved choice intact.
 
 ## Rendering contract
 
@@ -30,7 +34,7 @@ Only administrators can configure or refresh the source. Settings use the WordPr
 
 WordPress transients hold the current response for five minutes and the last valid response for at most 24 hours. Retrieval is request-driven, not a background polling process. A network error, HTTP 429/5xx or malformed response can fall back to the last valid data with a visible warning and retrieval time. Failures have a one-minute retry cooldown. Non-temporary HTTP errors, including 401/403/404, invalidate the backup. A valid empty schedule replaces the previous cache rather than retaining old training blocks.
 
-Changing the endpoint or clicking **Schema nu bijwerken** clears the plugin's cache. Full-page caching and CDN caches are separate: exclude the training page for prompt updates, or configure a short TTL and clear that cache after urgent changes. Layered cache durations can add together. Already open browser pages are not automatically refreshed.
+Changing the endpoint or clicking **Schema nu bijwerken** clears the default feed cache and schedule choices. Each selected schedule has its own five-minute cache. Full-page caching and CDN caches are separate: exclude the training page for prompt updates, or configure a short TTL and clear that cache after urgent changes. Layered cache durations can add together. Already open browser pages are not automatically refreshed.
 
 ## Development and verification
 
