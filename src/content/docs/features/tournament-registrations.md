@@ -22,7 +22,7 @@ do not make a team eligible for this list. Players do not need a Rondo account. 
 options API includes `player_count` for this filter and retains all teams so managers can still
 maintain staff assignments on existing registrations after a team loses its last player.
 
-Every signed-in user sees **Mijn toernooien** in the personal menu and can open
+Every signed-in user sees **Toernooien** in the personal menu and can open
 `/mijn-toernooien`, even without an assignment. The list still contains only that user's assigned
 registrations. An empty list explains that no tournament is currently available for registration
 and invites the user to contact a tournament coordinator.
