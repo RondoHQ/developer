@@ -10,11 +10,11 @@ manager overview also covers external processing, exports and programme distribu
 
 Administrators and users whose linked person has a current work-history role named exactly
 `Coördinator toernooien` can manage tournaments at `/toernooien`. The manager selects club teams
-and active team staff who have a Rondo account. Publishing creates one `rondo_tourn_entry` post per
-club team, assigns every selected staff account to that shared entry, and sends the initial email.
+and current team staff, including people who do not yet have a Rondo account. Publishing creates one `rondo_tourn_entry` post per
+club team, assigns every selected person to that shared entry, and sends the initial email.
 The publication review can select every eligible team and all of its current staff in one action.
 It shows the exact team and recipient counts and separately reports teams skipped because they have
-no active staff member with a Rondo account.
+no current staff member with a valid email address. Missing accounts and email addresses are shown separately.
 
 The invitation list only shows teams with at least one current player, using the same member
 counts as the team overview. Former members and ended player positions do not count; staff alone
@@ -41,12 +41,51 @@ locking, so an outdated browser cannot overwrite a newer version. There is delib
 or no-participation state: an entry can only remain open or become a positive registration.
 
 After publication, a manager can edit the assignment for each club team from **Teams and
-payments**. The picker reloads the current team-linked staff accounts and can select all current
-staff or an explicit subset. The server requires at least one current eligible account and the
+payments**. The picker reloads the current team-linked staff and can select all current
+staff or an explicit subset. The server requires at least one current eligible person and the
 entry's current `version`. Added staff immediately gain access and receive the assignment email at
 most once; removed staff immediately lose access. Every change is recorded in the tournament
 activity. Removing the selected contact from an open draft clears that choice, while a submitted
 contact and all financial snapshots remain unchanged.
+
+## Additional invitations and people without accounts
+
+From **Teams and payments → Extra teams uitnodigen**, managers can select teams that were not
+included at publication. The tournament must be open and its internal deadline must still be in
+the future. Reopen the tournament or extend that deadline first if necessary. Existing shared
+registrations, submitted contacts, invoices and payments remain unchanged. A repeated request for
+the same team and selection reuses its entry and skips already sent invitations; changing staff on
+an existing entry uses **Toewijzing wijzigen** instead.
+
+The publish and invite endpoints accept `assignments: [{ team_id, person_ids: [...] }]`.
+`POST /rondo/v1/tournaments/{id}/invite` is manager-only, as are publication and reassignment.
+`PATCH /rondo/v1/tournament-entries/{id}/assignees` accepts `person_ids` plus the current `version`.
+Older clients may continue sending `user_ids`; these are validated and mapped to the team's
+current people. Person selections must belong to current team staff; former members, ended roles,
+players and unrelated people cannot be newly invited. A newly selected person must have a valid
+email address. New team invitations are serialized with the existing tournament write lock.
+
+People without an account receive the same tournament invitation plus Dutch instructions to create
+an account using the address receiving that invitation. The call to action links to `/activeren/`;
+the email also retains the registration link. This uses the existing verified activation flow,
+without creating accounts or granting permissions during invitation delivery. Once their account
+has the normal `rondo_linked_person_id`, their assigned entry is available in **Toernooien** and at
+`/mijn-toernooien/{entry_id}`. Sharing an email address does not share tournament access.
+
+`assignment_snapshot` retains `person_id` and may contain `user_id: 0`. New and updated entries
+have `_tournament_assigned_person_{person_id}` lookup metadata alongside positive user indexes.
+Authorization checks the actual snapshot and trusted person link, so removing a pending assignee
+also revokes access after later account creation. Entry responses include `assigned_person_ids`
+and resolve current accounts without modifying stored history. Existing user-indexed entries remain
+compatible; no production migration or bulk invitation is needed.
+
+Invitation and initial payment receipts use `_tournament_{assignment|payment}_email_sent_person_{id}`
+for person-backed rows, while existing user-based receipts remain valid. This prevents account
+creation from resending an invitation and prevents two pending people from sharing a `user_id: 0`
+receipt. A failed send is reported and can be retried through **Toewijzing wijzigen**; successful
+recipients are skipped. Assigned staff without accounts also remain recipients of programme,
+change and payment messages, using their current person email. Existing email deduplication for
+programme and change messages remains in place.
 
 ## Registration model
 
