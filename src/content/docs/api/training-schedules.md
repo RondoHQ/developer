@@ -86,6 +86,10 @@ Send JSON with the content type `application/json`.
 
 A successful schedule write returns the saved schedule with the new revision. Submit that revision
 on the next change. Unknown fields, invalid team references, and invalid times receive HTTP 400.
+On `PUT /schedules/{id}`, an existing link to a `draft` team may be retained only on its
+persisted `block_id`. The server reads this allowlist from the saved version, never from the
+client. This allows edits after a team is archived while still rejecting new inactive links,
+new block assignments, missing teams, and trashed teams. New schedules still require active teams.
 Unknown or trashed version IDs receive HTTP 404. Resource conflicts, stale revisions, attempts to
 delete the active version, and removal of a referenced pitch receive HTTP 409.
 
