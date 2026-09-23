@@ -84,6 +84,8 @@ pipelines/sync-teams.js
 
 **Important:** The work history sync only touches entries it previously created (tracked via `rondo_club_work_history` table). Manually added work history entries in Rondo Club are left untouched.
 
+Same-named teams (for example Saturday and Sunday AWC 4) never overwrite one another in lookup maps. Both names and codes must be unique, or the quick sync resolves the member against exactly one current Sportlink roster. Multiple matches are left to the detailed membership sync. Detailed membership records with `PublicTeamId` use that ID exclusively; an unknown ID remains external history rather than falling back to a current namesake.
+
 ### Step 4: Enrich Work History with Sportlink Dates
 
 **Script:** `steps/submit-rondo-club-player-history.js`
