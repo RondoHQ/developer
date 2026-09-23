@@ -4,6 +4,10 @@ title: Feedback Agent
 
 The Feedback Agent is an autonomous Claude Code instance that processes user feedback (bug reports and feature requests) submitted through the Rondo Club UI. It runs on a Mac Mini every 30 minutes, creating pull requests for resolved items and posting follow-up questions when it needs more information.
 
+## Submitter profile
+
+The feedback response includes `author.person_id` for the submitter’s linked, published person when the viewer can access that record. “Submitted by” links to `/people/{person_id}`. Missing, unpublished, invalid, or inaccessible profiles return `null` and keep the name as plain text. The WordPress account ID remains `author.id`.
+
 ## Architecture
 
 ```
