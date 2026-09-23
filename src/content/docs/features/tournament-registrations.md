@@ -133,6 +133,32 @@ and every linked team registration to the WordPress trash, so they immediately d
 manager and assignee interfaces. Rondo does not send cancellation messages; the confirmation warns
 the manager that they must inform registered teams themselves.
 
+## Payment overview
+
+`/toernooien/betalingen` shows submitted registrations across tournaments, including archived
+tournaments, with the club team, number of tournament teams, amount, payment status, invoice
+number, payment date and payment method. Open assignments and trashed entries/tournaments are
+excluded. Free registrations are shown separately as **Geen betaling nodig** and do not contribute
+to outstanding totals.
+
+The overview is available to tournament managers and users with `financieel_read` or `financieel`.
+It is linked from the personal **Toernooien** page and the manager list, and from the finance menu
+for finance readers. Invoice links require finance read access; tournament management links require
+tournament management access. This read permission does not grant either of those other rights.
+
+`GET /rondo/v1/tournaments/payments` returns a compact array of payment rows and uses
+`Cache-Control: private, no-store`. It derives the payment state from the linked invoice using the
+existing tournament payment service and resolves the paid timestamp through the same
+`InvoiceStatistics::get_fully_paid_at()` helper as the invoice pages, including manual payments.
+Reading this overview does not create payment links, schedule retries or send email. It does not
+return contact data, assignees, payer bank accounts or checkout URLs.
+
+The table filters by tournament, club team and payment status (**Openstaand**, **Betaald**,
+**Geen betaling nodig**); filters persist in the URL. Totals follow the current filters. Missing,
+pending or expired payment links for positive registrations remain outstanding and retain their
+specific status label. Rows can be sorted and columns hidden using the standard table controls.
+The view refreshes every minute, on focus, or through **Vernieuwen**.
+
 ## Manager operations
 
 Managers can edit the operational information of an `open` or `closed` tournament, including its
