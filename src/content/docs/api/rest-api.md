@@ -123,6 +123,10 @@ These endpoints provide specialized functionality beyond basic CRUD operations.
 
 Returns summary statistics and recent activity for the dashboard.
 
+Coordinators and match secretaries use the separate [role-based dashboard](/features/role-dashboard/)
+workspace, match-programme and layout endpoints. These check their own role and
+record permissions on every request.
+
 **Permission:** Logged in users only
 
 The response is cached for 15 minutes per user. Cache keys include the site-wide
