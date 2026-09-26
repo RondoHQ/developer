@@ -10,6 +10,17 @@ Both WordPress and the worker enforce **1 July through 31 October inclusive**, u
 
 Rondo remains authoritative for a manually uploaded photo. Forward imports use `source=sportlink` and preserve these photos even after successful confirmation, preventing stale imports and echo loops. Later Sportlink-side edits therefore do not replace a manually managed Rondo photo; make subsequent changes in Rondo. Photos that were never manually queued retain their existing Sportlink import behaviour.
 
+## Sportlink photo imports
+
+Scheduled People sync and individual member sync select the most recently modified
+supported photo file in the sync server's cache. Sportlink may change a photo from
+JPEG to PNG (or another supported format); older files can remain, but must not
+take precedence over the newly downloaded photo. Since Rondo Sync 0.11.5, file
+modification time determines the selection instead of a fixed extension order.
+Previously affected records need a targeted photo re-upload because their photo
+date may already have been marked as synced. Manual Rondo photo protection still
+applies.
+
 ## Photo change logs
 
 Successful photo saves appear in **Relaties → Wijzigingslog** (`/people/wijzigingslog`).
