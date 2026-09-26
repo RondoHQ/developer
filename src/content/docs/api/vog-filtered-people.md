@@ -170,3 +170,9 @@ changes.
 - [REST API Overview](./rest-api.md) - All API endpoints
 - [Access Control](./access-control.md) - Permission model
 - [Data Model](./data-model.md) - Post types and fields
+
+### Dashboard count parity
+
+The board and legacy dashboards use the same `VOGRequirement::get_required_person_ids()` selection as `vog_required=1`, including role and committee exemptions. Counts exclude former members and records the current user cannot view. Missing or expired certificates are split by `vog_justis_submitted_date`; the upcoming count uses the same three-year validity and 30-day window as the **Binnenkort** tab.
+
+Expiry filters normalize native `YYYYMMDD` and legacy `YYYY-MM-DD` storage before comparing dates. A certificate at the three-year cutoff is expired; upcoming certificates fall strictly after that cutoff and on or before the 30-day cutoff.
