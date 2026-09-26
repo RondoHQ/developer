@@ -55,6 +55,7 @@ are cancelled on hide/unmount.
 All API responses, including errors, use `Cache-Control: private, no-store,
 max-age=0`. The service worker excludes this API family from offline caching;
 the reveal operation also uses POST so older GET-only caches cannot store it.
+WordPress query/header method overrides are rejected on reveal requests.
 
 ## API
 
