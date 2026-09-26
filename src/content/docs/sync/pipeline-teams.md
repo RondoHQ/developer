@@ -111,15 +111,17 @@ Same-named teams (for example Saturday and Sunday AWC 4) never overwrite one ano
 
 The fast team-roster response used in step 1 does not expose the start and end dates of a team relation. This step immediately follows the quick work-history sync and:
 
-1. Compares each member's current team signature with the last successful detail sync
-2. Skips members whose team data is unchanged
-3. Fetches changed memberships from Sportlink's member-details endpoint
+1. Reads tracked people's Rondo work history in batches of 100 and compares current team/role pairs against the downloaded Sportlink rosters, using stable team IDs
+2. Compares each member's current team signature with the last successful detail sync; an unmatched active Rondo role bypasses the unchanged-signature shortcut, even when the member has no current teams or work-history tracking rows
+3. Fetches changed or unmatched memberships from Sportlink's member-details endpoint
 4. Maps `RelationStart` and `RelationEnd` to the corresponding work-history row
 5. Reconciles the existing row instead of creating a dated duplicate
 
 Before mapping, `lib/team-membership-periods.js` interprets an empty `RelationEnd` using `SeasonDescription`. A recognized closed season such as `2025/'26` gets June 30, 2026 as its inferred end date. The cutoff follows Europe/Amsterdam. Explicit source end dates remain authoritative; current/future seasons, unrecognized seasons, and contradictory start dates are left unchanged. A continuing current-season copy with the same team, role, and start date takes precedence over an inferred historical end. Multiple historical copies retain the latest season. The normal reconciliation closes the existing current row and keeps unrelated and already ended history.
 
 Sportlink's `Status: INACTIVE` takes precedence over an empty `RelationEnd`: the importer writes `is_current: false` and preserves the unknown end date. A status-only change is reconciled in place, retaining the team link and start date. Rondo excludes explicitly inactive undated roles from current team membership, counts, fee matching and staff views. Replaying the same source does not write again.
+
+A missing membership panel, failed request, or malformed Sportlink response is an error, never an authoritative empty history. If an unmatched Rondo role cannot be found in verified Sportlink history, the sync preserves it and reports it for review. It never invents a termination date from absence alone. Committee roles and external history are outside this audit. Once an official end date is reconciled, the next run skips the unchanged member again. The audit runs as part of the weekly teams pipeline and every standalone history run.
 
 The standalone monthly player-history run remains a safety net, but new team assignments no longer wait for it before their dates appear in Rondo Club.
 
