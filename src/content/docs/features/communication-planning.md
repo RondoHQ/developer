@@ -17,6 +17,10 @@ De open workflow bestaat uit `concept`, `preparing` en `ready`. Concepten vereis
 
 Losse items kunnen worden geannuleerd. Een concrete keer uit een reeks kan worden overgeslagen. Beide blijven voor historie beschikbaar. Dupliceren maakt een onafhankelijk concept zonder datum, herhaling, opmerkingen of afhandelingsgegevens.
 
+## Zoekveld
+
+Het zoekveld gebruikt de gedeelde combinatie `input input-leading-icon`, zodat het vergrootglas voldoende ruimte houdt naast de placeholder en ingevoerde tekst. Gebruik hiervoor geen losse `pl-*` utility: de algemene `.input`-stijl staat buiten de Tailwind-lagen en overschrijft die padding.
+
 ## Herhaling
 
 Een reeks gebruikt een afzonderlijke `rondo_comm_series`-entiteit. Iedere geplande keer is een eigen `rondo_comm_item`, zodat statussen, tekst, opmerkingen en afhandeling per keer bewaard blijven.
