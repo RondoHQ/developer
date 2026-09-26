@@ -45,7 +45,7 @@ Items en reeksen accepteren `channel_ids`, een niet-lege lijst van unieke kanaal
 {"action":"complete","channel_id":"website","actual_date":"2026-09-26","published_url":"https://club.example/vrijwilliger"}
 ```
 
-De datum is optioneel en wordt standaard vandaag in de clubtijdzone. Gebruik `reopen` met hetzelfde `channel_id` om alleen dat kanaal te heropenen. `complete` en `reopen` zonder kanaal zijn alleen compatibel met items met één kanaal. Rechtstreeks `status: sent` instellen kan niet.
+De datum is optioneel en wordt standaard vandaag in de clubtijdzone. Onder **Datum en link** kan een gebruiker per afgevinkt kanaal de datum corrigeren en de publicatielink bewaren. Een herhaalde `complete`-actie met expliciete datum of link corrigeert die gegevens en behoudt de oorspronkelijke afvinker. Gebruik `reopen` met hetzelfde `channel_id` om alleen dat kanaal te heropenen. `complete` en `reopen` zonder kanaal zijn alleen compatibel met items met één kanaal. Rechtstreeks `status: sent` instellen kan niet.
 
 De native field registry declareert een genummerde `channels`-repeater op items en reeksen. Reeksen bewaren uitsluitend de selectie; items bewaren ook de afhandeling. Oude `channel`-velden worden bij lezen vertaald naar één rij, inclusief bestaande afhandeldatum en link. De eerste wijziging schrijft de nieuwe vorm; uitlezen alleen migreert geen data. De oorspronkelijke `occurrence_key` blijft behouden bij bewerken, zodat een herhaling niet opnieuw wordt aangemaakt.
 
