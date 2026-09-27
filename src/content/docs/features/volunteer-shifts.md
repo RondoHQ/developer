@@ -122,8 +122,29 @@ Holders of the `vrijwilligers` capability manage the programme. Beyond the CPTs,
 |---|---|
 | `GET /rondo/v1/shifts/{id}/assignable-people?search=` | Candidates for this shift, with a `block_reason` on anyone who cannot take it. Blocked people are listed rather than filtered out — a coordinator who cannot find someone concludes the search is broken. |
 | `POST /rondo/v1/shifts/{id}/assignees` | Put a person on the shift. All member-facing rules still apply; there is no certificate override. |
-| `DELETE /rondo/v1/shifts/{id}/assignees/{person_id}` | Remove an assignee after the member deadline. |
+| `DELETE /rondo/v1/shifts/{id}/assignees/{person_id}` | Remove an assignee after the member deadline and email that person. |
 | `POST /rondo/v1/shifts/{id}/cancellation` | Cancel the whole shift, with audited credit rules and notifications. |
+
+### Email after coordinator removal
+
+Removing one assignment sends that person an immediate Dutch email with the task,
+date and start/end times, explaining that a coordinator has removed their signup.
+The shift stays open for the remaining volunteers. The email links to `/vrijwillig`
+without promising cancellation credit or claiming that the entire shift is cancelled.
+The recipient follows `CommunicationPolicy::primary_email()`, including its contact restrictions.
+
+The DELETE response adds `notification: { sent, reason }`. `sent: true` means the
+mail transport accepted the message, not that inbox delivery was confirmed.
+Otherwise `reason` is `no_email`, `invalid_shift`, or `send_failed`; the assignment
+is still removed and the coordinator sees a warning to inform the person directly.
+The removal confirmation dialog announces the email before the coordinator proceeds.
+
+The shift stores `_shift_email_removal_status_{person_id}` (`sent` or the failure
+reason) and `_shift_email_removal_sent_{person_id}` for successful sends. These
+describe the latest removal; a failed later send clears an older success timestamp.
+Repeated DELETE requests return `assignee_not_found` and do not send another mail.
+A new assignment followed by another removal does send a new mail. Earlier removals
+are not backfilled, and member self-cancellation keeps its existing behavior.
 
 ### Statistics dashboard
 
