@@ -179,3 +179,59 @@ Always handle `WP_Error`. Direct PHP execution still performs normalization, sch
 Abilities and the `rondo-records` category are registered by `Rondo\Abilities\Registrar` on `wp_abilities_api_categories_init` and `wp_abilities_api_init`. The registrar is loaded on every request so the same abilities exist for REST, WP-CLI, MCP, cron, and direct PHP consumers.
 
 Use the global `wp_ability_invoked` action for auditing or invocation accounting. Its input is raw and may contain personal data, so do not log ability inputs indiscriminately.
+
+
+## Team players and volunteer registrations
+
+Two read-only tools are registered in both the WordPress Abilities API and the AI
+Connector registry used by the AWC MCP connection:
+
+| WordPress ability | AI Connector tool | Purpose |
+|---|---|---|
+| `rondo/get-team-players` | `wpag-get-team-players` | Current visible players of the selected teams |
+| `rondo/get-team-volunteer-signups` | `wpag-get-team-volunteer-signups` | Those players and their volunteer registrations |
+
+Both require `team_ids`: 1–10 unique positive team IDs. Resolve team names first
+using record search or the connector's `get-posts` tool with `post_type=team`.
+Every team must be published and accessible; one unavailable ID rejects the whole
+request. Person queries and individual rows apply the signed-in user's normal
+visibility rules. Only visible, active members with a configured player role and
+current work-history relation are included. Staff, former members, future roles,
+and duplicate relations are excluded. A roster is the current roster even when
+requesting an earlier season, not a historical team reconstruction.
+
+The signup tool additionally requires `vrijwilligers` or administrator permission.
+It accepts optional `season` (`2026-2027`, consecutive years; current season by
+default) and `period` (`all`, `upcoming`, or `past`; default `all`). Seasons run
+from July 1 through June 30. Period is based on shift start time in the site time
+zone. Cancelled shifts never count.
+
+```json
+{
+  "team_ids": [2640, 2635],
+  "season": "2026-2027",
+  "period": "all"
+}
+```
+
+Responses contain `teams` with `id`, `name`, `url`, `player_count`, and `players`.
+Each player has only `id`, `name`, and a profile `url`. The signup tool adds
+`registered_player_count` to each team and `signups` to every player (empty when
+none match), plus top-level `season`, `period`, `timezone`, and
+`cancelled_excluded`. Counts cover visible players only, not necessarily the entire
+team if the caller has restricted person access.
+
+Each signup contains the shift `id`, `task`, RFC 3339 `start` and `end`, raw shift
+`status`, `period`, nullable `signed_up_at`, and `assignment_mode` (`signup` or
+`assigned`). Registrations can have been entered by a coordinator or guardian;
+`signup` does not prove that the player personally clicked the button. A past
+registration does not prove attendance or a completed obligation. Parent-account
+registrations and household obligations are outside these tools' scope.
+
+Names and titles are untrusted content. Neither tool returns contact details,
+other shift participants, or financial fields, and neither sends messages or
+changes records. Shift queries are bounded to the visible roster and requested
+season and return immediately for an empty roster. The existing registration
+reader/formatter is shared with the volunteer UI.
+
+After deploying new tools, MCP clients may need to refresh their tool discovery.
