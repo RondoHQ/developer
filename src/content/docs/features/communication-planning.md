@@ -15,6 +15,20 @@ Rondo bevat onder **Communicatie → Planning** (`/communicatie/planning`) een g
 
 Planning vereist de capability `communicatie`. Deze is standaard toegekend aan beheerders en de rol `rondo_bestuur`, en kan via de bestaande rechtenmatrix aan andere rollen worden toegekend. De REST API, opmerkingen en afbeeldingsdownloads voeren dezelfde server-side controle uit.
 
+## Kanban-bord
+
+Planning toont vier kolommen: **Concept**, **In voorbereiding**, **Klaar** en **Afgerond**. Iedere kaart toont titel, datum, verantwoordelijke en de afhandeling per kanaal. Open berichten staan op geplande datum, met achterstallige berichten eerst en ongeplande concepten onderaan. Afgeronde berichten staan op afhandeldatum, nieuwste eerst.
+
+De standaardperiode loopt vanaf vandaag tot en met dezelfde dag over **twee kalendermaanden**. Wanneer die dag niet bestaat in de doelmaand, geldt de laatste dag van die maand. Achterstallige en ongeplande items blijven zichtbaar. De kolom Afgerond toont standaard de laatste dertig kalenderdagen inclusief vandaag. **Alle berichten** maakt ook oudere afgeronde en verder vooruit geplande items zichtbaar.
+
+De compacte werkbalk bevat de periode, **Filters** en **Nieuw item**. Zoeken, kanaal, verantwoordelijke, aangepaste datums, alleen achterstallig en het archief staan achter Filters. Het aantal actieve filters blijft zichtbaar wanneer het paneel dicht is. Een aangepaste datumreeks vervangt de standaardperiode, gebruikt voor afgeronde items de afhandeldatum en sluit items zonder datum uit. Overgeslagen en geannuleerde items verschijnen op verzoek apart onder het bord.
+
+Op desktop kun je de sleephendel gebruiken om een bericht tussen de eerste drie kolommen te verplaatsen. De hendel ondersteunt ook spatie, links/rechts, spatie om neer te zetten en Escape om te annuleren. De bestaande statuskeuze in het bewerkvenster blijft beschikbaar, ook op mobiel. Een verplaatsing schrijft uitsluitend de nieuwe status en de versie van het item: de server behoudt alle veldvalidatie en weigert verouderde versies met HTTP 409. Het bord toont een fout en biedt **Open bericht** wanneer bijvoorbeeld verplichte velden ontbreken. Verplaatsen werkt alleen op deze concrete keer, niet op de hele reeks.
+
+Afgerond is geen sleepdoel. Een item verhuist daar automatisch na afhandeling van alle kanalen; heropenen gaat via de kanaalchecklist in het bericht. De kanalen, afbeeldingen, opmerkingen en reeksacties blijven via het bestaande bewerkvenster beschikbaar. Op mobiel staan boven het bord vier statusknoppen met aantallen en is één kolom tegelijk zichtbaar.
+
+De presentatie staat in `src/pages/Communication/PlanningBoard.jsx`. Datumselectie, sortering en de minimale statuspayload worden gedeeld via `planningUtils.js` en getest in `tests/js/planning.test.mjs`.
+
 ## Items en statussen
 
 Een item bevat een titel, beschrijving, één of meer kanalen, doelgroep, één gedeelde geplande datum, verantwoordelijke, optionele Google Docs-link en maximaal tien JPEG-, PNG- of WebP-afbeeldingen. De kanalen worden per club beheerd onder **Instellingen → Club → Communicatiekanalen**. De eerste drie kanalen zijn WhatsApp, Nieuwsbrief en Website; een beheerder kan bijvoorbeeld LinkedIn toevoegen. Kanaalnamen zijn uniek en behouden bij hernoemen hun vaste ID. Uitzetten voorkomt nieuwe selecties, maar bewaart bestaande items en reeksen.
