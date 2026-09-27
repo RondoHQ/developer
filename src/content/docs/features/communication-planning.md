@@ -3,11 +3,17 @@ title: Communicatieplanning
 description: Gedeelde planning voor WhatsApp, nieuwsbrieven en websitepublicaties.
 ---
 
-Rondo bevat onder **Communicatie** een gedeelde planning voor bestuurscommunicatie. Rondo verstuurt of publiceert de berichten niet zelf: een bestuurslid handelt het werk buiten Rondo af en registreert daarna de werkelijke verzend- of publicatiedatum.
+Rondo bevat onder **Communicatie → Planning** (`/communicatie/planning`) een gedeelde planning voor bestuurscommunicatie. Rondo verstuurt of publiceert de berichten niet zelf: een bestuurslid handelt het werk buiten Rondo af en registreert daarna de werkelijke verzend- of publicatiedatum.
+
+## Navigatie
+
+**Communicatie** staat direct onder **Financiën** in het clubmenu. De overzichtspagina op `/communicatie` toont links naar **Planning**, **Club TV** en **App access**, uitsluitend voor onderdelen waartoe de gebruiker toegang heeft. Deze drie onderdelen staan ook als subpagina’s onder Communicatie. Club TV behoudt `/narrowcasting`; App access behoudt `/app-toegang`.
+
+`src/utils/communicationNavigation.js` deelt de volgorde, labels en toegangscontroles tussen het menu en de overzichtspagina. De overzichtspagina is beschikbaar zodra de gebruiker minstens één onderdeel mag openen. Planning behoudt de bestaande capability `communicatie`; de featuretoggle van Club TV en de rechten voor App access blijven afzonderlijk gelden.
 
 ## Toegang
 
-De sectie vereist de capability `communicatie`. Deze is standaard toegekend aan beheerders en de rol `rondo_bestuur`, en kan via de bestaande rechtenmatrix aan andere rollen worden toegekend. De REST API, opmerkingen en afbeeldingsdownloads voeren dezelfde server-side controle uit.
+Planning vereist de capability `communicatie`. Deze is standaard toegekend aan beheerders en de rol `rondo_bestuur`, en kan via de bestaande rechtenmatrix aan andere rollen worden toegekend. De REST API, opmerkingen en afbeeldingsdownloads voeren dezelfde server-side controle uit.
 
 ## Items en statussen
 

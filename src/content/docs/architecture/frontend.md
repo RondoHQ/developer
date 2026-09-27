@@ -106,6 +106,8 @@ Application shell behavior:
 
 Club navigation places **Commissies** after the Relaties section and before Sponsoren. **Voetbal** follows Sponsoren and groups Teams, Kaderlijst, Trainingsschema, Toernooien, Toegangsstatistieken and Tuchtzaken. Its `/voetbal` landing page shows responsive link tiles for the accessible child pages. `src/utils/footballNavigation.js` defines the shared order, labels, icons, URLs and capabilities for both tiles and sidebar. `canAccessFootball()` derives the section and route access check from those same items; each child retains its existing capability requirements and URL. **Jubilarissen** is the first child of Vrijwilligers and keeps its kader access.
 
+**Communicatie** follows Financiën and groups Planning (`/communicatie/planning`), Club TV (`/narrowcasting`) and App access (`/app-toegang`). Its `/communicatie` overview displays accessible child links using the shared definitions in `src/utils/communicationNavigation.js`. Overview access requires at least one accessible child; each child retains its existing capability and feature-toggle checks.
+
 Sections are grouped before capability filtering. When a parent is hidden, accessible children appear as standalone links instead of joining the preceding section. Desktop and mobile use the same navigation structure, including persisted collapse state. Sections can be collapsed even while their parent or a child is selected; navigation and reloads respect that choice.
 
 ## Routing
