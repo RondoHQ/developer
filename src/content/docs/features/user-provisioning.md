@@ -78,6 +78,10 @@ WordPress core's `retrieve_password()` for the current user's exact username and
 the message was requested; the password can be changed only with the expiring key received by
 email. The existing `ContactEmailRouter` ensures this also reaches later members of a household.
 
+Rondo removes WordPress's `wp_password_change_notification` callback from `after_password_reset`,
+so completing a password reset does not notify the site administrator. User password-reset links,
+household email routing and user-facing password-change confirmations remain enabled.
+
 ## Signing in
 
 Members never see the username Rondo generated for them, and the second member of a household
