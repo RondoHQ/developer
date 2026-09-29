@@ -116,6 +116,44 @@ In **Relaties → Filter → Kenmerken → Rondo-account**, choose **Met account
 **Ouder/verzorger** and other filters, persists as `rondoAccount=1` or `0` in the
 page URL, and applies to totals, pagination and the CSV export.
 
+### Parents by child team
+
+Pass `child_team=<team ID>` to `/rondo/v1/people/filtered` to return parents/guardians
+whose current child plays in that team. The people list exposes this under
+**Filter → Relaties → Team van kind** and stores the selection as `teamVanKind`
+in the page URL. It works with account, volunteer-task and other filters, totals,
+pagination and CSV export. A parent appears once, including when several children
+play in the same team. Positive unknown or inaccessible team IDs return no matches;
+non-positive or non-integer values are rejected.
+
+`/rondo/v1/people/filter-options` includes `child_teams`, an array of accessible
+published teams with `id` and plain-text `name`. Matching uses IDs, so teams with
+the same display name remain distinct.
+
+The single-person REST response includes a read-only top-level `children_teams`
+array when relationship fields are included:
+
+```json
+{
+  "children_teams": [
+    { "child_id": 123, "teams": [{ "id": 456, "name": "JO13-1" }] }
+  ]
+}
+```
+
+The parent profile shows these teams as links beneath each child's name in
+**Relaties**. The summary is separate from editable `fields.relationships` and
+must not be included in domain-field writes. Children without visible current
+player teams have no summary entry. Each team appears once per child.
+
+Both directions use `ParentRelationshipService`, the configured player roles and
+`VolunteerStatus::is_position_current()`. Staff roles, future or ended player
+roles, inactive roles without an end date, former members, deceased people and
+unpublished records do not qualify. Child relationships must use the `child`
+relationship type. Person and team access checks apply before returning matches;
+scoped members whose work-history fields are hidden do not receive team summaries
+or child-team filter options. Filtering uses native WordPress metadata queries.
+
 Pass `spelactiviteit_no_team=1` to return people with a non-empty `spelactiviteit` field who do not have a current player role linked to a team. Current staff or volunteer roles on a team do not exclude a person. The endpoint resolves these candidates through the native field layer before applying the normal row-level access filters.
 
 Deceased people are excluded from this endpoint by default, including CSV exports built from it.
