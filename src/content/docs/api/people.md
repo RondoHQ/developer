@@ -100,6 +100,22 @@ Sort surname columns by `last_name`, not by the combined display value. This kee
 
 The `leeftijdsgroep` filter accepts one age group or a comma-separated list, for example `leeftijdsgroep=Onder%206,Onder%207,Onder%2013`. A person matches any selected group; other filters and the caller's access restrictions still apply. Omit the parameter for all permitted groups. Existing single-group URLs remain valid. The People filter offers checkboxes for these choices, preserves them during navigation, and uses the same selection for pagination and CSV exports.
 
+### Rondo account filter
+
+Pass `has_rondo_account=1` for people with an existing linked WordPress account or
+`has_rondo_account=0` for people without one. Omit it (or pass an empty string) for
+all people. Other values return HTTP 400.
+
+Both `_rondo_wp_user_id` person metadata and legacy `rondo_linked_person_id` user
+metadata are recognized. Deleted accounts do not count. This checks account
+existence, not whether someone has signed in or completed their welcome flow.
+The lookup is read-only and preserves the caller's person access restrictions.
+
+In **Relaties → Filter → Kenmerken → Rondo-account**, choose **Met account** or
+**Zonder account**. Clear the selection for all people. This combines with
+**Ouder/verzorger** and other filters, persists as `rondoAccount=1` or `0` in the
+page URL, and applies to totals, pagination and the CSV export.
+
 Pass `spelactiviteit_no_team=1` to return people with a non-empty `spelactiviteit` field who do not have a current player role linked to a team. Current staff or volunteer roles on a team do not exclude a person. The endpoint resolves these candidates through the native field layer before applying the normal row-level access filters.
 
 Deceased people are excluded from this endpoint by default, including CSV exports built from it.
