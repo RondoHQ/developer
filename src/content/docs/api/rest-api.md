@@ -68,6 +68,22 @@ X-WP-Nonce: {nonce_value}
 
 The nonce is automatically injected by the frontend via `window.wpApiSettings.nonce`.
 
+## Twelve revenue reports
+
+Endpoints over the daily Twelve revenue reports (`rondo_twelve_report` posts).
+All require the `financieel_read` capability. Reports are imported from the PDF
+Twelve emails every morning via `wp rondo twelve import`; see the
+[feature documentation](/features/twelve-reports/) for the import setup.
+
+| Method | Endpoint | Access | Purpose |
+| --- | --- | --- | --- |
+| `GET` | `/rondo/v1/twelve/reports` | financieel_read | List imported reports (newest first), optional `from`, `to`, `per_page` |
+| `GET` | `/rondo/v1/twelve/summary` | financieel_read | Turnover per day or month (`group=day\|month`), with payment methods and product counts |
+| `GET` | `/rondo/v1/twelve/categories` | financieel_read | Turnover per category (e.g. Kantine, Bestuur, Businessclub) |
+| `GET` | `/rondo/v1/twelve/products` | financieel_read | Sales per product, ordered by quantity |
+| `GET` | `/rondo/v1/twelve/vat` | financieel_read | VAT per rate group (net, VAT, gross) |
+| `GET` | `/rondo/v1/twelve/businessclub` | financieel_read | Businessclub turnover per day for `month=YYYY-MM`, with net and VAT split |
+
 ## API Namespaces
 
 Rondo Club uses two API namespaces:
