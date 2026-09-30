@@ -159,6 +159,48 @@ but `prevent_direct_assignee_writes()` refuses any change to it, because that pa
 capacity, certificates, the write lock, the confirmation mail, the `vol` status flip,
 and detaches template-managed shifts from their sjabloon.
 
+## Transfer registrations between people
+
+The person's **Inschrijftaken** card offers **Inschrijftaken overzetten**. Select a recipient,
+select individual tasks or all tasks, review the direction and task count, and confirm.
+Only published shifts with status `open`, `vol` or `voltooid` are included; cancelled tasks stay
+with their original person. All seasons and completed tasks are available, including history
+beyond the two recent tasks normally shown on the profile.
+
+Membership administrators (`ledenadministratie`) can transfer only within the recorded immediate
+family: parent/guardian, child, sibling, siblings sharing a parent, or parents sharing a child.
+This uses the existing parent/child/sibling relationship types and inverse relationship service.
+Matching names or addresses do not grant permission, and the relationship graph is not traversed
+beyond those immediate connections. Administrators (`manage_options`) and users with the
+`rondo_bestuur` role can also select people outside the family. Volunteer management alone does
+not grant transfer access. Both records must be published and accessible to the current user.
+The same checks run on options, preview, and execution; a forged target or changed relationship
+cannot bypass the restriction.
+
+| Endpoint | Purpose |
+| --- | --- |
+| `GET /rondo/v1/people/{person_id}/shift-transfer?search=` | Eligible source tasks, accessible recipient candidates, and `family_only`. Empty search suggests family; unrestricted users can search other people by name or exact ID. |
+| `POST /rondo/v1/people/{person_id}/shift-transfer/preview` | Validate `target_id` and unique `shift_ids`, returning source, target, count and a signed snapshot `token`. |
+| `POST /rondo/v1/people/{person_id}/shift-transfer` | Submit the same selection with `token` to execute the reviewed transfer. |
+
+`GET /rondo/v1/people/{person_id}/shifts` includes `can_transfer` for the card's action.
+The server rejects duplicate registrations and existing recipient registration history rather
+than silently merging it. Planned tasks keep VOG, IVA, pool and overlap checks; completed tasks
+can be corrected without applying today's certificate requirements to historical attendance.
+
+Transfers preserve status, capacity, dates, template links, other assignees and all source
+`_shift_*_{person_id}` / `_no_show_{person_id}` metadata, including numbered reminder markers,
+assignment mode and attendance. They do not create a new signup confirmation; an already queued
+confirmation follows the registration to its new owner. Existing standard reminders continue.
+
+The implementation lives in `ShiftTransfers`, used by `MemberShifts`. It acquires the existing
+assignment locks in ID order without waiting while holding another lock, revalidates every item,
+and rejects stale previews before writing. Write failures restore the changed assignments and
+registration metadata. Each task stores a private `_rondo_shift_transfer_{token}` audit entry
+with the source, target, acting user, timestamp, complete selection and prior registration values.
+Replaying a completed request returns success without moving or notifying twice. Obligation
+caches and the frontend's person, volunteer and calendar data refresh afterwards.
+
 ## Notifications
 
 `ShiftEmailScheduler` sends a batched confirmation ten minutes after signup (so three
