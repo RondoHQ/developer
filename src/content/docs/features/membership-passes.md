@@ -252,6 +252,35 @@ scanner does not make an offline validity claim.
 
 This keeps camera scanning functional on browsers like iOS Chrome that do not expose `BarcodeDetector`.
 
+## Shared entrance accounts
+
+Use the built-in `rondo_entree` role for a shared entrance login without a linked
+person. Create a WordPress user with a club-managed recovery email and this role
+only; do not add `rondo_linked_person_id` or a reciprocal person-account link.
+It does not participate in linked-person capability synchronization.
+
+The role grants only `read` and `toegangscontrole`, with no derived person/team
+capabilities. Login lands at `/lidpas-scanner`; the SPA shows the existing
+scanner, match selector, match totals and logout without the normal navigation
+or links to member profiles. Other SPA routes redirect to the scanner.
+
+`UserRoles::is_entree()` identifies the role and `/rondo/v1/user/me` returns a
+minimal response with `is_entree: true`. The REST guard allows only:
+
+- `GET`/`HEAD`: `/rondo/v1/user/me`, `/rondo/v1/version`,
+  `/rondo/v1/access-events/matches`, `/rondo/v1/access-events/{id}/stats`.
+- `POST`: `/rondo/v1/access-events/select`,
+  `/rondo/v1/access-events/{id}/scan`, `/rondo/v1/membership-passes/verify`.
+
+Other REST routes and methods return HTTP 403 `rondo_entree_only`, including
+core WordPress routes, account linking and batch requests. Existing scanner
+permission callbacks still apply. Adding another role does not lift this REST
+restriction; remove `rondo_entree` explicitly to restore a normal account.
+The existing `rondo_toegangscontrole` staff role keeps its existing behavior.
+
+Password setup and recovery use the normal WordPress login flow and the account's
+recovery email. Never store passwords or login links in this documentation.
+
 ## Match selection and anonymous access statistics
 
 The scanner loads home fixtures from the existing server-side Sportlink
