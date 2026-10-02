@@ -1011,6 +1011,7 @@ Rendering notes:
 - Naming split: invoice PDFs continue to use the legal finance organization name (`org_name`), while user-facing finance branding such as email sender/display text and public payment pages now prefers `Clubnaam` via `FinanceConfig::get_display_name()`.
 - The per-invoice `E-mail body` override in the draft/create form also uses the rich text editor now, matching the global finance template editing experience.
 - The shared `RichTextEditor` normalizes legacy plain-text template values into paragraph HTML on load, so existing newline-separated finance templates keep their structure when opened in the editor.
+- The editor is created after React commits the form (`immediatelyRender: false`). Toolbar rendering and synchronization effects skip destroyed instances, preventing a delayed mount from reading a cleared Tiptap schema when opening a new invoice.
 
 ### Invoice Reminder Emails
 
