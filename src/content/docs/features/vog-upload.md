@@ -5,6 +5,37 @@ title: VOG uploads and review
 Available since Rondo Club 35.60.0. Members submit a VOG at `/profile/vog`;
 coordinators review submissions at `/vrijwilligers/vog/beoordelen`.
 
+Since 35.119.0, a linked member with a `vog_justis_submitted_date` sees an
+“Upload je VOG hier” bar below the app header, linking to `/profile/vog`.
+The current-user response exposes only the derived `needs_vog_upload` boolean;
+the layout reuses the existing current-user query. Upload and review changes
+invalidate that query immediately. The bar is hidden during `checking`,
+`technical`, `review`, `waiting_paper` and `awaiting_member`, until the submission
+expires. It returns when an original or replacement is needed. Approval clears
+the Justis date through the existing field side effect, removing the reminder.
+Unlinked accounts, former members and demo sites never get the upload prompt.
+
+## Coordinator notification
+
+New submissions requiring manual attention queue one email to the configured VOG
+email address (`rondo_vog_from_email`, using the existing administrator-email
+fallback when unset). This covers `review`, `waiting_paper` and `needs_original`;
+technical validation failures notify after the third automatic attempt.
+The branded message contains the submission number and a link to the review
+overview, without documents or extracted identity details.
+
+The `rondo_vog_review_notice` single cron event is scheduled one minute later.
+It rechecks the final state, current person/account link, latest submission and
+expiry under the person lock. Automatically approved, already finished,
+replaced, expired or unlinked submissions do not send. Terminal transitions
+cancel the event. Existing submissions are not mailed retroactively on deployment.
+
+`_rondo_vog_review_notified_at` records successful acceptance by `wp_mail`, not
+inbox delivery. `_rondo_vog_review_notice_attempts` bounds failed sends to three
+attempts, five minutes apart. Successful sends prevent duplicate notifications
+on later saves or validation retries. Email failures leave the upload available
+for review; delivery uses the shared Lettermint transport.
+
 The file selector uses a visible Dutch button (PDF kiezen / Bestanden kiezen) with an upload icon. File limits appear below it; choosing files does not submit them. The MijnOverheid option accepts exactly one PDF. A single selected file shows its name, preview link and remove action without a count, numbering or reorder controls. Multiple scan photos retain the count, numbering and ordering controls.
 
 ## Upload and approval
