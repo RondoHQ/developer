@@ -71,7 +71,7 @@ De credentials staan versleuteld in `rondo_twelve_agentmail_credentials`.
 
 ### 3. Dagelijkse import
 
-Na AgentMail-configuratie plant Rondo `rondo_twelve_daily_import` dagelijks om 07:00 Nederlandse tijd (Europe/Amsterdam). Losse events behouden deze lokale tijd bij zomer- en wintertijd. WordPress-cron wordt gestart door siteverkeer of de hosting-cron; 07:00 is de vroegste starttijd.
+Na AgentMail-configuratie plant Rondo `rondo_twelve_daily_import` dagelijks om 06:15 Nederlandse tijd (Europe/Amsterdam). Losse events behouden deze lokale tijd bij zomer- en wintertijd. WordPress-cron wordt gestart door siteverkeer of de hosting-cron; 06:15 is de vroegste starttijd.
 
 ```bash
 wp cron event list --hook=rondo_twelve_daily_import
