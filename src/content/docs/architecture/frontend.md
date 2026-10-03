@@ -404,6 +404,10 @@ export const APP_NAME = 'Rondo Club';
 
 ## State Management
 
+### Rich text editor lifecycle
+
+The shared `src/components/RichTextEditor.jsx` creates its Tiptap editor after React commits the component, using `immediatelyRender: false`. Deferred mounting, including the invoice form, can otherwise leave effects referencing an editor that Tiptap has already destroyed. The toolbar and effects that update editability or synchronize server-sanitized content check both the editor reference and `editor.isDestroyed` before using it. Content synchronization keeps `emitUpdate: false` so it does not create a second user edit.
+
 ### Server State (TanStack Query)
 
 All server data is managed via TanStack Query:

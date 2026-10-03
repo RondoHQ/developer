@@ -60,6 +60,7 @@ export default defineConfig({
 					items: [
 						{ label: 'WordPress Plugin', slug: 'integrations/wordpress-plugin' },
 						{ label: 'Demo Data', slug: 'integrations/demo-data' },
+						{ label: 'Twelve Revenue Reports', slug: 'integrations/twelve' },
 					],
 				},
 				{

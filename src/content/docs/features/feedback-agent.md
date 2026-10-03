@@ -113,6 +113,18 @@ the current status is a successful no-op.
 
 ## REST API
 
+### Private screenshots
+
+`POST /rondo/v1/feedback` accepts one optional `screenshot` file during creation. Send the existing feedback fields and the file as `multipart/form-data`; requests without a screenshot keep the JSON format. The submission modal provides a preview and removal button, and keeps submission errors visible. The released update endpoint does not replace or remove an existing screenshot.
+
+The server validates the actual image bytes: PNG, JPEG or WebP, at most 5 MiB and 25 million pixels. Invalid uploads return HTTP 400 before feedback creation or notification; storage failures return HTTP 500 and clean up the file and any newly created feedback record.
+
+Feedback responses expose only a top-level `has_screenshot` boolean. To read the image, request `GET /rondo/v1/feedback/{id}/screenshot` with normal REST authentication. The endpoint uses the same access check as the feedback thread: its submitter or a user with feedback-section access may read it. Anonymous and unrelated users cannot read the image. Missing files and trashed feedback return HTTP 404.
+
+`Rondo\Feedback\FeedbackScreenshot` stores files in `rondo-private/feedback/` beside the WordPress directory, outside public uploads. It uses a random filename, directory permissions `0700`, file permissions `0600`, and protected `_feedback_screenshot` post metadata. Include this private directory in backups alongside the WordPress database. Permanent feedback deletion removes the file; trashing the record only blocks access.
+
+The REST response streams the image with `Cache-Control: private, no-store, max-age=0`, `X-Content-Type-Options: nosniff` and `Content-Security-Policy: sandbox`. `FeedbackScreenshot.jsx` fetches an authenticated blob and displays a temporary object URL, revoking it when the component unmounts. No public media URL or storage filename appears in the feedback response.
+
 ### Feedback Comments
 
 Comments enable a conversation thread between the agent and users on feedback items.
@@ -236,12 +248,20 @@ launchctl unload ~/Library/LaunchAgents/com.rondo.feedback-agent.plist
 
 ## Frontend
 
+### Feedback overview and cache
+
+The overview starts with numeric ID sorting in descending order, with the active direction visible in the ID header. Sorting and filtering run in the browser after every REST page has loaded. `feedbackListOptions()` reads `X-WP-TotalPages`, fetches the remaining pages with the same filters, and rejects a failed page instead of displaying an incomplete list.
+
+`src/utils/feedbackQueries.js` owns shared keys and refresh behavior. Detail and comment keys normalize IDs to strings. List queries always refetch on mount; detail and comment queries refetch stale data on mount. After an update, `refreshUpdatedFeedback()` cancels the old detail request, writes the returned record into the detail cache, and waits for list invalidation with `refetchType: 'all'` plus dashboard invalidation. This also refreshes cached inactive overviews before the edit dialog closes.
+
 ### FeedbackDetail Page
 
 - Shows **PR link** when `meta.pr_url` is set
 - Shows **"Waiting for your response"** banner when status is `needs_info`
 - Shows **conversation thread** with agent/user messages
 - Shows **reply form** when status is `needs_info`
+- Shows the private screenshot when `has_screenshot` is true, with an option to open it at full size
+- Opens `meta.url_context` in a new tab using `rel="noopener noreferrer"`
 
 ### FeedbackManagement Admin Page
 

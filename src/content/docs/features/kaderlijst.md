@@ -28,7 +28,9 @@ Phone numbers are clickable `tel:` links with a separate WhatsApp icon beside th
 
 ## Data sources and access scope
 
-The page uses `GET /wp-json/rondo/v1/kaderlijst/people`. Its `people` array contains the limited staff/contact fields; `teams` contains only `id`, `parent`, `name`, and `can_access` for published teams. A team name links to its detail page only when `can_access` is true. Team labels do not grant access to the team directory or roster.
+The page uses `GET /wp-json/rondo/v1/kaderlijst/people`. Its `people` array contains the limited staff/contact fields; `teams` contains only `id`, `parent`, `name`, `activiteit`, and `can_access` for published teams. `activiteit` is a string and is empty when unset. A team name links to its detail page only when `can_access` is true. Team labels do not grant access to the team directory or roster.
+
+Senior team labels include the playing day from `activiteit`, for example `AWC 1 - Zaterdag` or `AWC 1 - Zondag`. The shared `getTeamNameWithPlayingDay()` helper in `src/utils/teamDisplay.js` extracts the day from values such as `Veld - Zondag`, accepts only Dutch weekday names, and avoids adding an existing suffix twice. Missing activities and values such as `Zaal` leave the name unchanged; youth labels remain unchanged. This is display formatting and does not rename the stored team.
 
 The Kaderlijst endpoint is the security boundary. It returns only the canonical fields rendered by
 the table: names, work history, email addresses, mobile numbers, and telephone numbers. It applies
