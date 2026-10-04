@@ -4,6 +4,12 @@ title: FreeScout OpenID Connect
 
 Rondo Club includes a narrowly scoped OpenID Connect provider for the first-party Rondo Integration FreeScout module. It supports only authorization code flow with PKCE S256 and confidential client authentication.
 
+## Sign-in entry and return destination
+
+FreeScout module 1.15.1 labels its sign-in button **Inloggen met Rondo**, with **Gebruik je Rondo-account om in te loggen.** guidance and an **of** separator aligned with the normal login fields. The button retains the existing `rondointegration.oidc.login` route, has a 48-pixel minimum touch target and visible keyboard focus, and keeps white text under club link colors.
+
+When Rondo authentication is needed during authorization, password and Magic Login sign-in preserve the validated local OAuth return URL, including its original query parameters and state. Unapproved external destinations fall back to the Rondo home page; entrance accounts keep their scanner destination. This destination handling does not change PKCE, consent, email verification or mailbox eligibility. See [account activation](/features/account-activation/#return-destination-after-sign-in) for the deferred Magic Login handoff.
+
 ## Provider endpoints
 
 The issuer is the Rondo Club site URL plus `/oauth`, without a trailing slash. Keeping discovery

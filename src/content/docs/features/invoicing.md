@@ -142,6 +142,12 @@ Manual invoices are created from `/financien/facturen/nieuw`.
 - Show a manual account picker only when more than one usable Mollie account exists
 - Do not expose account switching for discipline or membership invoices
 
+### Linked credit notes
+
+Finance managers can create a calculated credit draft from a sent, paid or overdue original invoice, or calculate contribution restitution after an eligible injury season. The preview and creation endpoints, source reservations, stored calculations and locked draft workflow are documented in [Linked credit notes and injury restitution](/features/credit-notes/). These credits use `invoice_type: manual` and `invoice_kind: credit`; a refund is handled separately.
+
+Invoice responses expose nullable `season`. Detail responses also include `credit_source_invoice_id`, `credit_calculation` and `linked_credits`. [Financial season history](/features/financial-history/) lists assigned and unassigned invoices on the person profile, including former and excluded members. Credit notes receive no payment links, reminders or automatic overdue transition; sending revalidates a calculated draft before PDF/email work.
+
 ## PDF Generation
 
 **Class:** `Rondo\Finance\InvoicePdfGenerator`
@@ -253,6 +259,8 @@ The separate payment statistics page requests `GET /invoices/statistics`. This r
 | GET | `/invoices` | List invoices (filterable by status, type, person) |
 | GET | `/invoices/statistics` | Filterable payment totals, lead time, and daily/monthly income series |
 | POST | `/invoices` | Create a new discipline invoice |
+| POST | `/invoices/credits/preview` | Validate and preview a linked or injury credit without creating a draft |
+| POST | `/invoices/credits` | Create a calculated credit draft with request replay protection |
 | GET | `/invoices/{id}` | Get invoice details |
 | DELETE | `/invoices/{id}` | Delete a draft invoice |
 | POST | `/invoices/{id}/send` | Send invoice (generates PDF, creates payment link, sends email, transitions to `rondo_sent`) |
@@ -266,9 +274,9 @@ The separate payment statistics page requests `GET /invoices/statistics`. This r
 The `send` endpoint orchestrates the full sending pipeline:
 
 1. Validate invoice is in `rondo_draft` status
-2. Generate PDF via `InvoicePdfGenerator`
-3. Create payment link via `MolliePayment` (or `RabobankPayment` depending on provider config)
-4. Generate QR code via `QrCodeGenerator`
+2. Revalidate stored credit calculations where present
+3. Prepare payment link and QR before PDF generation: credits clear payment/QR data, membership invoices retain their public payment URL, and other invoices use `MolliePayment` or `RabobankPayment`
+4. Generate PDF via `InvoicePdfGenerator`
 5. Send email via `InvoiceEmailSender`
 6. Transition post status to `rondo_sent`
 7. Set `sent_date` and calculate `due_date`

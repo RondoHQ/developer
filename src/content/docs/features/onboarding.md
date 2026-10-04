@@ -118,6 +118,14 @@ pipelines do not assert full coverage: their partial success cannot clear these
 pending checks. Volunteer return rounds, full conditional templates, per-recipient
 account matching and outbound transport remain subsequent milestones.
 
+### Merged source identities in Sync
+
+`sync-onboarding-sources.js` resolves the tracked person through the confirmed merge-target endpoint before every pending source check, including unchanged or deferred Sportlink registrations that never reach the normal person writer. A same-identity merge updates `rondo_club_id` to the survivor and clears the completed sync hash before simulation or observation; a healthy mapping leaves the hash intact.
+
+If a confirmed merge points to a survivor with a different KNVB ID, `retireMemberIdentity()` preserves the old mapping as a tombstone with `retired_into_knvb_id` and an empty active payload. The source remains incomplete: the producer acknowledges it with `person_id: 0` and an empty `observation_id`, records a deferred result, and performs no simulation, observation or person write against the survivor. Repeated checks and reimports preserve that retirement without making each People run fail.
+
+A missing person without a confirmed merge, a denied/failed merge lookup, or an unmerged KNVB mismatch remains an error and preserves the original mapping. `test/onboarding-merge.test.js` covers these boundaries, unchanged parked registrations, replay and same-identity remapping.
+
 ### Delivery reservations
 
 `Dispatch::reserve()` creates one durable reservation per round, message kind and

@@ -29,7 +29,13 @@ The default block order is birthdays, anniversaries, personal tasks, membership,
 - Volunteer shortages require `vrijwilligers`. Only future published, open/full-status shifts with unfilled capacity within 30 days count. Cancelled, completed, past, full and invalid assignments are excluded; duplicate assignments count once. Totals are calculated before the displayed list is limited. No volunteer names are returned. The lightweight `VolunteerStatistics::upcoming_shortages()` reuses the existing shortage rules without calculating the full season statistics.
 - VOG requires `vog`. Counts use `VOGRequirement::get_required_person_ids()`, the same role- and committee-exemption resolver as the VOG overview. They cover visible current volunteers with an active VOG-required role only, excluding former members, and distinguish missing/expired not yet requested, missing/expired requested at Justis, and expiring within 30 days. Native dates pass through the field formatter before comparison; the three-year and 30-day cutoffs match the filtered-people endpoint. The legacy dashboard reuses the same counting service.
 
-Adjacent birthday and anniversary blocks share a row from the desktop breakpoint (1024px), with compact name, age/milestone and date rows. They stack on smaller screens. Hiding or separating either block in a saved layout gives each its full width. Existing block order and visibility preferences remain intact.
+**De club in cijfers** uses only visible board blocks and finite counts from the permission-filtered workspace response. It shows playing association members, season arrivals, open volunteer places and missing/expired VOG totals when available. Hiding a block hides its summary count too; missing values are not displayed as zero.
+
+### Layout and branding
+
+The role dashboard and its shell use local Figtree fonts, Rondo logo assets and scoped light/dark colors in `dashboard-brand.css`. This shell applies only to the role dashboard at `/`, excluding `?overzicht=club`.
+
+With the default board order, two columns group volunteer/VOG attention, tasks and matches on the left and celebrations, membership and teams on the right. Smaller screens collapse the columns. A saved custom order uses one ordered grid, preserving visual and reading order. **Aanpassen** can reorder or hide available blocks and choose 1–30 birthday days, including today; the default is three. Preferences use `rondo_role_dashboard_layout` user metadata, separate from the legacy dashboard preferences. Revoked permissions remove unavailable blocks.
 
 Revoking a section capability removes its data and saved layout IDs on the next request. The dashboard grants no access through a preference or hidden block.
 
@@ -51,11 +57,17 @@ The dashboard returns up to ten open tasks authored by or assigned to the curren
 
 ## Match data
 
-The window is today through today + 6 days in the WordPress timezone. The club programme reads the existing independently refreshed Sportlink Club.Data cache; team programmes reuse `TeamMatches` and its on-demand cache.
+The club programme reads the existing independently refreshed Sportlink Club.Data cache; team programmes reuse `TeamMatches` and its on-demand cache.
 
-Club fixtures merge programme and cancellation records by match ID, including cancellation-only records. Overlapping team feeds are deduplicated by match ID in the client. Switching match tabs never hides club cancellation alerts from a secretary.
+**Wedstrijden deze week** covers today through six days later in the club timezone. Secretaries get home/away tabs with counts; coordinators get **Mijn teams**. A combined role retains club-wide cancellation alerts when the match tab changes.
 
-The club feed reports the oldest fetch time and freshness of the programme and cancellation feeds. Old results-feed data does not make this programme stale. Missing or failed sources produce a visible warning rather than a confident empty programme. An empty dressing-room value is **Nog niet ingevuld**; an explicit source value such as **0 - geen kleedkamer** is preserved.
+`DashboardMatchList` filters by day and by words in either team name, ignoring case and accents. Six matches appear per page, with counts and previous/next controls; paging never truncates the underlying week. Changing a filter resets the page. Rows expand to show pitch, location, dressing rooms, result and status. Unknown kickoff times show **N.t.b.**, missing room data shows **Nog niet ingevuld**, and cancellations remain explicit.
+
+The club-week feed merges programme, results and cancellations by match ID. Played matches stay in today's overview when Sportlink moves them from programme to results. Result rows retain available programme pitch/room details; cancellations take precedence. All cached results can contribute to this week, while Club TV still receives at most twelve recent results.
+
+Programme and results requests use a 500-row bound. Reaching it is treated as incomplete and preserves the previous cache. Legacy result caches without `complete: true` require refresh even before their old TTL expires. Week freshness uses all three feeds: `updated_at` is the oldest fetch time, `stale` includes missing completeness, and `expired` means missing data or a fetch older than 24 hours. Failures, unmatched teams and stale feeds produce visible warnings; they do not establish that no games exist.
+
+Overlapping team feeds are deduplicated by match ID in the client. An empty dressing-room value is **Nog niet ingevuld**; an explicit source value such as **0 - geen kleedkamer** is preserved.
 
 ## REST API
 
@@ -70,6 +82,10 @@ Workspace and layout routes require an authenticated board member, coordinator o
 
 Block IDs are `attention`, `birthdays`, `anniversaries`, `membership`, `volunteers`, `vog`, `matches` and `teams`; availability follows the role and section checks above. The layout response includes `defaults` for the role-specific reset order; it also includes `birthday_days`, defaulting to 3 for existing and new users. Writes that omit `birthday_days` preserve the saved value. Null, strings, fractions and values outside 1–30 return `invalid_birthday_days` without modifying preferences. Preferences live in the user meta `rondo_role_dashboard_layout`. Reads intersect stored IDs with current available blocks and append newly available blocks. Hiding every block is supported. Role revocation removes unavailable data and layout IDs on the next request. Preferences never authorize data access.
 
+The client keys workspace data by user, uses a one-minute stale time, polls club fixtures every minute and team fixtures every five minutes. **Verversen** reloads the workspace and selected match feeds. External fixture requests are separate from the personal workspace request.
+
 ## Verification
 
 `BoardDashboardTest` covers board role combinations, capability revocation, membership and anniversary date boundaries, VOG dates, role and committee exemptions, parity with the VOG list counts, and shortage totals. `RoleDashboardTest` covers role combinations and revocation, record boundaries, birthday visibility and inclusive window boundaries, per-user period persistence and validation, permission-gated coordinator anniversaries, current player counts, shared training, private task relations, match-window boundaries, cancellation freshness and role migration. JavaScript tests cover fixture deduplication, room labels and reordering. `tests/fixtures/dashboard-preview.html` renders the real dashboard with clearly labelled synthetic data for narrow-screen, dark-mode, saved-layout and error-state checks.
+
+`roleDashboard.test.mjs` also covers hidden/unknown summary values, saved custom ordering and busy-week pagination with accent-insensitive team filters. `NarrowcastingSportlinkTest` covers full result retention, programme-detail merging, cancellation precedence, freshness and legacy-cache refresh while keeping Club TV limited to twelve results.

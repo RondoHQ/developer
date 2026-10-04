@@ -28,6 +28,8 @@ Dry runs parse without storing reports. The command skips previously imported me
 
 Each report is a native `rondo_twelve_report` post. Period boundaries, message identity, and parsed JSON use `_twelve_period_start`, `_twelve_period_end`, `_twelve_message_id`, and `_twelve_report_data`. Duplicate message IDs or period ends prevent duplicate reports. Reports without revenue or product rows are rejected.
 
+`ReportRepository::store()` passes encoded JSON through `wp_slash()` before `update_post_meta()`, compensating for WordPress metadata unslashing. Unicode product names, quotes and backslashes therefore survive storage and decoding; `TwelveReportRepositoryTest` verifies the round trip. This applies to newly stored reports and does not rewrite existing report metadata.
+
 The original PDF is stored in protected `_twelve_pdf_base64` post metadata, with its sanitized filename in `_twelve_pdf_filename`. It is not a public upload, and report API responses omit this internal metadata. If PDF storage fails, the newly created report is removed so the import can be retried.
 
 The parser supports Dutch amounts, negative adjustments, and Smalot's extracted layout. It recognizes `Verbruik kantinedienst` and `Munten over/onderwaarde` as no-sale categories, and `Omzet munten` as a payment method. Card-brand detail rows with only an amount and transaction count are skipped so they do not interrupt the main payment-method table. Unknown category labels retain their data with section `unknown`; they do not become known no-sale categories automatically.

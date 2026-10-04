@@ -85,6 +85,8 @@ last-known-good cache. Failed requests record a credential-free error while
 preserving the previous payload. Cached assignments remain playable with a
 stale marker for up to 24 hours.
 
+Programme and results requests use a 500-row bound; reaching it is considered an incomplete response and preserves the last-known-good cache. Results are stored in full with `complete: true`, while the public Club TV response selects only the twelve most recent rows. Legacy caches without that completeness marker require a fresh results request. The [role dashboard](/features/role-dashboard/#match-data) uses all cached results to retain played fixtures in its seven-day club overview, merging available programme pitch/room details and giving cancellations precedence.
+
 The cron refresh is supplemented by refresh-on-read. This keeps the feed current
 even on sites where WordPress cron traffic is intermittent, while a short lock
 prevents several players from refreshing Sportlink simultaneously.

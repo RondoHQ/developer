@@ -175,6 +175,12 @@ household identities, guardian handling, and role provisioning.
 Every valid email submission receives the same neutral confirmation, including unknown and
 rate-limited addresses. This removes the old “account does not exist” membership oracle.
 
+### Return destination after sign-in
+
+Password login and emailed Magic Login links preserve the requested `redirect_to`, including a local OAuth authorization URL and its query parameters. `rondo_login_redirect()` uses WordPress's requested-destination argument, covering login-form POSTs as well as GETs. Missing destinations return home, and `wp_validate_redirect()` rejects unapproved external destinations with home as the fallback. Entrance accounts always return to `/lidpas-scanner`.
+
+`MagicLoginActivation` captures and validates the submitted destination before the response ends, queues it with the email address, and passes it through `ActivationService` when generating named login links. Existing-account links in combined household emails retain it too; activation-picker links keep their existing activation flow. `rondo_activation_magic_login_url` receives the validated destination as its third argument. Regression tests cover OAuth state retention, unsafe destinations and the entrance-account override.
+
 ### Timing
 
 Identical HTML is not enough. Sending the mail costs an API round-trip, so a known address would

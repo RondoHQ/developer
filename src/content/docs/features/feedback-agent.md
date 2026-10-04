@@ -8,6 +8,8 @@ The Feedback Agent is an autonomous Claude Code instance that processes user fee
 
 The feedback response includes `author.person_id` for the submitter’s linked, published person when the viewer can access that record. “Submitted by” links to `/people/{person_id}`. Missing, unpublished, invalid, or inaccessible profiles return `null` and keep the name as plain text. The WordPress account ID remains `author.id`.
 
+The creation and editing forms have no project selector, including for administrators. New UI submissions send `project: rondo-club`; UI edits omit `project` and preserve the stored value. The REST API still accepts the supported project values for integrations.
+
 ## Architecture
 
 ```
@@ -115,11 +117,13 @@ the current status is a successful no-op.
 
 ### Private screenshots
 
-`POST /rondo/v1/feedback` accepts one optional `screenshot` file during creation. Send the existing feedback fields and the file as `multipart/form-data`; requests without a screenshot keep the JSON format. The submission modal provides a preview and removal button, and keeps submission errors visible. The released update endpoint does not replace or remove an existing screenshot.
+`POST /rondo/v1/feedback` and `POST /rondo/v1/feedback/{id}` accept one optional `screenshot` file during creation or editing. Send the feedback fields and file as `multipart/form-data`; PHP parses uploads on POST. Requests without a screenshot keep the JSON format. Only the submitter and administrators may add or replace a screenshot; feedback-section read access alone is insufficient. Both forms share `FeedbackScreenshotInput`, with a preview, a button to clear the newly selected file, and visible save errors.
+
+An edit without a file preserves the stored screenshot. Selecting a file replaces it after the new descriptor is saved and read back successfully, then deletes the old private file. Invalid uploads are rejected before text changes. Failed attachment storage removes the new file while preserving the previous attachment. There is no API action to remove a stored screenshot; clearing the file selection only cancels the pending upload.
 
 The server validates the actual image bytes: PNG, JPEG or WebP, at most 5 MiB and 25 million pixels. Invalid uploads return HTTP 400 before feedback creation or notification; storage failures return HTTP 500 and clean up the file and any newly created feedback record.
 
-Feedback responses expose only a top-level `has_screenshot` boolean. To read the image, request `GET /rondo/v1/feedback/{id}/screenshot` with normal REST authentication. The endpoint uses the same access check as the feedback thread: its submitter or a user with feedback-section access may read it. Anonymous and unrelated users cannot read the image. Missing files and trashed feedback return HTTP 404.
+Feedback responses expose top-level `has_screenshot` and `screenshot_version` fields. The version is a SHA-256 hash of the descriptor, or an empty string without a screenshot; it refreshes the authenticated preview after replacement without exposing a storage path. To read the image, request `GET /rondo/v1/feedback/{id}/screenshot` with normal REST authentication. The endpoint uses the same access check as the feedback thread: its submitter or a user with feedback-section access may read it. Anonymous and unrelated users cannot read the image. Missing files and trashed feedback return HTTP 404.
 
 `Rondo\Feedback\FeedbackScreenshot` stores files in `rondo-private/feedback/` beside the WordPress directory, outside public uploads. It uses a random filename, directory permissions `0700`, file permissions `0600`, and protected `_feedback_screenshot` post metadata. Include this private directory in backups alongside the WordPress database. Permanent feedback deletion removes the file; trashing the record only blocks access.
 

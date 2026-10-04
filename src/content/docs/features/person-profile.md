@@ -32,6 +32,10 @@ Both sections use `DocumentStatusBadge`: green **Geldig**, amber **Wacht op beoo
 
 VOG dates are read-only by default. An icon-only pencil matching the address edit control opens and closes the existing date controls, with an accessible label, tooltip and expanded state; missing/expired VOGs retain application, email and reminder fields. Recorded application progress remains accessible under **Aanvraagstatus** without opening the editor.
 
+## Financial season history
+
+The permission-filtered **Financieel** card has a season selector persisted as `financeSeason` in the URL. It lists stored invoices and credit notes even when the person is a former member, excluded from contributions or not currently calculable. Historical contribution amounts come from issued membership invoices or Nikki, with unknown payments and invoices without a recorded season displayed explicitly. See [Financial season history](/features/financial-history/) for source precedence and the read API. Finance managers can start the [injury credit workflow](/features/credit-notes/) from the card; read-only finance users have no credit-writing actions.
+
 ## Shifts and administration
 
 Shift obligations show **Vrijgesteld**, **Geen inschrijftaken vereist**, or completed/required progress, without a season label beside the summary. Progress uses the existing server attribution calculator and caps each unit at its requirement for the summary, so surplus personal shifts do not imply that an unfinished family duty is complete. Details retain actual counts per unit, future shifts and the two most recent shifts; empty history sections are omitted.
