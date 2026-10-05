@@ -15,6 +15,8 @@ expires. It returns when an original or replacement is needed. Approval clears
 the Justis date through the existing field side effect, removing the reminder.
 Unlinked accounts, former members and demo sites never get the upload prompt.
 
+The current-user response also exposes `vog_required`, derived from the linked person's current roles through `VOGRequirement::is_required()`, including role and committee exemptions. **Mijn certificaten → Mijn VOG** appears only when this value is boolean `true`; unlinked accounts default to false. This profile-card visibility rule is separate from the existing upload reminder and does not remove the upload route.
+
 ## Coordinator notification
 
 New submissions requiring manual attention queue one email to the configured VOG

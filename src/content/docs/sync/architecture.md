@@ -36,6 +36,7 @@ All times are **Europe/Amsterdam** timezone.
 | Pipeline | Schedule | Cron | Notes |
 |----------|----------|------|-------|
 | People | 4x daily | `0 8,11,14,17 * * *` | Members, parents, photos |
+| [Twelve](/sync/pipeline-twelve/) | Hourly check, two-hourly inside club windows plus closure | `0 * * * *` | Validated browser snapshots; no login outside configured windows |
 | Nikki | Daily | `0 7 * * *` | Contributions to Rondo Club |
 | Functions (recent) | 4x daily | `30 7,10,13,16 * * *` | 30 min before each people sync; recent/VOG members plus one-quarter daily coverage |
 | Functions (full) | Weekly Sunday | `0 1 * * 0` | All members with `--all` |
@@ -102,6 +103,7 @@ Each pipeline has its own detailed documentation page covering step-by-step flow
 |----------|-------------|---------|
 | [People](/sync/pipeline-people/) | Downloads members from Sportlink, syncs to Laposta + Rondo Club, handles photos | 7-step flow: download, prepare Laposta, submit Laposta, submit Rondo Club (members + parents + birthdate), download photos, upload photos, reverse sync |
 | [Nikki](/sync/pipeline-nikki/) | Downloads contribution data from Nikki, writes per-year financial fields to Rondo Club | Playwright scraping of HTML tables + CSV; aggregates multiple contribution lines per member per year |
+| [Twelve](/sync/pipeline-twelve/) | Imports browser exports and source VAT tables into existing Rondo daily reports | Private snapshots, financial reconciliation, provisional days, sequential idempotent imports |
 | [Teams](/sync/pipeline-teams/) | Downloads team rosters from Sportlink, creates team posts, links members via work history | 3-step flow: download teams, sync teams to Rondo Club, sync work history to person posts |
 | [Functions](/sync/pipeline-functions/) | Scrapes committee memberships and free fields from Sportlink | Runs in daily (recent) and weekly (full) modes; also scrapes FreeScout ID, VOG date, and financial block used by the People pipeline |
 | [FreeScout](/sync/pipeline-freescout/) | Syncs minimal customer identities to FreeScout; downloads conversations as activities | Stores only customer names and email addresses in profiles. Live member context comes from the Rondo Integration sidebar. Downloads FreeScout conversations and creates activities in Rondo Club. |

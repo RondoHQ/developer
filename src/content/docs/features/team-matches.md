@@ -4,6 +4,8 @@ title: Team matches and calendar subscriptions
 
 The **Wedstrijden** tab on each team page lists the current July–June season, with home/away matches, results, venues, pitches, cancellations, and whole-season/upcoming/past filters. It includes only fixtures already published by Sportlink. Youth competitions may publish later phases during the season; some age groups do not publish results.
 
+Configured pilot teams expose **Wedstrijd registreren** to administrators and assigned users with `wedstrijdregistratie`. The link opens `/teams/{id}/registratie`; selectors, monthly calculations and export protections are documented in [Match registration and monthly compensation](/features/match-compensation/). The fixture feed itself does not contain player selections or bank details.
+
 ## Data source and team identity
 
 `Rondo\Teams\TeamMatches` uses the existing `SportlinkMatchday` Club.Data HTTP adapter and fixture normalizer. Credentials remain server-side, using the Club TV Sportlink configuration; this does not alter Club TV's matchday windows.

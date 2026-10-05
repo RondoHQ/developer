@@ -655,7 +655,7 @@ Every drill-down page (`VrijwilligersDataQuality.jsx`) has an **Exporteer CSV** 
 card instead of an obligation, and may still volunteer voluntarily. For a `gezin` unit,
 `resolve_unit()` checks all responsible parents or guardians: an exemption held by either adult
 exempts the shared family obligation. This also applies while a parent temporarily uses a child's
-account. Triggering children are only checked for orphan units where Rondo cannot resolve an adult.
+account. A triggering child with any active volunteer role also exempts both parents and all children in the shared family duty. Committee work, refereeing and other team support roles qualify through the existing volunteer-role classification; the cached Sportlink volunteer flag is not used. A child's personal manual or paid exemption does not transfer to the adults. Orphan units retain personal exemptions when no adult can be resolved.
 The member-facing copy for active club roles stays role-neutral, because committee work and team
 staff roles both count. Contributie-vrijstelling is deliberately *not* an exemption ground here;
 that runs through the resolver or an honorary role.
@@ -666,8 +666,7 @@ canonical `YYYY-MM-DD` wire format before comparison. A role whose end date is t
 current and therefore no longer grants an exemption or access to a committee-restricted shift pool.
 The default staff-role list recognizes `Trainer`, `Trainer/coach`, `Assistent-trainer`,
 `Assistent-trainer/coach`, `Scheidsrechter`, and `Verenigingsscheidsrechter`, among other staff
-roles. Referee titles grant exemption only while the assignment is active. A youth referee's
-exemption does not exempt the shared family obligation of their responsible adults.
+roles. Referee titles grant exemption only while the assignment is active. An active youth referee role exempts the shared family duty too.
 The exemption resolver loads a person's work history once and applies
 committee and staff checks to that shared value. Eligibility views use generation-based transient
 keys, so a relationship or role change is visible immediately when WordPress uses a persistent
@@ -676,8 +675,7 @@ object cache; old generations expire after the normal five-minute TTL.
 The management page at `/vrijwilligers/vrijstellingen` offers filters for committee members, team
 staff, and manual exemptions. A user with the `vrijwilligers` capability can search for a person on
 that page and create, edit, or withdraw a manual exemption. For a family obligation the exemption
-must be assigned to a responsible parent or guardian, because triggering children are not inspected
-when adults are available. The season field accepts a consecutive `YYYY-YYYY` value; an empty value
+must be assigned to a responsible parent or guardian; the child-based transfer is limited to active volunteer roles, not personal manual exemptions. The season field accepts a consecutive `YYYY-YYYY` value; an empty value
 makes the exemption ongoing.
 
 The frontend reads and writes the narrowly scoped policy state through

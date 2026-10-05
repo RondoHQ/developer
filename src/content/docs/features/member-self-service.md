@@ -64,9 +64,13 @@ Een adreswijziging vervangt of maakt de adresregel met label `Home` bij het geko
 
 Land en landcode zijn verplicht. Nederlandse adressen krijgen bij ontbrekende invoer automatisch `Nederland` en `NL`; een buitenlands adres zonder geldige ISO-landcode wordt geweigerd voordat het profiel of de Sportlink-wachtrij wordt bijgewerkt.
 
+## Bankgegevens
+
+Het gekoppelde lid kan op **Mijn gegevens** het eigen IBAN en de naam van de rekeninghouder wijzigen of leegmaken. De rekeninghouder mag iemand anders zijn. Rondo valideert het SEPA-IBAN en bewaart deze gegevens lokaal, zonder Sportlink-wachtrij. Toegang tot kinderen of andere gezinsleden geeft geen toegang tot hun bankgegevens. Voormalige leden kunnen dit niet wijzigen; overleden personen zijn niet wijzigbaar. De eigen REST-routes en afgeschermde audit staan in [Member bank accounts](/features/bank-accounts/).
+
 ## Wijzigingslog
 
-Elke zelfserviceactie maakt een privaat `rondo_profile_change`-record met actor, tijdstip, betrokken personen, oude en nieuwe waarden, verificatiestatus en Sportlink-status. De statussen zijn `pending`, `synced`, `failed`, `action_required` en `local_only`. De UI toont `action_required` als **Actie nodig** met de concrete Sportlink-validatiemelding.
+Elke contact- of adreswijziging maakt een privaat `rondo_profile_change`-record met actor, tijdstip, betrokken personen, oude en nieuwe waarden, verificatiestatus en Sportlink-status. De statussen zijn `pending`, `synced`, `failed`, `action_required` en `local_only`. De UI toont `action_required` als **Actie nodig** met de concrete Sportlink-validatiemelding.
 
 Alleen gebruikers met de capability `ledenadministratie` en beheerders kunnen de log via **Relaties → Wijzigingslog** lezen. Rondo verwijdert logregels na 24 maanden met een dagelijkse retentietaak.
 

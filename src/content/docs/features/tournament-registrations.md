@@ -48,6 +48,16 @@ most once; removed staff immediately lose access. Every change is recorded in th
 activity. Removing the selected contact from an open draft clears that choice, while a submitted
 contact and all financial snapshots remain unchanged.
 
+## Supplemental teams after confirmation
+
+Assigned staff can use **Extra teams aanmelden** on a submitted root registration while the tournament is open and the internal deadline has not passed, including when the original invoice is already paid. Enter only the additional teams/player counts and choose a complete current contact. Each supplement snapshots its own price and contact and gets a separate invoice and persistent payment link when its total is positive. Free supplements have `payment_state: not_applicable` and no invoice. Original team/player totals, contact and paid invoice remain unchanged.
+
+`POST /rondo/v1/tournament-entries/{id}/additions` requires the current root `version`, `contact_person_id`, nonempty `team_entries` with positive player counts, and UUID-v4 `request_id`. New requests recheck deadline, assignments, contact and pricing under the tournament lock. Replaying the same actor/contact/team payload with the same key reuses the child and invoice even when the supplied version is now old; a changed payload under that key or a stale version for a new request returns HTTP 409. Only assigned staff can add teams; management access alone does not authorize it. Supplements cannot themselves receive supplements.
+
+Each supplement is a `rondo_tourn_entry` with native `post_parent` pointing to the root. It inherits the root's **current** assignees for access and payment/programme/change recipients rather than copying a stale assignment. Assignment changes happen on the root and revoke access to its supplements too. Root responses expose `additional_entries`; each row includes `parent_entry_id`, and roots expose `can_add_teams` and `can_reopen`.
+
+Personal lists group supplements under their club team with separate amounts/payment states. Manager/payment views and CSV/PDF exports label **Aanvulling**. Selected-club-team and submitted-root counts count roots once; registered tournament teams, players and financial totals include supplements. A root with supplements cannot be reopened, preserving its grouped history. `TournamentWorkflowTest` covers paid roots, free additions, replay/conflicts, deadlines, locks, current inherited access and grouped totals.
+
 ## Additional invitations and people without accounts
 
 From **Teams and payments → Extra teams uitnodigen**, managers can select teams that were not
@@ -101,7 +111,7 @@ Tournament schedule rows contain a local date and time in the WordPress site tim
 remain calendar dates without a time, and the internal deadline remains open through the end of the
 selected day. A tournament manager can extend it, but it must remain in the future and before the
 organiser's external deadline. Confirmed registrations are
-read-only for assigned staff. A manager can reopen an unpaid registration: Rondo archives the old
+read-only for assigned staff, with supplemental registrations available separately before the deadline. A manager can reopen an unpaid registration without supplements: Rondo archives the old
 payment link and invoice, restores the saved team draft, and creates a new invoice after the next
 confirmation. Paid registrations cannot be reopened. If payment-link creation fails, the
 registration remains valid. Rondo schedules a deduplicated automatic retry after five minutes and

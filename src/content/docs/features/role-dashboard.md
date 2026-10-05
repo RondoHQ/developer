@@ -33,9 +33,9 @@ The default block order is birthdays, anniversaries, personal tasks, membership,
 
 ### Layout and branding
 
-The role dashboard and its shell use local Figtree fonts, Rondo logo assets and scoped light/dark colors in `dashboard-brand.css`. This shell applies only to the role dashboard at `/`, excluding `?overzicht=club`.
+The sidebar, top bar and mobile drawer on every page using `Layout` share local Figtree fonts, Rondo logo assets and light/dark colors in `app-shell-brand.css`. Dashboard content styling remains scoped to the role dashboard at `/` through `dashboard-brand.css`, excluding `?overzicht=club`.
 
-With the default board order, two columns group volunteer/VOG attention, tasks and matches on the left and celebrations, membership and teams on the right. Smaller screens collapse the columns. A saved custom order uses one ordered grid, preserving visual and reading order. **Aanpassen** can reorder or hide available blocks and choose 1–30 birthday days, including today; the default is three. Preferences use `rondo_role_dashboard_layout` user metadata, separate from the legacy dashboard preferences. Revoked permissions remove unavailable blocks.
+With the default board order, two columns group volunteer/VOG attention, tasks and matches on the left and celebrations, membership and teams on the right. Smaller screens collapse the columns. A saved custom order uses one ordered grid, preserving visual and reading order. At widths of 1280px and above, each block occupies half the grid and aligns to its own content height; smaller screens retain responsive layouts. **Aanpassen** can reorder or hide available blocks and choose 1–30 birthday days, including today; the default is three. Preferences use `rondo_role_dashboard_layout` user metadata, separate from the legacy dashboard preferences. Revoked permissions remove unavailable blocks.
 
 Revoking a section capability removes its data and saved layout IDs on the next request. The dashboard grants no access through a preference or hidden block.
 
@@ -83,6 +83,8 @@ Workspace and layout routes require an authenticated board member, coordinator o
 Block IDs are `attention`, `birthdays`, `anniversaries`, `membership`, `volunteers`, `vog`, `matches` and `teams`; availability follows the role and section checks above. The layout response includes `defaults` for the role-specific reset order; it also includes `birthday_days`, defaulting to 3 for existing and new users. Writes that omit `birthday_days` preserve the saved value. Null, strings, fractions and values outside 1–30 return `invalid_birthday_days` without modifying preferences. Preferences live in the user meta `rondo_role_dashboard_layout`. Reads intersect stored IDs with current available blocks and append newly available blocks. Hiding every block is supported. Role revocation removes unavailable data and layout IDs on the next request. Preferences never authorize data access.
 
 The client keys workspace data by user, uses a one-minute stale time, polls club fixtures every minute and team fixtures every five minutes. **Verversen** reloads the workspace and selected match feeds. External fixture requests are separate from the personal workspace request.
+
+Confirmed task changes cancel older in-flight workspace queries and update the cached task list before refresh. Completed or awaiting tasks disappear immediately; an old response or failed refresh cannot restore the confirmed open task. Open-task edits preserve relation metadata and do not insert unrelated tasks. `dashboardTasks.test.mjs` covers these cache races.
 
 ## Verification
 

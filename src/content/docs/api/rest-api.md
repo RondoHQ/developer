@@ -9,6 +9,10 @@ This document describes all REST API endpoints available in Rondo Club, includin
 
 All API requests require authentication via WordPress session with REST nonce.
 
+## Bank accounts and match compensation
+
+Approved authenticated users use the separately permission-filtered [bank-account routes](/features/bank-accounts/#rest-api) for their own linked person or financial management of a visible person. [Match-compensation routes](/features/match-compensation/#rest-api-and-retry-contracts) cover configured-team registration, financial month preview/closing, private exports, external processing and corrections. Neither module expands generic person/team access.
+
 ## Tournament registrations
 
 Tournament endpoints are authenticated and use domain permissions rather than generic post-type
@@ -34,9 +38,10 @@ access. Managers are administrators or users with the current work-history role
 | `GET` | `/rondo/v1/tournament-entries/{id}` | Assignee or manager | Read one shared entry |
 | `PATCH` | `/rondo/v1/tournament-entries/{id}/draft` | Assignee | Save contact and tournament-team draft data |
 | `POST` | `/rondo/v1/tournament-entries/{id}/submit` | Assignee | Confirm a positive registration |
+| `POST` | `/rondo/v1/tournament-entries/{id}/additions` | Assignee | Add separately payable teams before the deadline; current version and UUID-v4 request ID required |
 | `PATCH` | `/rondo/v1/tournament-entries/{id}/assignees` | Manager | Synchronize or redistribute current team staff with `user_ids` and `version` |
 | `POST` | `/rondo/v1/tournament-entries/{id}/payment-reminder` | Manager | Send a manual reminder for an open payment |
-| `POST` | `/rondo/v1/tournament-entries/{id}/reopen` | Manager | Cancel an unpaid invoice and reopen the registration |
+| `POST` | `/rondo/v1/tournament-entries/{id}/reopen` | Manager | Cancel an unpaid invoice and reopen a registration without supplements |
 | `PATCH` | `/rondo/v1/tournament-entries/{id}/planner-note` | Manager | Update the private operational note |
 
 Draft and submit writes require the current `version`. A stale version returns HTTP 409 with the

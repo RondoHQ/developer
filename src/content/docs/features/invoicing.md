@@ -142,9 +142,13 @@ Manual invoices are created from `/financien/facturen/nieuw`.
 - Show a manual account picker only when more than one usable Mollie account exists
 - Do not expose account switching for discipline or membership invoices
 
+External manual invoices offer **Kies uit adresboek**, loading all accessible `person_type: contact` records on demand. Search covers contact/company names, both email addresses and address text; up to twenty matches are displayed at once. Selection copies a customer snapshot: company name with the person's name as attention, otherwise the person name; distinct primary/CC emails; and an address labelled `factuur`, falling back to the first address. Missing values clear previous form values. The copied fields remain editable without changing the contact or linking the invoice to a member.
+
+Explicitly switching invoice kind resets email subject/body to that kind's configured defaults, including copied invoice overrides. Settings refreshes preserve saved/custom text when the kind remains unchanged.
+
 ### Linked credit notes
 
-Finance managers can create a calculated credit draft from a sent, paid or overdue original invoice, or calculate contribution restitution after an eligible injury season. The preview and creation endpoints, source reservations, stored calculations and locked draft workflow are documented in [Linked credit notes and injury restitution](/features/credit-notes/). These credits use `invoice_type: manual` and `invoice_kind: credit`; a refund is handled separately.
+Finance managers can create a calculated credit draft from a sent, paid or overdue original invoice, or calculate contribution restitution after an eligible injury season. The preview and creation endpoints, source reservations, stored calculations and locked draft workflow are documented in [Linked credit notes and injury restitution](/features/credit-notes/). These credits use `invoice_type: manual` and `invoice_kind: credit`; a refund is handled separately, with an optional [Rabobank payment-file export](/features/credit-notes/#rabobank-refund-export).
 
 Invoice responses expose nullable `season`. Detail responses also include `credit_source_invoice_id`, `credit_calculation` and `linked_credits`. [Financial season history](/features/financial-history/) lists assigned and unassigned invoices on the person profile, including former and excluded members. Credit notes receive no payment links, reminders or automatic overdue transition; sending revalidates a calculated draft before PDF/email work.
 
@@ -157,9 +161,8 @@ Generates PDF documents using the **mPDF** library. The PDF includes:
 - Club branding (logo, name, accent color from `FinanceConfig`)
 - Member details (name, address from `person` post)
 - Invoice metadata (number, date, due date)
-- Line items table (discipline cases with match details, or membership fee breakdown)
-- Payment instructions with payment link
-- QR code image (if available)
+- Only discipline invoices use the four-column discipline table with card and suspension columns; every other type uses description and amount
+- Payment instructions and a QR image, when available, only for unpaid normal invoices; credit notes and paid invoices omit them
 
 PDFs are saved to `wp-content/uploads/invoices/{invoice_number}.pdf`. The relative path is stored in the `pdf_path` ACF field.
 

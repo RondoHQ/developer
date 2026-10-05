@@ -24,6 +24,10 @@ The contact editor uses an icon-only pencil matching address editing, and contac
 
 Membership shows the **Bondsnummer** (KNVB ID), type, joining date, leaving date when present, and team. **Sportlink-gegevens** expands the remaining import fields. An absent membership record does not produce an empty card.
 
+## Bankgegevens
+
+The profile includes a separate bank-account card for administrators and financial managers who can view the person. Read-only finance access does not reveal full bank details. Validation, member self-service, independent permissions and local audit are documented in [Member bank accounts](/features/bank-accounts/).
+
 ## Documents
 
 VOG visibility still requires VOG access and a current volunteer. IVA appears only with an attached certificate, independently of volunteer status. The entire Documents card disappears if neither section is applicable. When both appear, the divider has equal 16-pixel spacing above and below.

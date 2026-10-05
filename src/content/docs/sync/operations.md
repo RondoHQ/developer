@@ -55,6 +55,7 @@ scripts/sync.sh people           # Members, parents, photos → Laposta + Rondo 
 scripts/sync.sh nikki            # Nikki contributions → Rondo Club
 scripts/sync.sh freescout        # Rondo Club members → FreeScout customers
 scripts/sync.sh teams            # Teams + work history → Rondo Club
+scripts/sync.sh twelve --scheduled # Hourly due check; source login only inside club windows
 scripts/sync.sh functions        # Commissies + free fields (recent updates)
 scripts/sync.sh functions --all  # Commissies + free fields (all members)
 scripts/sync.sh discipline       # Discipline cases → Rondo Club
