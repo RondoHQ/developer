@@ -136,6 +136,12 @@ review and expiry. No custom database tables or public media attachments are use
 Documents stream through authenticated REST requests with `private, no-store`,
 `nosniff` and a sandbox CSP. The UI uses nonce-authenticated blob downloads.
 
+Own-profile eligibility follows the authenticated account's `rondo_linked_person_id`,
+independently of age-group or team scopes used for coordinator person access. A coordinator
+whose own published, active person lies outside those scopes can still upload, read their
+own submission files and receive the upload reminder. The account cannot target another
+person; reviewing others still requires the existing VOG and row-access permissions.
+
 Approval, rejection and replacement remove source files and extracted identities
 from the submission. Explicitly retained verified names remain in the private
 identity record described above.

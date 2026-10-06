@@ -42,11 +42,13 @@ New UI-created parent relationships queue a full parent slot containing the curr
 
 Existing Sportlink parent relationships are updated only from a pending Rondo profile-change audit entry containing an exact old-to-new contact replacement. A generic mismatch is ignored because a child slot may intentionally use the parent's current `email_2`. New audit events snapshot their current child targets; historical mappings and unrelated person modifications cannot authorize an overwrite.
 
-Immediately before writing, the browser reads the child's current `MemberParentalInfo`. For an audited replacement it must find exactly one slot containing the old e-mail and a compatible parent name. It changes only `EmailAddressParent1/2`; name and phone remain untouched and are verified after saving. If the old address is absent, duplicated or attached to a conflicting name, the job stays blocked for review. New relationship jobs retain their separate compatible-partial-or-empty-slot behavior and may fill all three fields.
+Immediately before writing, the browser reads the child's current `MemberParentalInfo`. For an audited replacement it must find exactly one slot containing the old e-mail and a compatible parent name. It changes only `EmailAddressParent1/2`; name and phone remain untouched and are verified after saving. If the old address is absent, duplicated or attached to a conflicting name, the job stays blocked for review. New relationship jobs prefer an existing identity match or compatible partial/empty slot and may fill all three fields.
+
+For a new relationship only, two slots containing the same valid normalized e-mail may reuse slot 2 when the new parent has a different valid address. Slot 1 is retained. Distinct/invalid addresses and an ambiguous match to the desired inbox do not authorize replacement. If Sportlink requires a missing name in retained slot 1, `resolveRetainedParentSlot()` rechecks the published child's exact KNVB identity and fills that name only from one other currently linked, published Rondo parent whose primary or secondary e-mail matches. It preserves slot 1's e-mail and phone and verifies both slots after saving. Missing or multiple identities return `parent_contact_conflict`; retries match the saved new-parent slot instead of replacing it again.
 
 Verified writes complete the matching child-specific parent contact keys in Rondo's profile-change audit. Legacy e-mail jobs complete their older field keys after every child job for that parent has resolved. A callback failure is logged separately and never retries an already completed Sportlink write.
 
-Jobs retry transient failures with bounded backoff. Two occupied slots become a visible blocked/error status in Rondo. Relationship removal cancels pending work but does not clear an already written Sportlink slot in version 1.
+Jobs retry transient failures with bounded backoff. Two occupied slots without a safe identity match or duplicate-address fallback become a visible blocked/error status in Rondo. Relationship removal cancels pending work but does not clear an already written Sportlink slot in version 1.
 
 ## Tracked Fields
 

@@ -10,6 +10,8 @@ Rondo Club displays Twelve revenue at `/financien/kassaomzet`. The [Rondo Sync b
 
 `product_revenue`, when present, must use `method: proportional_v1` and known unique product names with integer `cashCents` and `businessclubCents`; allocations must reconcile to the independent daily totals. Partial no-sale rows retain an amount/category and an empty product list rather than guessed consumption. Full baskets retain original gross prices and can expose separate `accountedCents` for deposit-adjusted consumption.
 
+Optional `activity` version 1 adds original basket IDs, local minute timestamps, sale/correction kind and product revenue allocations. It requires `product_revenue` and must reconcile to each product's daily cash/Businessclub cents exactly; invalid supplied activity rejects the import. Older reports without it retain daily totals but have no hourly purchase counts. See [Kantine activity and matchday context](/features/kantine-activity/) for the complete contract.
+
 Each day stays a native `rondo_twelve_report` post, selected by `_twelve_period_start`. Updating a legacy day preserves its post ID, original `_twelve_pdf_base64`/filename and invoice claims; `_twelve_original_report_data` saves the previous data before replacement. JSON uses `wp_slash()` before metadata storage, preserving Unicode, quotes and backslashes. New posts remain draft until all financial metadata is read back successfully, and an interrupted import can resume that draft.
 
 The response is `{ id, status, hash }`, with `created`, `updated` or `unchanged` and the SHA-256 of the exact report JSON. Exact retries do not duplicate reports. A site client ID is established on first accepted import; another client, duplicate/trashed days, older observation/coverage or a conflicting invoice reservation returns HTTP 409. Imports and Businessclub invoice creation share `rondo_twelve_invoice_lock`. Claimed/billed days cannot change their Businessclub financial values or become provisional. `_twelve_source_hash` records successful storage; `rondo_twelve_browser_last_success` tracks the latest accepted source observation, not completion of the entire Sync run.
@@ -28,6 +30,8 @@ Comparison supports the same period last year or arbitrary dates. Series align b
 
 Administrators edit weekday opening windows under **Synchronisatie**. The schedule has fixed `timezone: Europe/Amsterdam`, `interval_hours: 2` and `days: [{ day, start, end }]`; day 0 is Sunday, start is 0–23 and end is later through 24. At most one window per weekday is allowed, and `[]` disables scheduled source logins. Validation occurs before replacing `rondo_twelve_schedule`. See the [pipeline](/sync/pipeline-twelve/#configuration-and-schedule) for default windows and hourly checks.
 
+**Drukte & bezetting** shows purchases and revenue per hour, registered kantine staffing and archived home fixtures, with a median comparison only when enough complete comparable days exist. **Marges** provides [private purchase invoices and theoretical product costing](/features/kantine-margins/), using dated purchase/sale prices and current ingredient mappings. Kassa readers can inspect both; changing margin data additionally requires finance-management permission.
+
 ## REST API
 
 Routes below are relative to `/wp-json/rondo/v1`; ordinary reads require approved authentication and `kassaomzet`.
@@ -40,6 +44,8 @@ Routes below are relative to `/wp-json/rondo/v1`; ordinary reads require approve
 | `GET /twelve/products` | `from`, `to`; product gross/net/VAT values and quantities |
 | `GET /twelve/vat` | `from`, `to`; source sales VAT totals |
 | `GET /twelve/no-sales` | `from`, `to`; `{ transactions }` including category, amount, time and available product details |
+| `GET /twelve/activity` | Required valid `date`; hourly counts/cents, staffing, daily revenue, coverage, match archive and comparison |
+| `GET /twelve/margins` | Optional valid `date`; product margins, price history, invoice summaries and `can_write`; [write/PDF routes](/features/kantine-margins/#rest-contract) |
 | `GET /twelve/product-groups` | Full historical catalog with SHA-256 `id`, current `group`, quantities/values, plus allowed `groups` |
 | `POST /twelve/product-groups` | Admin plus kassa access; existing product `id` and allowed `group`; `unassigned` removes the override |
 | `GET /twelve/schedule` | Current fixed timezone/interval and weekday windows |

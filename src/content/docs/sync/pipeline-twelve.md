@@ -31,6 +31,12 @@ Supply both historical dates or neither; do not combine dates with `--snapshot`.
 
 Days absent from source exports are skipped, not fabricated as zero. The current day is provisional until a complete 06:00 boundary is covered. Existing PDF archives and invoice claims are protected by the [Club import contract](/integrations/twelve/). Snapshots are retained for audit; monitor disk usage under `data/twelve`.
 
+## Hourly basket export
+
+Reports also include optional `activity` version 1 for [Drukte & bezetting](/features/kantine-activity/). The export carries original basket IDs, local minute timestamps, `sale`/`correction` kind and allocated product cash/Businessclub cents. Shared payment children merge into one basket. Zero-value sales are retained; top-ups, other no-sales and tab settlements do not become purchases. Food/drink classification remains in Club.
+
+After daily product rounding, a second deterministic largest-remainder allocation distributes each product's exact cent target across its baskets, with stable transaction-ID tie breaks. Reordering export rows does not change the result. Product totals must reconcile before the activity can be imported. The contract contains no customer or operator data. Existing immutable snapshots can be replayed through the pipeline to add activity, subject to the normal import freshness and billing protections.
+
 ## Monitoring and read-only comparison
 
 `RunTracker('twelve')` reports created, updated, skipped and failed counts. The pipeline is registered in the dashboard, alert renderer, `sync.sh` and self-heal mappings. Monitoring derives previous/next due times from the cached club windows and allows scheduled runs time to start before declaring them stale. Outside-window checks return a successful skip before starting a tracked import.

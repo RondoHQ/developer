@@ -44,6 +44,8 @@ There is no assignment post type. A shift's `assigned_persons` meta holds an arr
 | `_shift_signup_user_{person_id}` | Which WordPress account made it — a parent using a child's account, for instance. |
 | `_shift_assigned_by_{person_id}` | The coordinator who assigned this person, when it was not a self-signup. Survives cancellation. |
 | `_shift_assigned_at_{person_id}` | When that assignment happened. |
+| `_shift_retroactive_at_{person_id}` | When a coordinator added a helper after the shift ended; preserved when people are merged. |
+| `_shift_attendance_log` | Append-only added/removed records with person, actor and timestamp for retrospective corrections. |
 | `_shift_assignment_mode_{person_id}` | `assigned` for an explicit duty; `signup` or missing preserves normal self-cancellation rules. |
 | `_shift_email_assignment_sent_{person_id}` | Successful delivery time of the duty assignment notice. |
 | `_no_show_{person_id}` | No-show marker, set by an admin within the 72-hour window after the shift. |
@@ -121,11 +123,13 @@ Holders of the `vrijwilligers` capability manage the programme. Beyond the CPTs,
 | Endpoint | Purpose |
 |---|---|
 | `GET /rondo/v1/shifts/{id}/assignable-people?search=` | Candidates for this shift, with a `block_reason` on anyone who cannot take it. Blocked people are listed rather than filtered out — a coordinator who cannot find someone concludes the search is broken. |
-| `POST /rondo/v1/shifts/{id}/assignees` | Put a person on the shift. All member-facing rules still apply; there is no certificate override. |
-| `DELETE /rondo/v1/shifts/{id}/assignees/{person_id}` | Remove an assignee after the member deadline and email that person. |
+| `POST /rondo/v1/shifts/{id}/assignees` | Put a person on an upcoming shift under normal rules, or use `retroactive: true` to record a finished shift's helper. |
+| `DELETE /rondo/v1/shifts/{id}/assignees/{person_id}` | Remove an ordinary assignee with notification, or correct a retrospectively added helper without mail. |
 | `POST /rondo/v1/shifts/{id}/cancellation` | Cancel the whole shift, with audited credit rules and notifications. |
 
 ### Email after coordinator removal
+
+This notification flow applies to ordinary assignments; retrospective corrections are silent.
 
 Removing one assignment sends that person an immediate Dutch email with the task,
 date and start/end times, explaining that a coordinator has removed their signup.
@@ -208,7 +212,7 @@ receives no person or account IDs, and team names do not link to restricted team
 The coordinator editor offers **Indelen** (record an agreement using the normal signup rules)
 and **Dienst toewijzen** (an explicit duty that the member cannot cancel themselves).
 `POST /rondo/v1/shifts/{id}/assignees` accepts `assignment_mode: "signup" | "assigned"`,
-defaulting to `signup` for existing callers. Both modes enforce capacity, certificate and pool
+defaulting to `signup` for existing callers. For upcoming assignments, both modes enforce capacity, certificate and pool
 requirements, overlap checks and coordinator permissions. Existing assignments are not converted
 by retrying the endpoint in another mode; remove and re-add deliberately instead.
 
@@ -227,6 +231,40 @@ so coordinators can distinguish the two kinds of assignment.
 but `prevent_direct_assignee_writes()` refuses any change to it, because that path skips
 capacity, certificates, the write lock, the confirmation mail, the `vol` status flip,
 and detaches template-managed shifts from their sjabloon.
+
+### Retrospective attendance
+
+Coordinators can use **Eerdere dienst opzoeken** on the management page to select a date
+(`datum=YYYY-MM-DD`). `GET /rondo/v1/shifts/calendar?view=manage&from=…&to=…` includes
+completed shifts; the member signup view still excludes them. Cancelled shifts stay excluded.
+The shift editor exposes **Achteraf registreren** and labels the new helper accordingly.
+
+`POST /rondo/v1/shifts/{id}/assignees` with `person_id` and `retroactive: true` requires
+coordinator permission and access to that person. The shift must be published, have valid
+start/end times, have ended, and have status `open`, `vol` or `voltooid`; otherwise the API
+returns HTTP 409 `attendance_unavailable`. This historical operation bypasses capacity,
+current VOG/IVA, pool and overlap requirements. It does not relax upcoming signup rules.
+The candidate picker retains its active-member eligibility filter while skipping current
+certificate/pool checks for finished shifts.
+
+A new helper is added under the existing shift write lock, the shift becomes `voltooid`,
+actor/time metadata and an `added` audit row are recorded, and obligation caches are
+invalidated. Capacity, template linkage and customization metadata stay intact. No signup
+timestamp, confirmation or assignment notification is created; the response includes
+`retroactive: true`, `already_assigned`, counts and
+`notification: { queued: false, reason: "retroactive" }`.
+
+An existing assignee is left unchanged, including duty mode and no-show markers; retrying
+does not duplicate the helper or audit row. Completed shifts with the new helper count in
+obligation progress and [registered kantine staffing](/features/kantine-activity/#registered-staffing).
+Shift responses expose `retroactive_person_ids` and `can_record_attendance`.
+
+DELETE can remove a helper with `_shift_retroactive_at_` while the shift remains eligible
+for historical recording. It removes that marker, appends a `removed` audit row, refreshes
+obligation caches and returns `retroactive: true` without sending mail. The shift remains
+completed. Original assignments on completed shifts retain the normal closed-shift guard.
+The UI refreshes calendars, personal shifts, person shift history and Twelve activity after
+historical additions/removals. This records helpers without claiming full attendance coverage.
 
 ## Notifications
 

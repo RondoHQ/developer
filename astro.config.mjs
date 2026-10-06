@@ -54,6 +54,8 @@ export default defineConfig({
 						{ label: 'Linked Credit Notes', slug: 'features/credit-notes' },
 						{ label: 'Member Bank Accounts', slug: 'features/bank-accounts' },
 						{ label: 'Match Compensation', slug: 'features/match-compensation' },
+						{ label: 'Kantine Activity', slug: 'features/kantine-activity' },
+						{ label: 'Kantine Product Margins', slug: 'features/kantine-margins' },
 						{ label: 'Role Dashboards', slug: 'features/role-dashboard' },
 						{ label: 'Reminders', slug: 'features/reminders' },
 						{ label: 'Sportpark Calendar', slug: 'features/sportpark-calendar' },

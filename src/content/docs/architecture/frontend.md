@@ -53,6 +53,7 @@ Shared visual styles are defined in `src/index.css` to keep page components cons
   - `h1` and `h2` default to Montserrat with a stronger title weight.
   - Brand gradient heading treatment is applied through `h1.text-brand-gradient`, `h2.text-brand-gradient`, or `.brand-heading`.
   - Use `.heading-plain` to explicitly opt out of gradient text on detail/legal contexts.
+  - Section `h3` headings use light `#dce4ff` under `.dark`, keeping the shared blue headings readable on dark surfaces.
 - **Cards**
   - Use the shared `.card` class for standard content containers.
   - `.card` includes the light neutral surface, subtle border/shadow, and a 3px brand gradient top accent.
