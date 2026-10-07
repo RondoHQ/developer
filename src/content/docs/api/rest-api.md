@@ -1585,3 +1585,20 @@ When no option is set, hardcoded defaults from `VolunteerStatus` class are used.
 | POST | `/rondo/v1/membership-passes/verify` | Validate scanned membership pass token |
 
 Detailed reference: `api/membership-passes.md`.
+
+
+### Newsletter Preparation and Testmail
+
+Newsletter routes require approved communication access and an item with the configured active newsletter channel. Settings and signing-profile writes additionally require administrator access.
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET / PUT | `/rondo/v1/communications/{id}/newsletter` | Read or partially save a draft with its revision |
+| POST | `/rondo/v1/communications/{id}/newsletter/preview` | Render a temporary draft without saving |
+| POST | `/rondo/v1/communications/{id}/newsletter/review` | Check saved content and audiences; issue a ten-minute review token |
+| POST | `/rondo/v1/communications/{id}/newsletter/export` | Create or update a verified Laposta draft using the review token |
+| POST | `/rondo/v1/communications/{id}/newsletter/testmail` | Request one testmail with `email` and the current `revision` |
+
+Testmail requires an unchanged, verified export and an unchanged, editable remote campaign. HTTP 200 returns `{ "email": "tester@example.org", "status": "requested" }`; this confirms the request, not delivery. Invalid input returns 400, stale or conflicting state 409, and uncertain testmail results 502 without automatic retry. Campaign scheduling and audience delivery remain in Laposta.
+
+See [Nieuwsbrieven met Laposta](../../features/newsletters/) for configuration, rendering, recovery and the complete route list.

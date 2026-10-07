@@ -37,6 +37,11 @@ wp rondo demo import --clean   # Wipe existing data first, then import
 
 Default fixture path: `fixtures/demo-fixture.json` in the theme directory.
 
+A clean import preserves the completed membership-pass migration flag
+`rondo_membership_pass_private_actions_v1_done`. This upgrade state belongs to
+the installed code, so replacing demo data does not repeat the legacy public-pass
+metadata cleanup. Other replaceable membership-pass configuration is still cleared.
+
 ### Date Shifting
 
 All dates in the fixture are shifted relative to today on import:

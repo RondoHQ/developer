@@ -3,7 +3,7 @@ title: Communicatieplanning
 description: Gedeelde planning voor WhatsApp, nieuwsbrieven en websitepublicaties.
 ---
 
-Rondo bevat onder **Communicatie → Planning** (`/communicatie/planning`) een gedeelde planning voor bestuurscommunicatie. Rondo verstuurt of publiceert de berichten niet zelf: een bestuurslid handelt het werk buiten Rondo af en registreert daarna de werkelijke verzend- of publicatiedatum.
+Rondo bevat onder **Communicatie → Planning** (`/communicatie/planning`) een gedeelde planning voor bestuurscommunicatie. Een bestuurslid handelt de publicatie of doelgroepverzending buiten Rondo af en registreert daarna de werkelijke datum. Voor nieuwsbrieven kan Rondo een Laposta-concept voorbereiden en één testmail aanvragen; zie [Nieuwsbrieven met Laposta](../newsletters/).
 
 ## Navigatie
 

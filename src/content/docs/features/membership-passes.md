@@ -124,8 +124,13 @@ open. The UI uses the local Dutch badge assets:
 
 There is no public membership-pass page or stable public pass URL. The one-time
 `rondo_membership_pass_private_actions_v1_done` cleanup removes legacy
-`_membership_pass_token` and `_membership_pass_url` person meta and flushes the
-old rewrite rule.
+`_membership_pass_token` and `_membership_pass_url` metadata and flushes the
+old rewrite rule. The completion flag is written before one bulk deletion, so
+subsequent requests skip the expensive migration. This also removes retired keys
+from trashed people. The `post_meta` cache group is flushed when supported;
+otherwise the full WordPress object cache is flushed. Pass-version metadata is
+preserved. Demo data refreshes retain the completion flag instead of repeating
+this upgrade work.
 
 ## Digital pass without a wallet
 
