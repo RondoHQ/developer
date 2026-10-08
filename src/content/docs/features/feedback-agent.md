@@ -271,3 +271,13 @@ The overview starts with numeric ID sorting in descending order, with the active
 
 - Includes `needs_info` ("Info nodig") in status dropdown
 - Shows **PR** column with link to GitHub PR
+
+## Configurable feedback notice
+
+Administrators configure **Melding boven het feedbackformulier** under **Instellingen → Club**. The notice directs profile and membership questions to the club's membership administration. It is disabled by default with an empty contact address. Settings include an enable switch, title, plain multiline text, email and a live preview; disabling retains the content for re-enabling.
+
+`GET /rondo/v1/config` returns `feedback_notice`; administrator-only `POST /rondo/v1/config` accepts a partial `feedback_notice` object with `enabled`, `title`, `text` and `email`. Omitted fields retain their current values. The option is `rondo_feedback_notice`, and the initial frontend configuration exposes it as `window.rondoConfig.feedbackNotice`. The settings save refreshes that in-memory value.
+
+Enabled notices require a nonempty title/text and valid email. A supplied nonempty invalid email is rejected even while disabled. Invalid settings return HTTP 400 (`rondo_invalid_feedback_notice`) without overwriting the stored notice. Title and textarea sanitization remove markup. `FeedbackNotice` renders text through React with preserved line breaks, replaces every `{email}` with a `mailto:` link, and adds a separate email link when the placeholder is absent. The shared feedback modal shows it above the form fields. The notice is guidance and does not change submission permissions or routing.
+
+`tests/Wpunit/FeedbackNoticeTest.php` covers defaults, sanitization, partial disable/re-enable updates, validation and administrator-only writes.

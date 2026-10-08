@@ -1275,3 +1275,7 @@ Also used by `LettermintWebhook` for Secretaris notification on new member signu
 - **v21.0** (2026-02-08, Phase 155): Per-season fee category configuration with copy-forward
 - **v18.1.0** (2026-02-05): Per-season fee storage with automatic migration
 - Previous: Global fee settings (single option for all seasons)
+
+## Current family-member names
+
+Person-fee responses format each `family_members` entry from its current `first_name`, `infix` and `last_name`, and include those three fields alongside `id` and the compatible `name` display value. Name presentation is refreshed even when fee amounts/family grouping come from cache, so a changed infix is visible immediately. `FinancesCard` prefers frontend `formatPersonName()` and falls back to `name`. Sibling explanations use the same PHP `PersonName` helper; fee-list name sorting includes the infix.

@@ -84,6 +84,7 @@ export default defineConfig({
 					items: [
 						{ label: 'Installation', slug: 'sync/installation' },
 						{ label: 'Sync Architecture', slug: 'sync/architecture' },
+						{ label: 'Editable Schedules', slug: 'sync/schedules' },
 						{ label: 'Database Schema', slug: 'sync/database-schema' },
 						{ label: 'People Pipeline', slug: 'sync/pipeline-people' },
 						{ label: 'Teams Pipeline', slug: 'sync/pipeline-teams' },

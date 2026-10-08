@@ -96,3 +96,7 @@ systemctl restart rondo-sync-web
 ```
 
 The same key must be configured in Rondo Club's `.env` so WordPress can call this endpoint.
+
+## Dashboard schedule forms
+
+`GET /beheer/schedules` and `POST /beheer/schedules` use dashboard session authentication. The POST requires the form's session CSRF token and current configuration revision: missing/wrong CSRF returns 403, validation returns 400 with the draft preserved, and a stale revision returns 409. A valid save redirects to `/beheer/schedules?saved=1`. This form does not use `X-Sync-API-Key`. See [Editable Sync Schedules](/sync/schedules/) for fields, allowed cadences and dispatcher behavior.

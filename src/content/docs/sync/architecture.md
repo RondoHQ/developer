@@ -31,38 +31,9 @@ Neither Sportlink Club nor Nikki provide APIs. All data is extracted by automati
 
 ## Schedules
 
-All times are **Europe/Amsterdam** timezone.
+Automatic schedules are editable through **Beheer → Sync schedules** and persisted in `data/sync-schedules.json`. One minute dispatcher starts due allowlisted pipelines; dashboard predictions, overdue checks and watchdog budgets use the same saved configuration. Manual runs remain available when automation is disabled.
 
-| Pipeline | Schedule | Cron | Notes |
-|----------|----------|------|-------|
-| People | 4x daily | `0 8,11,14,17 * * *` | Members, parents, photos |
-| [Twelve](/sync/pipeline-twelve/) | Hourly check, two-hourly inside club windows plus closure | `0 * * * *` | Validated browser snapshots; no login outside configured windows |
-| Nikki | Daily | `0 7 * * *` | Contributions to Rondo Club |
-| Functions (recent) | 4x daily | `30 7,10,13,16 * * *` | 30 min before each people sync; recent/VOG members plus one-quarter daily coverage |
-| Functions (full) | Weekly Sunday | `0 1 * * 0` | All members with `--all` |
-| FreeScout | Daily | `0 8 * * *` | Rondo Club members to FreeScout customers |
-| Teams | Weekly Sunday | `0 6 * * 0` | Team creation + work history |
-| Discipline | Weekly Monday | `30 23 * * 1` | Discipline cases |
-| Reverse Sync | Hourly | `0 * * * *` | Rondo Club changes back to Sportlink |
-
-### Daily Timeline
-
-```
- Every hour    Reverse sync (Rondo Club -> Sportlink)
- 07:00         Nikki sync
- 07:30         Functions sync (recent) -> 08:00 People sync (1st) + FreeScout sync
- 10:30         Functions sync (recent) -> 11:00 People sync (2nd)
- 13:30         Functions sync (recent) -> 14:00 People sync (3rd)
- 16:30         Functions sync (recent) -> 17:00 People sync (4th)
-```
-
-### Weekly
-
-```
- Sunday  01:00  Functions sync (full --all)
- Sunday  06:00  Teams sync
- Monday  23:30  Discipline sync
-```
+See [Editable Sync Schedules](/sync/schedules/) for the ten default cadences, cron migration, locking and DST rules. Twelve keeps its separate hourly check and club opening windows. Missed dispatcher slots are not caught up after downtime.
 
 ## API Load Management
 

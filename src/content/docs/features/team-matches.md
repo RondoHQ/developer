@@ -74,3 +74,7 @@ The existing `_rondo_team_matches_cache` stores `matchdays` separately from actu
 `vendor/bin/codecept run Wpunit TeamMatchesTest` covers team/day disambiguation, local match inclusion, season filtering, result merging, outage retention, cancellation tombstones, event revisions, Unicode folding, unknown times, signed subscription permissions, KNVB age/division durations, legacy subscription migration, stable revisions and end times across daylight-saving changes.
 
 `ParentRelationshipRestTest` covers household team scope, date boundaries, duplicate roles, excluded entities, and the restricted other-parent payload.
+
+## Team gender labels
+
+Team lists and detail subtitles share `getGenderLabel()` from `src/utils/teamDisplay.js`: `male`/`Mannen` render as `Man`, `female`/`Vrouwen` as `Vrouw`, and `Gemengd` stays `Gemengd`. An empty value renders no label; an unknown nonempty value renders `Onbekend`. This is a presentation rule; the stored team field is unchanged.

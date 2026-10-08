@@ -17,7 +17,7 @@ The dashboard reports domain counts for People runs. **People created**, **Peopl
 **People unchanged** come from the Rondo Club submission result. Download and preparation volumes
 are shown as **Processed** in the run's step table, so they do not look like newly created people.
 
-### View Cron Schedule
+### View and Edit Sync Schedules
 
 ```bash
 crontab -l
@@ -223,16 +223,22 @@ du -sh logs/
 ## Monitoring Checklist
 
 Daily checks:
-- [ ] People sync email report arrives (4x daily)
+- [ ] People sync email reports arrive at the configured cadence
 - [ ] No errors in latest sync report
 
 Weekly checks:
-- [ ] Team sync ran on Sunday (check `logs/cron/sync-teams-*`)
-- [ ] Full functions sync ran on Sunday (check `logs/cron/sync-functions-*`)
-- [ ] Discipline sync ran on Monday (check `logs/cron/sync-discipline-*`)
+- [ ] Team sync ran at its configured slot (check `logs/cron/sync-teams-*`)
+- [ ] Full functions sync ran at its configured slot (check `logs/cron/sync-functions-*`)
+- [ ] Discipline sync ran at its configured slot (check `logs/cron/sync-discipline-*`)
 - [ ] Disk usage reasonable (`du -sh /home/rondo/`)
 
 Monthly checks:
 - [ ] Log files cleaned up (`find logs/cron/ -name "*.log" -mtime +30 | wc -l`)
 - [ ] Photo directory size reasonable (`du -sh photos/`)
 - [ ] Database sizes stable (`ls -lh data/*.sqlite`)
+
+## Editable schedule operations
+
+Use **Beheer → Sync schedules** to inspect saved timing, next runs and enable switches. See [Editable Sync Schedules](/sync/schedules/) before installing or migrating cron. `crontab -l` shows the minute dispatcher and separate Twelve check, while `data/sync-schedules.json` holds the ten pipeline cadences. Run server commands as `rondo`; root-owned locks can prevent scheduled work.
+
+Inspect `logs/cron/scheduler.log` when a due job is not dispatched. The dispatcher does not catch up missed slots after downtime. Dashboard overdue checks and watchdog stale budgets follow the saved schedule; disabled schedules also suppress automatic healing. Cadence changes reset previous-slot checks until the first eligible slot. Weekly/monthly checklists must follow the current saved timing rather than assume the initial default days.

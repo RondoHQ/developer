@@ -1602,3 +1602,7 @@ Newsletter routes require approved communication access and an item with the con
 Testmail requires an unchanged, verified export and an unchanged, editable remote campaign. HTTP 200 returns `{ "email": "tester@example.org", "status": "requested" }`; this confirms the request, not delivery. Invalid input returns 400, stale or conflicting state 409, and uncertain testmail results 502 without automatic retry. Campaign scheduling and audience delivery remain in Laposta.
 
 See [Nieuwsbrieven met Laposta](../../features/newsletters/) for configuration, rendering, recovery and the complete route list.
+
+## Club configuration: feedback notice
+
+Approved authenticated users can read `GET /rondo/v1/config`; only administrators can write `POST /rondo/v1/config`. The `feedback_notice` object contains `enabled` (boolean), `title`, `text` and `email` (strings). Partial writes preserve omitted properties; additional properties are rejected by the route schema. Enabled notices require a title, text and valid contact email; invalid settings return HTTP 400 without replacing the saved notice. See [Feedback Agent](/features/feedback-agent/#configurable-feedback-notice) for rendering, defaults and storage.

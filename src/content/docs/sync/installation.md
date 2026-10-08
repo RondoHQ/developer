@@ -160,7 +160,7 @@ This takes a while on first run because:
 
 Subsequent runs are much faster due to hash-based change detection.
 
-### 7. Install Cron Jobs
+### 7. Install Editable Schedules
 
 Set up automated scheduling:
 
@@ -168,24 +168,9 @@ Set up automated scheduling:
 npm run install-cron
 ```
 
-This prompts for Lettermint credentials (if not already in `.env`) and installs cron entries:
+Run the installer only on the sync server as `rondo`. It prompts for missing Lettermint configuration, imports recognized existing pipeline timings, preserves unrelated cron jobs and existing UI edits, and writes a private crontab backup. The ten editable jobs become one minute dispatcher; Twelve retains its separate hourly check. Unknown or ambiguous legacy entries stop migration.
 
-| Schedule | Pipeline | Command |
-|----------|----------|---------|
-| 4x daily (8am, 11am, 2pm, 5pm) | People | `sync.sh people` |
-| Daily 8:00 AM | FreeScout | `sync.sh freescout` |
-| 4x daily (7:30am, 10:30am, 1:30pm, 4:30pm) | Functions (recent) | `sync.sh functions` |
-| Weekly Sunday 1:00 AM | Functions (full) | `sync.sh functions --all` |
-| Weekly Sunday 6:00 AM | Teams | `sync.sh teams` |
-| Weekly Monday 11:30 PM | Discipline | `sync.sh discipline` |
-
-All times are Europe/Amsterdam timezone.
-
-Verify with:
-
-```bash
-crontab -l
-```
+Manage timings and enable switches through **Beheer → Sync schedules**. See [Editable Sync Schedules](/sync/schedules/) for defaults, validation, migration and DST behavior; `crontab -l` now shows the dispatcher rather than each pipeline's timing.
 
 ## Directory Structure After Install
 

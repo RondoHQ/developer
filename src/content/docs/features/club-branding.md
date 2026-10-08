@@ -37,3 +37,9 @@ The login page needs more than one colour, so `rondo_login_mix_color()` mixes th
 with white or black to produce tints and shades (for example, the page background is the accent
 mixed 88% toward white). `rondo_login_hex_to_rgb()` validates hex input and falls back to the
 Rondo cyan on invalid values, so a malformed option can never break the login page.
+
+## Sponsor and membership-pass labels
+
+`ClubConfig::get_sponsor_role_labels()` and frontend `getSponsorRoleLabels()` derive `Sponsor {club name}` and `Businessclub {club name}` from the configured Clubnaam. Sponsor forms/lists, person relations, native field-schema choices, admission statistics and Apple/Google sponsor card titles use these labels. Empty club names produce `Sponsor` and `Businessclub`.
+
+Stored keys remain `awc_sponsor` and `businessclub`; integrations must use these keys rather than a translated label. Sponsor Wallet card titles use Clubnaam even when a separate issuer/organization name is configured. Household member-pass titles use `{club name} Ledenpas`, while the ordinary member choice alongside sponsor passes uses `{club name} ledenpas — {team} — {role}`. Household Club TV logo guidance also uses the configured club name.

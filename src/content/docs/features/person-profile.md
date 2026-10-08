@@ -51,3 +51,7 @@ Open tasks remain visible and can be added from the header. An empty task list i
 **Functiegeschiedenis** uses compact text rows without logos or placeholder images. At `sm` and wider, role, team/committee and period use aligned columns; on smaller screens they stack. Descriptions remain below their row. The existing order, linked team/committee destinations, external team names and current/historical date semantics are unchanged.
 
 The Timeline keeps its existing permission-filtered content, editing and activity actions while using the full available width. Tasks remain accessible on the Profile tab.
+
+## Shared personal-name formatting
+
+PHP `Rondo\People\PersonName::get($person_id)` reads canonical `first_name`, `infix` and `last_name`; `format()` trims each part, omits empty parts and joins them in that order, matching frontend `formatPersonName()`. Use it for person presentation rather than joining first and last names directly. Auto-titles, linked-account person responses, newly provisioned display names, photo filenames/descriptions, family-fee names, delivery notifications and duplicate-name grouping retain the infix. Consumers keep their existing company, title or recipient fallback where relevant; the helper itself returns an empty string when all personal-name fields are empty.

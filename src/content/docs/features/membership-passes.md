@@ -191,8 +191,8 @@ Class: `Rondo\Passes\MembershipPassApple`
 - Has no season field; validity follows current pass rights instead of a season boundary
 - Shows KNVB ID field only for `Bondslid` tier
 - Sponsor passes use a white background with dark foreground and label text and replace team/function fields with `BEDRIJF` and the selected sponsor company's title
-- `businessclub` shows `Businessclub {organization name}` with the separately configurable Businessclub logo; without an uploaded logo it falls back to the bundled Businessclub AWC asset
-- `awc_sponsor` shows `{organization name} Sponsor` with the standard club logo
+- `businessclub` shows `Businessclub {club name}` with the separately configurable Businessclub logo; without an uploaded logo it falls back to the bundled Businessclub AWC asset
+- `awc_sponsor` shows `Sponsor {club name}` with the standard club logo
 
 Administrators upload both the standard club logo and the optional Businessclub logo under **Instellingen → Club → Huisstijl**. The Businessclub attachment ID is stored in the WordPress option `rondo_finance_businessclub_logo_id`.
 
@@ -216,8 +216,8 @@ Class: `Rondo\Passes\MembershipPassGoogle`
 - Uses uploaded service-account JSON attachment
 - Tier routing depends on `type-lid`, not KNVB ID presence
 - Uses the club logo as wallet `logo` (not `heroImage`) and sets `cardTitle` to issuer/club name to keep a standard Google Generic Pass layout
-- Sponsor `businessclub` passes use the separately configurable Businessclub logo and `Businessclub {issuer name}`; without an uploaded logo they fall back to the bundled Businessclub AWC asset
-- Sponsor `awc_sponsor` passes use the standard club logo and `{issuer name} Sponsor`
+- Sponsor `businessclub` passes use the separately configurable Businessclub logo and `Businessclub {club name}`; without an uploaded logo they fall back to the bundled Businessclub AWC asset
+- Sponsor `awc_sponsor` passes use the standard club logo and `Sponsor {club name}`
 - Generates a cached padded PNG variant of the club logo for Google Wallet to avoid crest clipping in the compact wallet card
 - Uses full object `update` to replace legacy object styling when a pass object already exists
 - Sets `subheader` to member type label (`Bondslid`/`Verenigingslid`/`Sponsor`) above the member name
@@ -299,3 +299,7 @@ viewing this page never creates an event or admission. Select a match to see the
 shared admission total and breakdown by pass type, refreshed every five seconds.
 Past matches remain available independently of the current Sportlink feed.
 The page also links to the scanner, including on desktop.
+
+## Club-branded role labels
+
+Sponsor card titles in both Wallet generators follow Clubnaam, independently of the configured issuer name: `Sponsor {club name}` and `Businessclub {club name}`. The household UI and admission breakdown share those labels; stored pass/role keys remain `awc_sponsor` and `businessclub`. See [Club branding](/features/club-branding/#sponsor-and-membership-pass-labels).

@@ -119,3 +119,7 @@ Businessclub sponsors. A manual Businessclub relation takes precedence over an
 AWC Sponsor relation for the `businessclub`, `bedrijfsnaam` and
 `sponsorvariant` fields. Existing Sponsit source IDs are retained when the same
 person also has a Sponsit-backed relation.
+
+## Configured club labels
+
+The sponsor-role selectors, filters, person-relation cards and validation messages show `Sponsor {club name}` and `Businessclub {club name}` from Clubnaam. The native field registry exposes the same choices. Persist and filter using `awc_sponsor` and `businessclub`; those machine values remain stable when the club name changes. Sponsor Wallet titles also use Clubnaam rather than the Wallet issuer name.
