@@ -52,6 +52,14 @@ A per-person Options API lock serializes uploads and claims. A crashed lock fail
 
 The worker reads the current Sportlink image fingerprint, checks it again before claiming and immediately before uploading, then verifies a changed image and nonempty photo date after reopening the exact profile. Photo bytes, signed CDN URLs and claim tokens are not logged. WordPress exports a bounded JPEG using its image editor; the user's selected crop is preserved.
 
+Since Rondo Sync 0.16.2, profile reads accept only a successful `GET` response
+from `MemberHeader` whose `PublicPersonId` matches the requested KNVB ID. Failed
+responses during redirects or session recovery, another member's response and
+preflight requests cannot supply the photo state. The exact profile route and
+visible relation code must also match. A navigation or header-read failure gets
+one fresh read attempt; after two failed attempts the read fails. This retry does
+not repeat an upload or an uncertain post-upload job.
+
 An uncertain upload or acknowledgement becomes `review` or stays `sending`. Neither state is automatically retried. A successful HTTP click alone is not confirmation; inspect the actual Sportlink photo before resolving an uncertain job. Administrators can complete an already-verified sending job through the revision-and-token-bound endpoint. Keep the current attachment and revision when investigating; never re-upload blindly after a timeout.
 
 ## REST API

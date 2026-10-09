@@ -97,6 +97,26 @@ systemctl restart rondo-sync-web
 
 The same key must be configured in Rondo Club's `.env` so WordPress can call this endpoint.
 
+## Dashboard pipeline routes
+
+Pipeline history and manual starts use dashboard session authentication, not
+`X-Sync-API-Key`. Since Rondo Sync 0.16.1, the overview, route validation and
+display names share `PIPELINE_CONFIG` from `lib/dashboard-queries.js`, including
+Twelve. Unknown pipeline names return 404; unauthenticated requests redirect to
+`/login`.
+
+- `GET /pipeline/:name`: run history, 20 runs per page. `page` must be a positive
+  integer or the route returns 400. Twelve history is `/pipeline/twelve`.
+- `POST /api/pipeline/:name/start`: launches `scripts/sync.sh` for that pipeline.
+  Twelve launches with `['twelve']`, so this is a manual run outside the scheduled
+  window checks. Success returns `{ ok: true, pipeline: "twelve" }`; an already
+  running pipeline returns 409. Immediate launch failures return 500 and retain
+  a per-launch log under `logs/dashboard-launch/`.
+
+A successful launch response does not establish that the import completed;
+check the tracked run and its outcome. See [Twelve pipeline](/sync/pipeline-twelve/)
+for reconciliation and checkpoint rules.
+
 ## Dashboard schedule forms
 
 `GET /beheer/schedules` and `POST /beheer/schedules` use dashboard session authentication. The POST requires the form's session CSRF token and current configuration revision: missing/wrong CSRF returns 403, validation returns 400 with the draft preserved, and a stale revision returns 409. A valid save redirects to `/beheer/schedules?saved=1`. This form does not use `X-Sync-API-Key`. See [Editable Sync Schedules](/sync/schedules/) for fields, allowed cadences and dispatcher behavior.

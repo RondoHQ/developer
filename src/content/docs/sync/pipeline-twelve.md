@@ -41,6 +41,14 @@ After daily product rounding, a second deterministic largest-remainder allocatio
 
 `RunTracker('twelve')` reports created, updated, skipped and failed counts. The pipeline is registered in the dashboard, alert renderer, `sync.sh` and self-heal mappings. Monitoring derives previous/next due times from the cached club windows and allows scheduled runs time to start before declaring them stale. Outside-window checks return a successful skip before starting a tracked import.
 
+Since Rondo Sync 0.16.1, authenticated dashboard users can open
+`/pipeline/twelve` for run history and manually launch Twelve through
+`POST /api/pipeline/twelve/start`. The launch runs `scripts/sync.sh twelve`
+without `--scheduled`, bypassing the configured weekday windows. An already
+running pipeline returns 409. The overview and these routes share the same
+pipeline registry; verify completion in the tracked run after launch. See
+[dashboard pipeline routes](/sync/web-api/#dashboard-pipeline-routes).
+
 `steps/download-twelve.js` can also create read-only snapshots; `tools/compare-twelve.js` checks selected totals against supplied PDF-derived reference data. Its `fullPdfParity: false` explicitly means that matching those totals alone does not prove VAT/cashflow parity or billing eligibility. It does not import or schedule anything.
 
 Tests in `twelve-export.test.js`, `twelve-report.test.js`, `twelve-schedule.test.js` and `twelve-read-queue.test.js` cover synthetic reconciliation, DST/06:00/year boundaries, filters, private snapshots, sanitized login failures, VAT contracts, allocation rounding, schedule validation and ordered writes.

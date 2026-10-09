@@ -42,7 +42,12 @@ The file selector uses a visible Dutch button (PDF kiezen / Bestanden kiezen) wi
 
 ## Upload and approval
 
-- Original digital PDF: submit the unchanged bytes to Justid's GAAV endpoint,
+Since Rondo Club 35.145.1, the upload explanation, digital approval status and
+coordinator authenticity result spell out **Justitiële Informatiedienst (Justid)**.
+This is the digital authenticity validation service; existing Justis request-date
+fields and the approval rules retain their names and behavior.
+
+- Original digital PDF: submit the unchanged bytes to the Justitiële Informatiedienst (Justid) GAAV endpoint,
   `https://www.validatie.nl/api/valideer/`. Only integer `response_code: 0` confirms
   authenticity. No API key is required by the tested API. HTTP errors, malformed
   responses and technical response codes never approve a document.

@@ -69,10 +69,10 @@ separate from the active-member import: former members are not re-imported, but 
 2. Applies field mappings from `config/field-mapping.json` to transform Sportlink fields to Laposta custom fields
 3. Reads the current-season obligation units from `GET /rondo/v1/volunteer-obligations`
 4. Maps each Rondo person ID to its tracked KNVB ID or standalone-parent email and adds the three numeric volunteer counters
-5. Handles parent extraction: creates separate list entries for `EmailAddressParent1` / `EmailAddressParent2`
-6. Deduplicates parent entries across lists
-7. Computes `source_hash` for each member (SHA-256 of email + custom fields)
-8. Upserts into `data/laposta-sync.sqlite` → `members` table
+5. Reads the live members of each configured Laposta list before allocating separate member and parent identities
+6. Allocates member entries first, then deduplicated parents, preserving matching parent placements and occupied legacy slots
+7. Stops preparation before database writes if the four lists cannot accommodate every entry
+8. Computes `source_hash` for each member (SHA-256 of email + custom fields) and upserts into `data/laposta-sync.sqlite` → `members` table
 
 **Output:** `{ success, lists: [{ total }], excluded }`
 
@@ -97,26 +97,42 @@ Example recruitment segment: `vrijwilligersplicht > 0`,
 Existing segments that interpreted `vrijwilligersplicht = 0` as completed must
 be revised: the field now describes the full requirement.
 
-### Parent names in Laposta
+### Member and parent identities in Laposta
 
-An address in `EmailAddressParent1` or `EmailAddressParent2` belongs to a parent
-recipient even when the same address is also the child's `Email` or
-`EmailAlternative`. Those child-derived rows use the parent's name and include
-all linked child names in `oudervan`. Existing list assignments and child-specific
-team and membership fields remain unchanged.
+Since Rondo Sync 0.16.3, primary and alternative member rows keep the member's
+own name, birthdate and relation code, even when the mailbox also appears in
+`EmailAddressParent1` or `EmailAddressParent2`. This keeps birthday messages
+addressed to the person whose birthday is stored. A separate parent row supplies
+the parent's salutation and has no child birthdate or relation code.
 
-Name resolution checks all children before choosing a name:
+All actual member rows are allocated before standalone parents across the four
+existing lists, with one occurrence of an address per list. Two siblings sharing
+a mailbox therefore have two member rows and one parent row. A parent who already
+has a member row through their primary or alternative email keeps that identity
+and their own birthdate; no synthetic parent is added. With multiple adults at one
+address, reuse their member rows only when every supplied parent name matches one
+distinct adult name. Known children are excluded from adult-name resolution.
 
-1. Use the structured name of a unique member with that primary email, excluding
-   every child who lists the address as a parent address.
-2. Otherwise, use a unique nonempty `NameParent1` / `NameParent2` from any child.
-   Sportlink supplies this as one string, which goes into `voornaam`; the child's
-   `tussenvoegsel` and `achternaam` are cleared.
-3. Conflicting identities use `Ouder/verzorger` instead of whichever name happens
-   to appear first. Missing names use `Ouder/verzorger van <child>`.
+Standalone parent names use a unique nonempty `NameParent1` / `NameParent2` from
+any linked child. Sportlink supplies this as one string in `voornaam`, clearing
+`tussenvoegsel` and `achternaam`. Conflicting identities use `Ouder/verzorger`;
+a missing name uses `Ouder/verzorger van <child>` with the child's surname fields.
+`oudervan` aggregates all linked child names; parent team and age-category fields
+aggregate their children's values.
 
-A child's own separate address keeps the child's name. Laposta submission retains
-its existing unsubscribe and notification suppression settings.
+Preparation reads the live lists before placing parents. A matching parent keeps
+their existing list. An inherited birthdate can be cleared only when it exactly
+matches a linked child's birthday and the relation code is absent or matches that
+child. Occupied legacy slots, including an older adult's own birthday, are
+reserved instead of overwritten; a new parent uses an empty slot. If any member
+or parent cannot fit in the four lists, preparation fails before changing the
+stored desired state rather than silently excluding them.
+
+A new parent row cannot bypass an existing non-active relation in another list.
+An existing matching parent remains on its list, where submission's
+`suppress_reactivation` protection applies. Existing unsubscribe and notification
+suppression settings remain in use. No additional birthday-name custom field is
+required by this identity model.
 
 ### Step 3: Submit to Laposta
 
