@@ -129,6 +129,15 @@ Team-name and season whitespace is collapsed before matching and writing externa
 
 The standalone monthly player-history run remains a safety net, but new team assignments no longer wait for it before their dates appear in Rondo Club.
 
+The membership reader reloads a missing panel once, then the player-history step
+refreshes authentication and retries the strict read once. The full pipeline
+passes its shared session through for this recovery and retains ownership of it.
+If Sportlink explicitly says no person exists for the relation code, the reader
+raises `ERR_SPORTLINK_MEMBER_NOT_FOUND` after the first failed panel load instead.
+This is an identity problem to investigate, not an empty membership list or an
+automatic quarantine. A persistent panel failure remains an error; failed reads
+do not update work history or the successful-history signature.
+
 **Output:** `{ total, downloaded, synced, created, reconciled, skippedUnchanged, skippedQuarantined, errors }`
 
 ## Field Mappings
