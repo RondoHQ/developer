@@ -55,6 +55,7 @@ The nonce is available in `window.rondoConfig.nonce` when logged in to Rondo Clu
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
+| `GET` | `/rondo/v1/my-committees` | Own current committee rosters; contacts only for their chairperson |
 | `GET` | `/wp/v2/commissies` | List all accessible commissies |
 | `GET` | `/wp/v2/commissies/{id}` | Get single commissie |
 | `POST` | `/wp/v2/commissies` | Create new commissie |
@@ -64,6 +65,18 @@ The nonce is available in `window.rondoConfig.nonce` when logged in to Rondo Clu
 | `POST` | `/rondo/v1/commissies/{id}/info` | Update Rondo-local commissie information (board/admin only) |
 
 ---
+
+## Personal Committee Rosters
+
+```http
+GET /rondo/v1/my-committees
+```
+
+This read-only endpoint resolves the authenticated user's own current committee memberships through their published, non-former linked person. It does not require the full-directory `commissies` capability. Anonymous requests receive HTTP 401; users without a qualifying committee receive HTTP 403, including administrators without an own membership. Request parameters cannot select another user, person or committee. Verenigingsbreed is excluded from membership and contact grants.
+
+The response is an array of `{ id, name, can_view_contacts, members }`, sorted by committee name. Members are sorted by name and contain `{ id, name, thumbnail, roles }`. Only a current exact Voorzitter role in that committee (trimmed, case-insensitive) adds `emails`, `phones` and `mobile_phones`. Other members receive no contact keys. Parent contacts and general person fields are never returned. Ending a role or membership changes the next response.
+
+Responses send `Cache-Control: private, no-store`. See [My Committees](/features/my-committees/) for date rules, contact allowlists, exclusions, client freshness and source tests. This endpoint is separate from the directory member endpoint below.
 
 ## Commissie Members
 

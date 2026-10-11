@@ -7,7 +7,7 @@ This document describes the access control system in Rondo Club.
 
 ## Overview
 
-Rondo Club uses a least-privilege access model. Members can read their own household and shared team reference data; committee access requires its own capability. Specialist roles receive only the custom post type and REST capabilities needed for their work.
+Rondo Club uses a least-privilege access model. Members can read their own household and shared team reference data; the full committee directory requires its own capability. Personal committee rosters use current own membership and per-committee chairperson checks. Specialist roles receive only the custom post type and REST capabilities needed for their work.
 
 **Key principles:**
 
@@ -60,6 +60,10 @@ The class intercepts data access at multiple levels:
 All authenticated users retain **Feedback verzenden** and can read and discuss their own submissions. Existing admin-only feedback management operations remain admin-only. Committee information editing still requires an administrator or a board role, plus section access.
 
 Navigation and route guards use the current-user flags. REST permission callbacks, `rest_pre_dispatch`, record access checks, and query filters enforce the same rules on the server. Dashboard responses omit restricted anniversaries and counts; the dashboard cache key incorporates section permissions and the visible team IDs.
+
+### Personal committee rosters
+
+[Mijn commissies](/features/my-committees/) and `GET /rondo/v1/my-committees` are independent of the directory's `commissies` capability. `has_my_committees` derives from the signed-in person's current published committee assignments and controls the personal menu and route. Only an exact current Voorzitter role grants contacts within that committee; household memberships, administrator status and Verenigingsbreed roles grant no personal committee access. The endpoint returns explicit roster fields without granting general person or committee-record access, and sends `Cache-Control: private, no-store`.
 
 ### Coordinator team visibility
 

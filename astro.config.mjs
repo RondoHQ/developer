@@ -47,6 +47,7 @@ export default defineConfig({
 						{ label: 'Access Control', slug: 'features/access-control' },
 						{ label: 'Multi-User System', slug: 'features/multi-user' },
 						{ label: 'User Provisioning', slug: 'features/user-provisioning' },
+						{ label: 'My Committees', slug: 'features/my-committees' },
 						{ label: 'Relationships', slug: 'features/relationships' },
 						{ label: 'Relationship Types', slug: 'features/relationship-types' },
 						{ label: 'Membership Fees', slug: 'features/membership-fees' },
