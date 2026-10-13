@@ -5,6 +5,10 @@ title: "Frontend Architecture"
 
 This document describes the React Single Page Application (SPA) that powers the Rondo Club frontend.
 
+## Error reporting
+
+The React root reports caught and uncaught errors through the Sentry-compatible GlitchTip SDK. Startup exceptions and Axios responses with status 500 or higher use the same reporter. WordPress provides the frontend DSN and environment through `rondoConfig.errorMonitoring`. Outgoing events remove original messages, request data and member context. See [Error monitoring with GlitchTip](/architecture/error-monitoring/) for release versions, event filtering and private source-map uploads required by production builds.
+
 ## Technology Stack
 
 | Technology | Version | Purpose |

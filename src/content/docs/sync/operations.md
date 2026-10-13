@@ -222,6 +222,10 @@ du -sh logs/
 
 ## Monitoring Checklist
 
+[GlitchTip](/architecture/error-monitoring/) collects filtered step errors, failed/partial runs, crashes and dashboard server errors. `/health/sync` checks aggregate schedule coverage: completed partial runs count as active, while their errors remain available for investigation. Keep external heartbeat monitoring for VPS outages. Private local logs retain the original messages that outgoing events omit.
+
+GlitchTip's daily backup timer stores private local archives under `/opt/glitchtip/backups`, including credentials. Check `systemctl status rondo-glitchtip-backup.timer` and disk usage alongside the Sync checks below. These archives do not protect against loss of the VPS; see [hosting and backups](/architecture/error-monitoring/#hosting-alerts-and-backups).
+
 Daily checks:
 - [ ] People sync email reports arrive at the configured cadence
 - [ ] No errors in latest sync report

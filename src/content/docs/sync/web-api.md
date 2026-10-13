@@ -22,6 +22,17 @@ openssl rand -base64 32
 | Invalid key | 403 | `{ ok: false, error: "Invalid API key" }` |
 | Key not configured on server | 503 | `{ ok: false, error: "API key not configured on server" }` |
 
+## Health endpoints
+
+`GET /health` and `GET /health/sync` are public and require neither API-key nor dashboard-session authentication.
+
+| Route | Purpose | Response |
+| --- | --- | --- |
+| `/health` | Dashboard server availability | HTTP 200, `{ "status": "ok", "timestamp": "…" }` |
+| `/health/sync` | Aggregate completed-run coverage of configured schedules | HTTP 200, `{ "status": "ok" }`, or HTTP 503, `{ "status": "overdue" }` |
+
+Sync health allows one hour of grace for interval jobs and four hours for other jobs. The latest completed run must have started at or after the due slot at that cutoff. Both `success` and `partial` count; a running job alone does not. Disabled/manual schedules and changed schedules before their first eligible slot are exempt. The response contains no pipeline or member details. See [Error monitoring](/architecture/error-monitoring/#sync-health-endpoint) for GlitchTip reporting and Twelve's schedule handling.
+
 ## Endpoints
 
 ### POST /api/sync/individual

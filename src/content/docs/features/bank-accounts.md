@@ -29,4 +29,6 @@ Empty or unknown-field PATCH payloads fail with HTTP 400; unauthorized access us
 
 The separate `nmbrs_name` field uses the same visibility group, but only administrators and finance managers can edit it through the match-compensation endpoint. It is not a member-editable bank field.
 
+New AWC 1 payroll uses the name and employee number in a [dated compensation agreement](/features/match-compensation/#dated-awc-1-agreements); a standalone name does not establish an agreement. `match_compensation_agreements` belongs to the bank visibility group and requires the dedicated financial-management routes, even for the linked person.
+
 Implementation: `class-person-bank-account.php`, `class-rest-bank-accounts.php`, `class-access-control.php`, the field registry and `BankAccountCard.jsx`. `PersonBankAccountTest` covers own-person access, normalization, clearing, unauthorized/unknown-field writes, former members and audit redaction.

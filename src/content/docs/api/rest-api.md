@@ -11,7 +11,7 @@ All API requests require authentication via WordPress session with REST nonce.
 
 ## Bank accounts and match compensation
 
-Approved authenticated users use the separately permission-filtered [bank-account routes](/features/bank-accounts/#rest-api) for their own linked person or financial management of a visible person. [Match-compensation routes](/features/match-compensation/#rest-api-and-retry-contracts) cover configured-team registration, financial month preview/closing, private exports, external processing and corrections. Neither module expands generic person/team access.
+Approved authenticated users use the separately permission-filtered [bank-account routes](/features/bank-accounts/#rest-api) for their own linked person or financial management of a visible person. [Match-compensation routes](/features/match-compensation/#rest-api-and-retry-contracts) cover configured-team registration, dated person agreements, financial month preview/closing, private XLSX/SEPA exports, route-specific external processing and corrections. Agreement reads and writes require financial management; generic person writes cannot replace them. Neither module expands generic person/team access.
 
 ## Tournament registrations
 
