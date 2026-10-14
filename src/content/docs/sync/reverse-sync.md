@@ -7,6 +7,8 @@ Detects field changes made in Rondo Club and pushes them back to Sportlink Club 
 
 **Status: active.** Runs every five minutes, syncing contact fields, address fields, administrative fields, and queued parent/guardian relationships back to Sportlink.
 
+See the [single-person photo pilot](/sync/photo-pilot/) for cropped profile photos. The pilot is invoked explicitly and is not part of this scheduled pipeline.
+
 ## Schedule
 
 **Every five minutes** via `scripts/sync.sh reverse`.
