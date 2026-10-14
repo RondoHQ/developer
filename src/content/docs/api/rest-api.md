@@ -1601,6 +1601,8 @@ Newsletter routes require approved communication access and an item with the con
 
 Testmail requires an unchanged, verified export and an unchanged, editable remote campaign. HTTP 200 returns `{ "email": "tester@example.org", "status": "requested" }`; this confirms the request, not delivery. Invalid input returns 400, stale or conflicting state 409, and uncertain testmail results 502 without automatic retry. Campaign scheduling and audience delivery remain in Laposta.
 
+Newsletter draft responses include `import_warning`, an empty string when no warning is stored. A Laposta content-import warning returns HTTP 409 with code `newsletter_import_warning`; its translated message persists across GET requests and editor reloads, with status `attention` and testmail blocked. Image and stylesheet warnings include sanitized HTTP(S) file addresses, preserving encoded filenames while omitting URL credentials, queries, fragments and arbitrary remote error text. A subsequent content import without warnings clears the message; export still requires successful remote verification.
+
 See [Nieuwsbrieven met Laposta](../../features/newsletters/) for configuration, rendering, recovery and the complete route list.
 
 ## Club configuration: feedback notice

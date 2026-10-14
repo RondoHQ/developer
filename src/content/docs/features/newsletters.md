@@ -44,6 +44,12 @@ Export bewaart `_rondo_newsletter_export` met campagne-ID, transactiefase, doeli
 
 Een onzekere campagneaanmaak wordt bij een volgende expliciete poging opgezocht met de opgeslagen unieke referentie. Alleen één passend, bewerkbaar resultaat wordt hergebruikt. Onderbroken updates kunnen uitsluitend worden hervat wanneer de remote instellingen en inhoud overeenkomen met de opgeslagen baseline of het exacte transactiedoel. Laposta-importwaarschuwingen of afwijkende readback voorkomen een geslaagde exportstatus.
 
+### Importwaarschuwingen
+
+Een importwaarschuwing geeft HTTP 409 met code `newsletter_import_warning`. Rondo vertaalt meldingen uit zowel `campaign.report` als `report`: JavaScript, Flash, een ontbrekende of lege afmeldlink en niet-geïmporteerde afbeeldingen of stylesheets. Bij bestandsproblemen toont de melding bruikbare HTTP(S)-adressen met behoud van gecodeerde bestandsnamen, zoals `%20`. Gebruikersnamen, wachtwoorden, queryparameters, fragmenten en vrije fouttekst van Laposta worden weggelaten. Controleer of de genoemde bestanden openbaar bereikbaar zijn en door Laposta worden ondersteund. Onbekende meldingen blijven blokkerend en verwijzen naar een beheerder.
+
+De tekst blijft bewaard als `import_warning` in `_rondo_newsletter_export` en komt terug in de GET-respons. De editor toont de melding ook na herladen; de export blijft op `attention` en testmail is geblokkeerd. Herstel de inhoud of template en voer opnieuw een gecontroleerde export uit. Een nieuwe inhoudsimport zonder waarschuwingen wist de opgeslagen tekst; pas na geslaagde remote verificatie is de status weer `exported`.
+
 ## Testmail
 
 **Testmail versturen** wordt beschikbaar na een geslaagde export, zolang het lokale concept geen ongeopslagen wijzigingen heeft. De server controleert de actuele `revision`, de exportfingerprint en de remote instellingen en HTML tegen de laatst gecontroleerde baseline. Een gewijzigd concept, extern bewerkte campagne of ingeplande/verzonden campagne krijgt HTTP 409.
@@ -85,4 +91,4 @@ Onbekende velden en ongeldige adressen krijgen HTTP 400. Verouderde revisies en 
 
 De backend staat in `class-newsletter.php`, `class-newsletter-export.php`, `class-rest-newsletter.php` en `class-laposta-client.php`. De UI staat in `src/pages/Communication/Newsletter.jsx` en `NewsletterSettings.jsx`; berichtopmaak gebruikt `RichTextEditor.jsx` en `.newsletter-editor` in `src/index.css`.
 
-`NewsletterTest` controleert onder meer afbeeldingssanitatie en opslag, kop- en lijstafstanden in preview/export, expliciete doelgroepen, reviewconflicten, herstel zonder dubbele campagne, remote wijzigingen, één testadres, rechten, gedeelde locks en onzekere testmail zonder retry.
+`NewsletterTest` controleert onder meer afbeeldingssanitatie en opslag, kop- en lijstafstanden in preview/export, expliciete doelgroepen, reviewconflicten, herstel zonder dubbele campagne, remote wijzigingen, één testadres, rechten, gedeelde locks en onzekere testmail zonder retry. Importtests controleren beide rapportlocaties, gecodeerde bestandsnamen, afgeschermde URL-gegevens, onbekende meldingen, behoud na herladen, geblokkeerde testmail en het wissen van waarschuwingen bij een geslaagde herexport.

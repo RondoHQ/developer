@@ -29,11 +29,11 @@ pipelines/sync-teams.js
 ### Step 1: Download Teams from Sportlink
 
 **Script:** `steps/download-teams-from-sportlink.js`
-**Function:** `runTeamDownload({ logger, verbose })`
+**Function:** `runTeamDownload({ logger, verbose, page, session, rosters })`
 
 1. Launches headless Chromium via Playwright
 2. Logs into Sportlink Club
-3. Calls Sportlink API to fetch team data:
+3. Navigates the Sportlink SPA and captures its GET responses for team data:
    - `UnionTeams` (KNVB-assigned teams, preferred source)
    - `ClubTeams` (club-assigned teams, fallback)
 4. For each team, fetches the team roster:
@@ -47,6 +47,12 @@ pipelines/sync-teams.js
 **Output:** `{ success, teamCount, memberCount, currentSportlinkIds }`
 
 `currentSportlinkIds` comes directly from validated UnionTeams and ClubTeams responses. Both pipelines pass this snapshot to the team sync; the accumulated tracking database must never be used as the current source list.
+
+#### Authentication recovery and complete snapshots
+
+`readTeamPage()` matches exact endpoint suffixes and GET requests for both team lists and player/staff rosters. It waits up to 60 seconds per response, allowing Sportlink's own token refresh to recover an initial HTTP 401. If the wait expires after a 401, or the page visibly reports **Je bent uitgelogd omdat je een tijdje niet actief was.**, it calls `session.relogin()` once for that page and reads all its responses again. A plain timeout without that evidence, HTTP 403 or HTTP 500 fails without reauthentication. Persistent authentication failure also fails the download.
+
+Standalone downloads own and close their `SportlinkSession`. Callers sharing a `page` must also pass its `session` for recovery and retain responsibility for closing it. Both team lists require a `Team` array; every roster response requires a `Person` array, which may be empty. Failed or malformed responses abort before `clearTeamMembers()` and preserve the entire previous team-member snapshot. Failure returns `success: false` with `error` and no `currentSportlinkIds`, preventing missing-team cleanup from using an incomplete download. With `rosters: false`, only validated team lists are returned and no source cache is written.
 
 **Rate limiting:** 500ms-1.5s random jitter between member scrapes.
 
@@ -173,10 +179,13 @@ The ACF `work_history` is a repeater field on person posts:
 ## Error Handling
 
 - Team download failure allows cached team updates but never cleanup; standalone submission without fresh source IDs also skips cleanup
+- Failed or incomplete roster responses preserve cached members; authentication recovery retries one complete page at most once
 - Individual team sync failures don't stop the pipeline
 - Work history sync skips members not yet in Rondo Club (counted as `skipped`)
 - Player-history detail sync skips unchanged members and reports quarantined or failed Sportlink detail records
 - All errors collected in summary report
+
+`test/team-download-auth.test.js` covers SPA recovery after a 401, exact GET matching, one relogin per page, shared-session ownership, persistent failures, 403/500 handling, visible expiry versus plain timeouts, roster cache preservation and re-reading both roster responses after relogin.
 
 ## Source Files
 

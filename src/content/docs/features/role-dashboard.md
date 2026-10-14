@@ -55,6 +55,8 @@ Player counts exclude former members, historical roles and non-player roles. A p
 
 The dashboard returns up to ten open tasks authored by or assigned to the current user, sorted by due date before limiting. Related-person summaries are separately permission checked. Completing or editing a task invalidates both dashboard caches. Activity creation is offered only when the task contains an accessible related person.
 
+`DashboardTodoModal` loads the shared `Timeline/TodoModal` only when opened. A local `Suspense` fallback shows **Taak laden…** in a closable dialog. Its error boundary contains loading and rendering failures in **Taak kon niet worden geladen**, with close and page-reload actions, so the dashboard remains available. Escape also closes the fallback dialog. Caught errors still reach the React root's existing GlitchTip reporter.
+
 ## Match data
 
 The club programme reads the existing independently refreshed Sportlink Club.Data cache; team programmes reuse `TeamMatches` and its on-demand cache.
