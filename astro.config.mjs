@@ -10,6 +10,7 @@ export default defineConfig({
 		mermaid(),
 		starlight({
 			title: 'Rondo Developer',
+			components: { Head: './src/components/Head.astro' },
 			logo: {
 				dark: './src/assets/rondo-logo-wordmark-white.svg',
 				light: './src/assets/rondo-logo-wordmark.svg',
