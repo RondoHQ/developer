@@ -40,9 +40,21 @@ De editor gebruikt dezelfde afstanden. De voorbeeldweergave staat in een sandbox
 
 ## Export en herstel
 
-Export bewaart `_rondo_newsletter_export` met campagne-ID, transactiefase, doelinstellingen, HTML en de laatst gecontroleerde remote toestand. De status in de GET-respons is `local`, `exported`, `changed` of `attention`. Een ongewijzigd, gecontroleerd concept wordt hergebruikt; externe wijzigingen worden met HTTP 409 geblokkeerd. Een ingeplande, verzonden of verwijderde campagne wordt niet overschreven.
+Export bewaart `_rondo_newsletter_export` met campagne-ID, transactiefase, doelinstellingen, HTML en de laatst gecontroleerde remote toestand. De status in de GET-respons is `local`, `exported`, `changed` of `attention`. Een ongewijzigd, gecontroleerd concept wordt hergebruikt; externe wijzigingen geven eerst HTTP 409 met `newsletter_remote_conflict`. Een ingeplande, verzonden of verwijderde campagne wordt niet overschreven.
 
-Een onzekere campagneaanmaak wordt bij een volgende expliciete poging opgezocht met de opgeslagen unieke referentie. Alleen één passend, bewerkbaar resultaat wordt hergebruikt. Onderbroken updates kunnen uitsluitend worden hervat wanneer de remote instellingen en inhoud overeenkomen met de opgeslagen baseline of het exacte transactiedoel. Laposta-importwaarschuwingen of afwijkende readback voorkomen een geslaagde exportstatus.
+Een onzekere campagneaanmaak wordt bij een volgende expliciete poging opgezocht met de opgeslagen unieke referentie. Alleen één passend, bewerkbaar resultaat wordt hergebruikt. Onderbroken updates worden zonder extra bevestiging alleen hervat wanneer de remote instellingen en inhoud overeenkomen met de opgeslagen baseline of het exacte transactiedoel. Laposta-importwaarschuwingen of afwijkende readback voorkomen een geslaagde exportstatus.
+
+### Expliciet overschrijven
+
+Bij een bekend, bewerkbaar concept waarvan de instellingen of inhoud afwijken, bevat de conflictrespons `data.can_force: true`. De review blijft open en toont **Concept geforceerd overschrijven**. Na een extra bevestiging vervangt Rondo de inhoud, het onderwerp, de afzender, het antwoordadres en de doelgroep door het gecontroleerde concept. Wijzigingen in Laposta gaan daarbij verloren; deze actie verstuurt geen nieuwsbrief.
+
+De exportaanvraag gebruikt hetzelfde actuele controletoken met `force: true`. Voor overschrijven is de JSON-boolean `true` nodig; bijvoorbeeld `"true"` of `1` geeft HTTP 400 met `newsletter_force_invalid`. Het token, de gebruiker, fingerprint, actuele doelgroep en gedeelde lock blijven verplicht. Een onzekere campagneaanmaak zonder vastgesteld campagne-ID biedt geen force-optie. Ingeplande, verzonden, verwijderde of niet controleerbare campagnes blijven geblokkeerd.
+
+### Bevestigde importinhoud
+
+Laposta kan HTML herschrijven, bijvoorbeeld emoji omzetten naar entiteiten en CSS inline plaatsen. Daarom bewaart Rondo de HTML uit de importbevestiging als `target_html`, na controle van het campagne-ID en een niet-lege HTML-string. Een afzonderlijke readback moet exact deze inhoud en de gewenste instellingen teruggeven; de gecontroleerde remote toestand wordt de nieuwe baseline. Dit geldt ook bij geforceerd overschrijven.
+
+Een ontbrekende inhoudsbevestiging of verkeerd campagne-ID geeft HTTP 502 met `newsletter_import_uncertain`. Afwijkende instellingen of inhoud bij readback geven HTTP 409 met `newsletter_verify_failed`. De fase blijft `updating`; de export wordt niet als geslaagd gemarkeerd en testmail blijft geblokkeerd.
 
 ### Importwaarschuwingen
 
@@ -72,7 +84,7 @@ Alle routes gebruiken `/rondo/v1`:
 | GET / PUT | `/communications/{id}/newsletter` | Concept lezen of gedeeltelijk opslaan |
 | POST | `/communications/{id}/newsletter/preview` | Tijdelijk concept renderen via `fields`, zonder opslaan |
 | POST | `/communications/{id}/newsletter/review` | Opgeslagen `revision` controleren en token ontvangen |
-| POST | `/communications/{id}/newsletter/export` | Export uitvoeren met controletoken `token` |
+| POST | `/communications/{id}/newsletter/export` | Export uitvoeren met controletoken `token` en optionele boolean `force` |
 | POST | `/communications/{id}/newsletter/testmail` | Testmail aanvragen met `email` en `revision` |
 
 ```json
@@ -91,4 +103,4 @@ Onbekende velden en ongeldige adressen krijgen HTTP 400. Verouderde revisies en 
 
 De backend staat in `class-newsletter.php`, `class-newsletter-export.php`, `class-rest-newsletter.php` en `class-laposta-client.php`. De UI staat in `src/pages/Communication/Newsletter.jsx` en `NewsletterSettings.jsx`; berichtopmaak gebruikt `RichTextEditor.jsx` en `.newsletter-editor` in `src/index.css`.
 
-`NewsletterTest` controleert onder meer afbeeldingssanitatie en opslag, kop- en lijstafstanden in preview/export, expliciete doelgroepen, reviewconflicten, herstel zonder dubbele campagne, remote wijzigingen, één testadres, rechten, gedeelde locks en onzekere testmail zonder retry. Importtests controleren beide rapportlocaties, gecodeerde bestandsnamen, afgeschermde URL-gegevens, onbekende meldingen, behoud na herladen, geblokkeerde testmail en het wissen van waarschuwingen bij een geslaagde herexport.
+`NewsletterTest` controleert onder meer afbeeldingssanitatie en opslag, kop- en lijstafstanden in preview/export, expliciete doelgroepen, reviewconflicten, herstel zonder dubbele campagne, remote wijzigingen, één testadres, rechten, gedeelde locks en onzekere testmail zonder retry. Importtests controleren beide rapportlocaties, gecodeerde bestandsnamen, afgeschermde URL-gegevens, onbekende meldingen, behoud na herladen, geblokkeerde testmail en het wissen van waarschuwingen bij een geslaagde herexport. Tests voor geforceerde export bewaken review-, rechten-, doelgroep- en bezorgstatuscontroles. Importtests controleren ook herschreven emoji-HTML, hergebruik zonder nieuwe writes, ontbrekende bevestiging, een verkeerd campagne-ID en wijzigingen tussen import en readback.

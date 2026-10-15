@@ -64,6 +64,8 @@ pipelines/sync-functions.js
 
 **Rate limiting:** 500ms-1.5s random jitter between member scrapes.
 
+The shared general, functions/committees and free-field readers use `waitForSourceResponse()` to observe a successful SPA retry after an initial 401. A persistent 401 becomes an explicit session-expiry error after the bounded wait. Strict onboarding callers require successful responses and complete field shapes; their [recovery wrapper](/features/onboarding/#sportlink-source-read-recovery) can renew the shared session once. Ordinary Functions reads retain the per-endpoint snapshot rules below.
+
 **Critical gotcha:** A successful empty response is authoritative and must remove that member's old rows. A missing, timed-out, non-2xx, or unparseable endpoint response is not a snapshot and must preserve the previous rows.
 
 ### Step 2: Sync Commissies to Rondo Club

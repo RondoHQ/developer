@@ -9,24 +9,63 @@ depend on a developer workstation.
 
 ## Pipeline
 
-The `CI and deploy` workflow performs these stages:
+The `CI and deploy` workflow separates release preparation from deployment:
 
-1. Install locked JavaScript and PHP dependencies.
-2. Run JavaScript linting, a production frontend build, and PHP coding
-   standards.
-3. Rebuild the exact `main` commit as a production release:
-   - `npm ci`
-   - `npm run build`
-   - `composer install --no-dev --prefer-dist --optimize-autoloader`
-4. Store the compressed release as a GitHub Actions artifact for 30 days.
-5. Deploy the artifact to SiteGround over SSH.
-6. Remove deleted files from release-controlled directories.
-7. Clear the WordPress object cache and SiteGround cache.
-8. Confirm that the live WordPress theme version matches the release and that
-   the production URL responds successfully.
+1. `Plan checks` decides whether the exact code has reusable successful PR checks.
+2. When fresh checks are needed, run JavaScript lint/build, PHP coding standards,
+   Capacitor spike checks, and three parallel PHP test groups.
+3. On `main`, `_build-production.yml` prepares the exact commit while checks run:
+   - Validate the full lowercase 40-character SHA and its ancestry in `main`.
+   - Run `npm ci` and `npm run build`, including the required GlitchTip source-map
+     upload; reject leftover `.map` files.
+   - Install production PHP dependencies and package the isolated Linux VOG reader.
+   - Package tracked source plus `dist` and `vendor` as `rondo-club-{run_id}`,
+     retained for 30 days.
+4. After the check plan, required validation and release build succeed,
+   `_deploy-production.yml` downloads that run's release artifact and deploys it
+   to SiteGround over SSH. Production deployments are serialized.
+5. Remove deleted release-controlled files, clear WordPress and SiteGround
+   caches, and verify the live theme version and production URL.
 
-Pull requests and feature branches run validation only. They cannot access the
-production environment or its SSH key.
+Pull requests run validation without production deployment. Pushes confined to
+`docs/prd/**` do not start the workflow. The artifact name stays stable across
+attempts, allowing a deploy-only rerun to reuse the original build. A full rerun
+replaces the artifact.
+
+### Parallel PHP tests
+
+`tests/ci/split_php_tests.py` discovers every `tests/Wpunit/**/*Test.php` file and
+assigns complete files deterministically to three groups using recorded duration
+weights from `php-test-durations.json`. New files receive a default weight;
+renamed or removed files cannot silently disappear through a timing allowlist.
+Each group has its own MySQL 8.4 service and WordPress 7.1 test install, and runs
+without field plugins. Group 1 also runs the opt-in mobile adapter test in a local
+environment.
+
+The splitter validates each JUnit report against its selected files. Reports and
+file selections are uploaded as `php-tests-group-{group}` artifacts for seven
+days, including on failure. `fail-fast: false` lets every group finish. The stable
+**PHP tests** status aggregates all groups and blocks deployment on failures or
+unexpected skips. Local `composer test` still runs the complete suite.
+
+### Reusing verified PR checks
+
+`tests/ci/reuse_pr_checks.py` can reuse checks only for a push to `main` associated
+with a merged PR from the same repository whose merge SHA is that exact commit.
+It requires a completed successful `ci.yml` PR run for the PR's current head,
+a non-expired `ci-tree-{attempt}-{pr}-{tree}` artifact matching the current full
+Git tree, and exactly one successful instance of every required job, including
+all three PHP groups. PR tree markers are retained for seven days. A green overall
+run with skipped or missing jobs is insufficient.
+
+With valid proof, JavaScript, PHP standards, mobile and PHP group jobs are skipped
+on the main push; the stable PHP status validates that decision. The production
+release still builds for the main commit and deployment waits for it. Changed
+trees, missing evidence, API failures and direct pushes without qualifying PR
+proof run all checks. PRs and manual `workflow_dispatch` runs always check again.
+The check-plan summary links to the reused run or records that fresh checks run.
+The Python tests cover grouping/report coverage and rejection of incomplete reuse
+evidence.
 
 ## Production environment
 

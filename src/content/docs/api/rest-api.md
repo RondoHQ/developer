@@ -1596,10 +1596,14 @@ Newsletter routes require approved communication access and an item with the con
 | GET / PUT | `/rondo/v1/communications/{id}/newsletter` | Read or partially save a draft with its revision |
 | POST | `/rondo/v1/communications/{id}/newsletter/preview` | Render a temporary draft without saving |
 | POST | `/rondo/v1/communications/{id}/newsletter/review` | Check saved content and audiences; issue a ten-minute review token |
-| POST | `/rondo/v1/communications/{id}/newsletter/export` | Create or update a verified Laposta draft using the review token |
+| POST | `/rondo/v1/communications/{id}/newsletter/export` | Create or update a verified Laposta draft using `token` and optional boolean `force` |
 | POST | `/rondo/v1/communications/{id}/newsletter/testmail` | Request one testmail with `email` and the current `revision` |
 
 Testmail requires an unchanged, verified export and an unchanged, editable remote campaign. HTTP 200 returns `{ "email": "tester@example.org", "status": "requested" }`; this confirms the request, not delivery. Invalid input returns 400, stale or conflicting state 409, and uncertain testmail results 502 without automatic retry. Campaign scheduling and audience delivery remain in Laposta.
+
+An export conflict on a known editable draft returns HTTP 409 `newsletter_remote_conflict` with `data.can_force: true`. After explicit confirmation, retry with the current review `token` and `force: true` to replace remote content and settings. Non-null, non-boolean force values return HTTP 400 `newsletter_force_invalid`. Review ownership, fingerprint, audience, locking and remote delivery-state checks still apply; uncertain creation without a resolved campaign ID cannot be forced. This operation does not send the campaign.
+
+Export verifies a separate readback against the non-empty HTML acknowledged by Laposta for the same campaign ID, allowing provider HTML normalization. Missing or mismatched import acknowledgement returns HTTP 502 `newsletter_import_uncertain`; changed content or settings on readback returns HTTP 409 `newsletter_verify_failed`. Neither marks the export verified, including when `force` is true.
 
 Newsletter draft responses include `import_warning`, an empty string when no warning is stored. A Laposta content-import warning returns HTTP 409 with code `newsletter_import_warning`; its translated message persists across GET requests and editor reloads, with status `attention` and testmail blocked. Image and stylesheet warnings include sanitized HTTP(S) file addresses, preserving encoded filenames while omitting URL credentials, queries, fragments and arbitrary remote error text. A subsequent content import without warnings clears the message; export still requires successful remote verification.
 

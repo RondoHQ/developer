@@ -118,6 +118,14 @@ pipelines do not assert full coverage: their partial success cannot clear these
 pending checks. Volunteer return rounds, full conditional templates, per-recipient
 account matching and outbound transport remain subsequent milestones.
 
+### Sportlink source-read recovery
+
+Targeted onboarding reads use `lib/sportlink-source-retry.js`. The People pipeline and production inspection tool pass their shared `SportlinkSession` to `runSourceChecks()`; the caller retains ownership of closing it. General data, functions/committees, VOG and team responses wait past an initial HTTP 401 for the SPA token-refresh retry. The usual response timeout is 15 seconds; `MemberTeams` uses 30 seconds. A wait that saw only 401 responses becomes `ERR_SPORTLINK_SESSION_EXPIRED`.
+
+`readSourceWithRecovery()` allows at most two read attempts. After a failed read, confirmed session expiry renews the session once with `session.relogin()` and reacquires the page. Retryable timeouts, `ERR_SPORTLINK_SOURCE_INCOMPLETE` and a missing team panel can repeat the read without unnecessary login. The team reader uses `retryPanel: false` here so nested retries do not multiply navigation attempts. A complete, validated response takes precedence over a stale logout notice; the notice alone cannot invalidate a successful read.
+
+`ERR_SPORTLINK_MEMBER_NOT_FOUND` is never retried. A permanent error without session-expiry evidence is propagated, and failed or incomplete coverage stays incomplete. The helper retries source reads only, not saves or outbound mail. Tests in `sportlink-source-retry.test.js` cover 401 recovery, persistent expiry, stale notices, strict VOG coverage and the two-navigation limit; `sportlink-login.test.js` covers the delayed OTP redirect.
+
 ### Merged source identities in Sync
 
 `sync-onboarding-sources.js` resolves the tracked person through the confirmed merge-target endpoint before every pending source check, including unchanged or deferred Sportlink registrations that never reach the normal person writer. A same-identity merge updates `rondo_club_id` to the survivor and clears the completed sync hash before simulation or observation; a healthy mapping leaves the hash intact.

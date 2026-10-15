@@ -29,6 +29,8 @@ graph LR
 
 Neither Sportlink Club nor Nikki provide APIs. All data is extracted by automating their web applications using **Playwright (headless Chromium)**. The sync tool logs in, navigates pages, and intercepts the internal requests (like `SearchMembers`, `MemberHeader`, `MemberFreeFields`, `UnionTeams`) that the web app makes to its own backend. Nikki is different — it has no internal requests to intercept, so contribution data is scraped from HTML tables and CSV exports. The reverse sync also uses browser automation to fill in Sportlink's web forms.
 
+`loginToSportlink()` waits up to 45 seconds after OTP submission for the identity-provider redirect to return to `club.sportlink.com` before checking the authenticated page. Shared source readers observe the SPA's retry after an initial 401. Targeted onboarding reads add one bounded recovery attempt through the shared session; see [Sportlink source-read recovery](/features/onboarding/#sportlink-source-read-recovery) for validation and retry limits.
+
 ## Schedules
 
 Automatic schedules are editable through **Beheer → Sync schedules** and persisted in `data/sync-schedules.json`. One minute dispatcher starts due allowlisted pipelines; dashboard predictions, overdue checks and watchdog budgets use the same saved configuration. Manual runs remain available when automation is disabled.
