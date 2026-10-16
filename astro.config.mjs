@@ -79,6 +79,7 @@ export default defineConfig({
 						{ label: 'Frontend', slug: 'architecture/frontend' },
 						{ label: 'PHP Autoloading', slug: 'architecture/php-autoloading' },
 						{ label: 'Error Monitoring', slug: 'architecture/error-monitoring' },
+						{ label: 'Marketing Website', slug: 'architecture/website' },
 						{ label: 'Relationship System', slug: 'architecture/relationship-system' },
 					],
 				},

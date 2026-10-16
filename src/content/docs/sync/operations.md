@@ -224,7 +224,9 @@ du -sh logs/
 
 [GlitchTip](/architecture/error-monitoring/) collects filtered step errors, failed/partial runs, crashes and dashboard server errors. `/health/sync` checks aggregate schedule coverage: completed partial runs count as active, while their errors remain available for investigation. Keep external heartbeat monitoring for VPS outages. Private local logs retain the original messages that outgoing events omit.
 
-GlitchTip's daily backup timer stores private local archives under `/opt/glitchtip/backups`, including credentials. Check `systemctl status rondo-glitchtip-backup.timer` and disk usage alongside the Sync checks below. These archives do not protect against loss of the VPS; see [hosting and backups](/architecture/error-monitoring/#hosting-alerts-and-backups).
+Sync errors are grouped by pipeline, step and a safe `error_code`; unknown causes retain default stack grouping. Use the local logs for the original message. RunTracker also emits one performance transaction per completed run/step with full duration, a shared trace ID and aggregate created/updated/skipped/failed counts. No per-member spans or detail payloads leave the tracker. `GLITCHTIP_PERFORMANCE=false` disables these measurements while retaining errors; see [performance measurements](/architecture/error-monitoring/#performance-measurements).
+
+GlitchTip's daily backup timer stores private local archives under `/opt/glitchtip/backups`, including credentials and the DuckDB performance cold-storage volume as `cold-storage.tar`. Restore cold storage alongside the database and uploads. Check `systemctl status rondo-glitchtip-backup.timer` and disk usage alongside the Sync checks below. These archives do not protect against loss of the VPS; see [hosting and backups](/architecture/error-monitoring/#hosting-alerts-and-backups).
 
 Daily checks:
 - [ ] People sync email reports arrive at the configured cadence

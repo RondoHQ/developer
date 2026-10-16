@@ -7,7 +7,7 @@ This document describes the React Single Page Application (SPA) that powers the 
 
 ## Error reporting
 
-The React root reports caught and uncaught errors through the Sentry-compatible GlitchTip SDK. Startup exceptions and Axios responses with status 500 or higher use the same reporter. WordPress provides the frontend DSN and environment through `rondoConfig.errorMonitoring`. Outgoing events remove original messages, request data and member context. See [Error monitoring with GlitchTip](/architecture/error-monitoring/) for release versions, event filtering and private source-map uploads required by production builds.
+The React root reports caught and uncaught errors through the Sentry-compatible GlitchTip SDK. Startup exceptions and Axios responses with status 500 or higher use the same reporter. WordPress provides the frontend DSN, environment, same-origin diagnostics tunnel and performance toggle through `rondoConfig.errorMonitoring`. React Router tracing samples 10% of page loads/navigation and propagates traces only to the site's `/wp-json/` requests. Separate error and transaction filters remove request data and member context. See [Error monitoring with GlitchTip](/architecture/error-monitoring/) for sampling controls, transport limits and private source-map uploads required by production builds.
 
 ## Technology Stack
 
@@ -478,22 +478,15 @@ All styling uses Tailwind utility classes. Configuration in `tailwind.config.js`
 
 ## PWA/Mobile App Support
 
-### Version Check & Cache Invalidation
+### Version checks and explicit updates
 
-When the app is installed as a PWA or loaded in a mobile browser (Add to Home Screen), browser caching can prevent users from receiving updates. The version check system addresses this:
+`ReloadPrompt` combines server-build detection and a waiting service worker into one Dutch **Update beschikbaar** prompt. It asks users to save their changes and offers **Later** and **Nu herladen**. Dismissing it hides the current version/worker combination until that combination changes or the document reloads.
 
-1. **Version Endpoint**: `/rondo/v1/version` returns the current theme version
-2. **Periodic Checking**: `useVersionCheck` hook polls for new versions
-3. **Update Banner**: When a new version is detected, a banner appears at the top of the screen with a "Reload" button
+`useVersionCheck` compares `/rondo/v1/version`'s `buildTime` with the timestamp embedded in `window.rondoConfig.buildTime`, so a deployment can be detected even when the theme version stays the same. The first check waits one minute; later checks run every 15 minutes and when the tab becomes visible after a check is due. Missing build timestamps and overlapping requests are skipped. Separately, service-worker update checks run every 15 minutes and when the document becomes visible, provided the browser is online.
 
-**How it works:**
-1. On app load, the current version is stored from `window.rondoConfig.version`
-2. Every 15 minutes (and when the user returns after that interval), the hook fetches `/rondo/v1/version`
-3. If the server version differs from the loaded version, `hasUpdate` becomes true
-4. The `UpdateBanner` component renders at the top of `App.jsx` when an update is available
-5. User clicks "Reload" → `window.location.reload(true)` forces a fresh load
+Only **Nu herladen** activates a waiting worker with `SKIP_WAITING`. `reloadForUpdate()` waits for activation/redundancy or a three-second fallback, then reloads the requesting document. A missing, failed or unresponsive worker still permits the reload. Activation from another tab does not automatically reload this tab. Registrations and shared caches are retained, preserving other tabs' unsaved work. The former separate `UpdateBanner` and cache-deletion reload path have been removed.
 
-**Note:** The version is embedded in both the HTML response (via `rondoConfig`) and the asset filenames (via Vite's hash-based naming), ensuring a reload fetches all new assets.
+Deployment [retains retired assets for seven days](/architecture/deployment/#frontend-asset-retention), allowing open tabs to load older lazy chunks during that grace period.
 
 ### PWA asset caching
 

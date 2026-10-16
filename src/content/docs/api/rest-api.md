@@ -7,7 +7,13 @@ This document describes all REST API endpoints available in Rondo Club, includin
 
 ## Authentication
 
-All API requests require authentication via WordPress session with REST nonce.
+Authenticated application routes use a WordPress session with REST nonce. Routes explicitly documented as public have separate access rules.
+
+## Browser diagnostics transport
+
+`POST /rondo/v1/diagnostics` is a public, same-origin ingestion endpoint for the configured React GlitchTip project. It reads no club records and does not require a login nonce. It accepts one validated error/transaction envelope up to 65,536 bytes, requires an exact site `Origin`, and rejects cross-site requests. Soft transient budgets limit forwarding to 20 requests per IP per minute and 2,000 per UTC day.
+
+Success returns empty HTTP 204 with `Cache-Control: no-store`. Invalid origin returns 403; malformed content 400; oversized content 413; exhausted budget 429; upstream failure 502; disabled/unavailable transport 503. Browser credentials are not forwarded. See [Same-origin browser diagnostics](/architecture/error-monitoring/#same-origin-browser-diagnostics) for the fixed destination, backoff headers and disable switches.
 
 ## Bank accounts and match compensation
 

@@ -24,8 +24,8 @@ The `CI and deploy` workflow separates release preparation from deployment:
 4. After the check plan, required validation and release build succeed,
    `_deploy-production.yml` downloads that run's release artifact and deploys it
    to SiteGround over SSH. Production deployments are serialized.
-5. Remove deleted release-controlled files, clear WordPress and SiteGround
-   caches, and verify the live theme version and production URL.
+5. Prune eligible retired assets and deleted release-controlled source files,
+   clear WordPress and SiteGround caches, and verify the live theme version and production URL.
 
 Pull requests run validation without production deployment. Pushes confined to
 `docs/prd/**` do not start the workflow. The artifact name stays stable across
@@ -66,6 +66,28 @@ proof run all checks. PRs and manual `workflow_dispatch` runs always check again
 The check-plan summary links to the reused run or records that fresh checks run.
 The Python tests cover grouping/report coverage and rejection of incomplete reuse
 evidence.
+
+## Frontend asset retention
+
+`bin/deploy.sh` inventories the new build with `bin/retain-assets.php`, uploads
+`dist/assets/` first, and publishes manifests and service-worker metadata only
+after the assets are present. Both rsync and the archive fallback overlay these
+files without deleting previous chunks. The server's `.asset-retention.json`
+is excluded from transfer so an incoming release cannot reset retirement history.
+
+After the complete release is present, the pruning step compares the actual
+assets with `.asset-inventory.json`. Files absent from the new inventory get a
+seven-day grace period starting when a deployment first marks them obsolete,
+regardless of their build modification time. Later deployments remove them once
+that period expires. Assets reused by a rollback become current again and lose
+their retirement marker. This allows already-open apps to fetch old lazy chunks
+while users finish their work and [choose when to reload](/architecture/frontend/#version-checks-and-explicit-updates).
+
+Missing current assets, corrupt retention state, symlinks and empty inventories
+fail validation before pruning. Inventory/state writes use a temporary file and
+rename. CI runs `appUpdate.test.mjs`, `assetRetention.test.mjs` and
+`deployAssetTransfer.test.mjs` to check the update helper, retirement timing,
+rollback protection, transfer order and both upload paths.
 
 ## Production environment
 
