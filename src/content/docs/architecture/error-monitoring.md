@@ -27,6 +27,22 @@ Website stack filenames are restricted to production `/_astro/*.js` files and re
 
 Default personal-data collection, client reports and breadcrumbs are disabled in the browser and Sync SDKs. Performance transactions have their own filters; error filtering alone does not protect traces. Do not add member identifiers or raw payloads to monitoring events.
 
+### Club browser diagnostic tags
+
+Club rebuilds browser error tags from a fixed allowlist in `src/utils/error-event.js`:
+
+| Tag | Allowed values |
+| --- | --- |
+| `error_code` | A locally classified category; unknown errors use `unclassified_error` |
+| `error_source` | `react`, `unhandled_rejection`, `browser` or `manual`, derived from the SDK exception mechanisms |
+| `page` | Current page pathname filtered through the performance `safePath()` helper; known route segments remain, other segments become `:id`; missing paths use `/:unknown` |
+| `online` | Browser `navigator.onLine` as `true` or `false`; unavailable state uses `unknown` |
+| `http_status` | Present only for an integer response status from 400 through 599 on the original exception |
+
+Categories distinguish `chunk_load_failed`, `http_client_error`, `http_server_error`, `request_timeout`, `network_request_failed`, `missing_value`, `not_callable` and `react_render_error`. Classification reads the original exception when available, otherwise the final exception message. The outgoing message remains `Rondo application error`; raw messages, response bodies, member IDs, query strings and arbitrary caller tags or contexts are excluded. These tags do not replace the SDK's existing issue grouping.
+
+The `vite:preloadError` listener remembers the failed error object in a `WeakSet`. This lets the classifier identify a lazy-asset failure even when its message is only `Load failed`. It does not store the asset URL, change the error or send a second report. Without a Vite marker, that generic message remains `network_request_failed`.
+
 ### Sync error grouping
 
 Sync fingerprints contain `rondo-sync`, pipeline, step (or `run`) and a safe diagnostic code. Known causes such as `sportlink_session_expired`, `sportlink_vog_incomplete`, `sportlink_teams_incomplete`, `team_history_conflict`, `request_timeout`, `connection_reset` and `dns_failure` remain separate without including member IDs, release versions or raw provider errors in the fingerprint. Unknown causes use `unclassified_error` plus the SDK's default stack grouping. Private local logs retain the original message for investigation.
@@ -84,5 +100,7 @@ Inspect the timer with `systemctl status rondo-glitchtip-backup.timer` and servi
 ## Source verification
 
 Club's `ErrorMonitoringTest` and `tests/js/error-monitoring.test.mjs` check outgoing event filtering while preserving stack locations. Sync's `test/error-monitoring.test.js` covers filtering, disabled monitoring, missed interval runs, partial outcomes and schedule exemptions. Deployment completion, SDK ingestion, TLS, source resolution and alert delivery are separate checks; source review alone does not establish their live status.
+
+Club's browser tests also cover diagnostic categories and defaults, HTTP status bounds, caller-supplied context rejection, chained React exceptions and Vite error-object marking. The JavaScript CI job runs `node --test tests/js/error-monitoring.test.mjs tests/js/performance-monitoring.test.mjs` after lint and before the build.
 
 Club's `PerformanceMonitoringTest` covers route naming, parent sampling, nested REST calls, outgoing payloads and the diagnostics exclusion. `MonitoringTunnelTest` and Website's `tests/monitoring-tunnel.test.mjs` cover forwarding boundaries and budgets. Browser performance tests check privacy and the 100-span bound; Sync's performance tests check long steps and the shared run/step trace; website middleware tests check contact budgets and transport recursion prevention. See [Marketing website](/architecture/website/) for the contact failure contract.
