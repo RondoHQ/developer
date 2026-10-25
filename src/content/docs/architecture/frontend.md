@@ -500,6 +500,8 @@ The generated worker remains in `dist/sw.js`, but WordPress serves it publicly a
 
 WordPress starts the dashboard REST request from the HTML head so it can overlap with JavaScript startup. This preload only runs for an authenticated request to the site root. Direct links to another SPA route must not preload the dashboard, because the response would be discarded while still consuming PHP and database capacity.
 
+The inline script immediately attaches a no-op rejection handler to `window.__dashboardPreload`, preventing an unhandled network rejection before React starts. Keep the original promise in that global: `prmApi.getDashboard()` consumes it once and clears the reference. If the preload rejects, returns a non-success HTTP response, or fails JSON parsing, the helper falls back to the normal Axios request to `/rondo/v1/dashboard`.
+
 ## Volunteer load testing
 
 The repository contains a demo-only k6 journey at `tests/load/volunteer-journey.js`. It creates a real WordPress session for a unique synthetic volunteer, opens `/vrijwillig`, and calls `user/me`, `my-shifts`, and `shifts/available`. Signup mode lets multiple volunteers claim the same synthetic shift at nearly the same time.
