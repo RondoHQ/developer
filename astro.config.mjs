@@ -59,6 +59,7 @@ export default defineConfig({
 						{ label: 'Kantine Activity', slug: 'features/kantine-activity' },
 						{ label: 'Kantine Product Margins', slug: 'features/kantine-margins' },
 						{ label: 'Role Dashboards', slug: 'features/role-dashboard' },
+						{ label: 'Volunteer Planning', slug: 'features/volunteer-planning' },
 						{ label: 'Reminders', slug: 'features/reminders' },
 						{ label: 'Nieuwsbrieven met Laposta', slug: 'features/newsletters' },
 						{ label: 'Sportpark Calendar', slug: 'features/sportpark-calendar' },

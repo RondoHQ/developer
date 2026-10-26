@@ -142,7 +142,34 @@ Manual invoices are created from `/financien/facturen/nieuw`.
 - Show a manual account picker only when more than one usable Mollie account exists
 - Do not expose account switching for discipline or membership invoices
 
-External manual invoices offer **Kies uit adresboek**, loading all accessible `person_type: contact` records on demand. Search covers contact/company names, both email addresses and address text; up to twenty matches are displayed at once. Selection copies a customer snapshot: company name with the person's name as attention, otherwise the person name; distinct primary/CC emails; and an address labelled `factuur`, falling back to the first address. Missing values clear previous form values. The copied fields remain editable without changing the contact or linking the invoice to a member.
+External manual invoices offer **Kies uit adresboek**, loading all accessible
+`person_type: contact` records on demand. Search covers contact/company names,
+both email addresses and address text; up to twenty matches appear at once.
+Selection copies a customer snapshot, leaving the contact unchanged and the
+invoice unlinked to a member. The copied fields remain editable.
+
+The snapshot prefers the company name, falling back to the person name. Attention
+uses `invoice_attention`, falling back to the person's name for company contacts.
+The saved `invoice_address` takes precedence over an address labelled `factuur`
+or the first postal address. With an invoice-specific address, primary and CC
+recipients retain their original slots, including an empty primary recipient.
+Other contacts use distinct available emails. Missing values clear previous form values.
+
+**Opslaan in adresboek** saves the current external customer as a reusable
+`person_type: contact` through `POST /wp/v2/people`. It requires a customer name
+and address, and validates both optional email fields. The payload stores the
+customer name in `company_name`, the full address in the native textarea field
+`invoice_address`, attention in `invoice_attention`, and recipients in `email_1`
+and `email_2`. It does not split names or postal addresses.
+
+Before creating a contact, the client loads accessible contacts and reuses an
+identical customer snapshot after trimming and normalizing newlines. It blocks
+repeated clicks while saving and disables automatic mutation retries. This is a
+client-side duplicate check, not a server uniqueness constraint. After an uncertain
+failure, check **Kies uit adresboek** before trying again. Saving uses existing
+person-create permissions; read-only finance users cannot create contacts.
+`InvoiceAddressBookContactTest.php` and `tests/js/invoiceContact.test.mjs` cover
+permissions, canonical storage and address/recipient round trips.
 
 Explicitly switching invoice kind resets email subject/body to that kind's configured defaults, including copied invoice overrides. Settings refreshes preserve saved/custom text when the kind remains unchanged.
 
@@ -167,6 +194,13 @@ Generates PDF documents using the **mPDF** library. The PDF includes:
 PDFs are saved to `wp-content/uploads/invoices/{invoice_number}.pdf`. The relative path is stored in the `pdf_path` ACF field.
 
 The `due_date` is calculated automatically if not set: invoice sent date + configurable payment term days from `FinanceConfig`.
+
+A draft PDF without `sent_date` uses `_scheduled_send_date` when a send date is
+planned; otherwise it uses today's date. A missing due date follows that same
+chosen date plus the configured payment term. Rescheduling or cancelling the
+schedule changes the preview without marking the invoice as sent. Sent invoices
+retain their recorded `sent_date` and explicit `due_date`, even if old schedule
+metadata remains. `InvoicePdfDateTest.php` verifies these dates in generated PDFs.
 
 ## Email Sending
 

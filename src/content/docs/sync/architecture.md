@@ -57,7 +57,7 @@ When API calls are needed, all pipelines insert delays between requests to avoid
 
 | Target | Delay | Notes |
 |--------|-------|-------|
-| Laposta API | 2s between requests | Fixed delay via `waitForRateLimit()` |
+| Laposta API | At least 2.5s between request starts | Shared per-process queue in `lib/laposta-client.js`; bounded HTTP 429 retries |
 | Rondo Club API | Exponential backoff on errors | 1s, 2s, 4s on retries |
 | Rondo Club photo uploads | 2s between uploads | Both upload and delete operations |
 | Nikki to Rondo Club | 500ms between updates | |
@@ -65,6 +65,9 @@ When API calls are needed, all pipelines insert delays between requests to avoid
 | FreeScout API | Exponential backoff on errors | 1s, 2s, 4s on 5xx errors |
 | Sportlink browser scraping | 500ms-1.5s between members | Random jitter to avoid patterns |
 | Reverse sync (Sportlink) | 1-2s between members | Random jitter, exponential backoff on errors |
+
+See [Laposta rate-limit recovery](/sync/pipeline-people/#laposta-rate-limit-recovery)
+for provider cooldowns, the per-attempt deadline and errors that are never replayed.
 
 ---
 

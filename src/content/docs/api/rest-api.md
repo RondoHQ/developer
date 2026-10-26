@@ -77,7 +77,11 @@ and invalid addresses; send also returns the individual delivery results.
 X-WP-Nonce: {nonce_value}
 ```
 
-The nonce is automatically injected by the frontend via `window.wpApiSettings.nonce`.
+The nonce is automatically injected by the frontend via `window.rondoConfig.nonce`.
+An HTTP 403 `rest_cookie_invalid_nonce` can trigger one same-account refresh through
+the authenticated AJAX action `rondo_rest_session`. See
+[REST session recovery](/architecture/frontend/#rest-session-recovery) for the
+cookie, concurrency and write-replay safeguards.
 
 ## API Namespaces
 
@@ -1618,3 +1622,19 @@ See [Nieuwsbrieven met Laposta](../../features/newsletters/) for configuration, 
 ## Club configuration: feedback notice
 
 Approved authenticated users can read `GET /rondo/v1/config`; only administrators can write `POST /rondo/v1/config`. The `feedback_notice` object contains `enabled` (boolean), `title`, `text` and `email` (strings). Partial writes preserve omitted properties; additional properties are rejected by the route schema. Enabled notices require a title, text and valid contact email; invalid settings return HTTP 400 without replacing the saved notice. See [Feedback Agent](/features/feedback-agent/#configurable-feedback-notice) for rendering, defaults and storage.
+
+## Volunteer planning and mailing
+
+The private `/rondo/v1/volunteer-plans` routes generate, review, edit, publish and
+close proposals. They require `manage_options` or `vrijwilligers`, enforce record
+visibility and return `Cache-Control: private, no-store`. Writes to an existing
+proposal require its current integer `revision`. See
+[Volunteer planning proposals](/features/volunteer-planning/#rest-contract) for
+all routes, continuation and conversion approval.
+
+`GET /rondo/v1/volunteer-mailing` exposes aggregate delivery status and configured
+notification addresses to the same permission group. `PUT` requires
+`overview_email` and optionally accepts `planner_email`; empty strings disable
+the respective messages. See
+[Weekly volunteer recruitment email](/features/email-delivery/#weekly-volunteer-recruitment-email)
+for selection, validation and duplicate-send safeguards.

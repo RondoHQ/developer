@@ -192,7 +192,32 @@ const api = axios.create({
 
 **Interceptors:**
 - **Request:** Updates nonce from `window.rondoConfig` before each request
-- **Response:** Handles 401 (redirect to login) and 403 (log error)
+- **Response:** First attempts bounded nonce recovery for WordPress nonce rejection; remaining 401 responses redirect to login and 403 responses log an error.
+
+### REST session recovery
+
+`installNonceRecovery()` in `src/api/nonce-recovery.js` handles HTTP 403
+`rest_cookie_invalid_nonce`. Signing in again in another window changes the shared
+login cookie while existing windows retain their old REST nonce.
+
+The client fetches `window.rondoConfig.sessionRefreshUrl` with same-origin cookies
+and `cache: 'no-store'`. This points to the authenticated, read-only AJAX action
+`/wp-admin/admin-ajax.php?action=rondo_rest_session`, which returns
+`{ success: true, data: { userId, nonce } }` with no-cache headers. It needs the
+current login cookie and has no logged-out action.
+
+Concurrent failures share one refresh. If the returned user ID matches the page's
+configured user, the client updates the nonce and retries the original request
+once, preserving its method and body. WordPress rejects an invalid nonce before
+the endpoint runs, so this retry can include writes. A delayed rejection reuses
+an already refreshed nonce. A changed account reloads the page without replaying
+the request. Failed refreshes, missing nonces and repeated rejections preserve
+the original error. Other permission, server and network failures do not trigger
+this recovery.
+
+`RestSessionTest.php` reproduces the changed-cookie failure. The JavaScript tests
+in `tests/js/nonceRecovery.test.mjs` cover concurrency, retained write bodies,
+retry limits, account changes and the AJAX fetch contract.
 
 ### API Helpers
 

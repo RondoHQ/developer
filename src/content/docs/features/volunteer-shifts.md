@@ -47,7 +47,7 @@ There is no assignment post type. A shift's `assigned_persons` meta holds an arr
 | `_shift_retroactive_at_{person_id}` | When a coordinator added a helper after the shift ended; preserved when people are merged. |
 | `_shift_attendance_log` | Append-only added/removed records with person, actor and timestamp for retrospective corrections. |
 | `_shift_assignment_mode_{person_id}` | `assigned` for an explicit duty; `signup` or missing preserves normal self-cancellation rules. |
-| `_shift_email_assignment_sent_{person_id}` | Successful delivery time of the duty assignment notice. |
+| `_shift_email_assignment_sent_{person_id}` | Transport acceptance time of the duty assignment notice. |
 | `_no_show_{person_id}` | No-show marker, set by an admin within the 72-hour window after the shift. |
 | `_shift_customized` | The shift was edited by hand, so template re-rollout must never overwrite or delete it. |
 
@@ -210,19 +210,29 @@ registrations use the selected season. This scope is stated on the page. The bro
 receives no person or account IDs, and team names do not link to restricted team pages.
 
 The coordinator editor offers **Indelen** (record an agreement using the normal signup rules)
-and **Dienst toewijzen** (an explicit duty that the member cannot cancel themselves).
+and **Dienst toewijzen** (an explicit duty with a 21-day cancellation deadline and no signup grace period).
 `POST /rondo/v1/shifts/{id}/assignees` accepts `assignment_mode: "signup" | "assigned"`,
 defaulting to `signup` for existing callers. For upcoming assignments, both modes enforce capacity, certificate and pool
 requirements, overlap checks and coordinator permissions. Existing assignments are not converted
 by retrying the endpoint in another mode; remove and re-add deliberately instead.
 
-Both modes write `_shift_signup_at_` for reporting. For `assigned`, member cancellation returns
-`409 shift_assignment_required`, even before the 21-day deadline or during the 30-minute grace
-period. Member list and calendar responses expose `is_duty_assigned` and `can_cancel: false`,
-and the UI directs replacements and swaps to the accommodatiemanager. Coordinators can still
-remove the person; removal clears the mode and any pending confirmation. Ordinary signups and
-all existing assignments retain their cancellation rights. Person merges and guardian relinking
-preserve the mode; an explicit duty takes precedence over a regular signup.
+Both modes write `_shift_signup_at_` for reporting. Members can cancel an explicit
+`assigned` duty until 21 days before it starts. Inside that deadline, cancellation
+returns `409 shift_assignment_required`; the 30-minute grace applies only to normal
+signups. Member responses expose `is_duty_assigned` and the current `can_cancel`.
+After the deadline, replacements and swaps go through the accommodatiemanager.
+Coordinators can still remove the person; removal clears the mode and pending
+confirmation. Person merges and guardian relinking preserve the mode; an explicit
+duty takes precedence over a regular signup.
+
+Member cancellation stores `_shift_declined_{person_id}`, removes the assignment
+mode and signup timestamp, discards its pending confirmation and reopens a full
+shift. The planner schedules a replacement proposal after one minute and excludes
+that person from automatic reassignment to the declined shift. See
+[Volunteer planning proposals](/features/volunteer-planning/).
+
+The coordinator's person search shows failed requests with an error and retry
+button. A failed search is not displayed as an empty result.
 
 The shift editor response includes `duty_assigned_person_ids` alongside `assigned_person_names`
 so coordinators can distinguish the two kinds of assignment.
@@ -365,23 +375,21 @@ and player-before-family attribution rules remain the source of truth. “Afgero
 includes credit for late club cancellations. Filters are applied before pagination
 and total calculation; only the resulting page receives full person data.
 
-## Weekend recruitment mail scheduling
+## Weekly recruitment mail scheduling
 
-`WeekendVolunteerMail` schedules a digest every other Sunday at 19:00
-Europe/Amsterdam, anchored on 20 September 2026. It includes suitable open shifts
-on the next three Saturdays and Sundays, six through twenty-one calendar days
-after the mailing. Weekday shifts are excluded. For example, the 4 October mailing
-covers 10–11, 17–18 and 24–25 October; the 18 October mailing covers 24–25 October,
-31 October–1 November and 7–8 November. Local calendar dates preserve the window
-across daylight-saving changes. The subject and introduction show the full date
-range; available shifts are grouped by day. Existing recipient eligibility,
-capacity checks, batching and duplicate-send protection remain unchanged. Its `init` registration
-and `rondo_weekend_volunteer_mail` callback both accept zero WordPress hook
-arguments. The optional `DateTimeImmutable` parameter on the underlying methods
-is a test clock, not a hook argument: WordPress can pass an empty string for an
-action invoked without arguments, which otherwise causes a fatal type error.
-Regression tests exercise both registrations through WordPress action dispatch.
+`WeekendVolunteerMail` schedules a digest every Sunday at 19:00 Europe/Amsterdam,
+anchored on 20 September 2026. It includes suitable open shifts on all days of the
+next five complete Monday–Sunday weeks. The 25 October round therefore covers
+26 October through 29 November. Local calendar dates preserve the window across
+DST changes. The subject and introduction show the full date range; shifts are
+grouped by day. See [weekly recruitment mail](/features/email-delivery/#weekly-volunteer-recruitment-email)
+for recipient eligibility, the coordinator overview, status, batching and recovery.
 
+Its `init` registration and `rondo_weekend_volunteer_mail` callback both accept
+zero WordPress hook arguments. The optional `DateTimeImmutable` parameter on the
+underlying methods is a test clock, not a hook argument: WordPress can pass an
+empty string for an action invoked without arguments, otherwise causing a fatal
+type error.
 
 ## Outstanding-duty assignment overview
 
@@ -400,8 +408,11 @@ attribution; assigning a playing parent can therefore satisfy their own duty fir
 
 Defaults are **0 diensten afgerond** and **Nog niets ingepland**. Coordinators can
 select exactly one completed duty, all completion counts, and with/without planned
-duties, search by member or parent name and page through the results. The view
-shows required, completed, planned and still-needed counts. There is no export.
+duties, search by member, parent or child name and page through the results.
+Search checks every accessible person in the household, ignoring case and accents,
+while the row still lists only responsible adults. **Alle aantallen** changes the
+completed-count filter; exempt and fully planned/completed obligations remain excluded.
+The view shows required, completed, planned and still-needed counts. There is no export.
 
 **Dienst toewijzen** expands an inline form. Choose the responsible adult, date
 range (up to 90 days) and an available shift. The options omit closed/full shifts,

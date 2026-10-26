@@ -13,8 +13,8 @@ The `CI and deploy` workflow separates release preparation from deployment:
 
 1. `Plan checks` decides whether the exact code has reusable successful PR checks.
 2. When fresh checks are needed, run JavaScript lint, browser error/performance
-   privacy tests and build, PHP coding standards, Capacitor spike checks, and
-   three parallel PHP test groups. See [monitoring source verification](/architecture/error-monitoring/#source-verification) for the browser test command.
+   privacy and REST session-recovery tests, build, PHP coding standards,
+   Capacitor spike checks, and three parallel PHP test groups. See [monitoring source verification](/architecture/error-monitoring/#source-verification) for the browser test command.
 3. On `main`, `_build-production.yml` prepares the exact commit while checks run:
    - Validate the full lowercase 40-character SHA and its ancestry in `main`.
    - Run `npm ci` and `npm run build`, including the required GlitchTip source-map

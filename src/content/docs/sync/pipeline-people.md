@@ -144,12 +144,33 @@ required by this identity model.
    - **New member** (no existing Laposta record): `POST /api/v2/member`
    - **Updated member**: `POST /api/v2/member` with update
 3. Updates `last_synced_hash` on success
-4. Rate limited: 2s delay between API calls
+4. All calls through `lib/laposta-client.js` share one per-process queue, with at
+   least 2.5 seconds between request starts across lists, reads, writes and steps.
 
 **Output:** `{ lists: [{ index, listId, total, synced, added, updated, errors }] }`
 
 **CLI flags:**
 - `--force`: Sync all members regardless of hash (ignores change detection)
+
+### Laposta rate-limit recovery
+
+`lib/laposta-rate-limit.js` retries explicit HTTP 429 responses at most three times
+(four total attempts). It respects `Retry-After` seconds or HTTP dates while
+retaining the 2.5-second minimum spacing. Missing or invalid headers use delays
+of 2.5, 5 and 10 seconds. A provider cooldown longer than 60 seconds fails promptly
+without retrying early. The queue retains that cooldown for subsequent calls,
+including after retry exhaustion. Each HTTP attempt has a 45-second deadline.
+
+Network failures, uncertain writes and non-429 HTTP errors are not replayed.
+Original error status/details remain available to pipeline reporting. Successful
+writes keep the existing upsert, unsubscribe and notification-suppression flags.
+Failed items do not receive a successful sync hash and remain pending for a later
+normal run. Existing caller waits remain compatible with client pacing. Separate
+pipeline processes have separate queues and can still rate-limit each other.
+
+`test/laposta-rate-limit.test.js` and `test/laposta-client.test.js` cover spacing,
+provider cooldowns, exhaustion, queue recovery, retained write bodies and opt-out
+protections.
 
 After the normal desired-state submission, `sync-deceased-members.js` checks active Laposta
 relations whose address belongs to a deceased person. It changes those relations to

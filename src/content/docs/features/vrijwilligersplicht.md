@@ -482,6 +482,12 @@ grace period so an accidental click can still be corrected. The REST endpoint en
 the interface mirrors it through `can_cancel` and warns before a signup that falls inside the
 deadline.
 
+Explicitly assigned duties also allow cancellation until 21 days before the start,
+but have no 30-minute grace inside that deadline. After the deadline the API returns
+`409 shift_assignment_required`. The interface and assignment email explain the
+same rule. Cancellation marks the shift declined for that person and requests a
+[replacement proposal](/features/volunteer-planning/), without assigning it automatically.
+
 Users with `manage_options` or the configurable `vrijwilligers` capability can always remove an
 assignee through:
 
