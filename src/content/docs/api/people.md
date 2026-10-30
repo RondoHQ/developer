@@ -173,7 +173,7 @@ Only administrators can preview or execute a merge. The primary person remains p
 GET /rondo/v1/people/209/merge-preview?duplicate_id=8010
 ```
 
-The response contains both person summaries, automatically combined fields, scalar conflicts that require a choice, blocking conflicts, and counts of linked domain records. Different non-empty stable identifiers of the same kind, or two different linked WordPress accounts, block execution.
+The response contains both person summaries, automatically combined fields, scalar conflicts that require a choice, blocking conflicts, and counts of linked domain records. Different non-empty stable identifiers of the same kind, or two different linked WordPress accounts, block execution by default. Only the KNVB-ID conflict supports the explicit override below; the preview continues to report it in `blocking_conflicts`.
 
 ### Execute
 
@@ -194,7 +194,11 @@ X-WP-Nonce: {nonce}
 }
 ```
 
-Every conflict returned by the preview must have a `primary` or `duplicate` resolution. The service automatically combines unique emails, phones, addresses, relationships, work history, gallery/list values, person and sponsor roles, and empty scalar fields.
+Every scalar conflict in `conflicts` returned by the preview must have a `primary` or `duplicate` resolution. The service automatically combines unique emails, phones, addresses, relationships, work history, gallery/list values, person and sponsor roles, and empty scalar fields.
+
+To merge a verified duplicate with different KNVB IDs, an administrator must also send `"override_knvb_id": true` alongside `"confirmed": true`. The default is `false`; a missing or false override leaves the HTTP 409 `rondo_person_merge_blocked` response intact. This flag removes only the `knvb_id` blocker. Other stable-ID, account and sponsor conflicts still block execution before writes.
+
+The primary retains its KNVB ID, even if `resolutions.knvb_id` says `duplicate`. The trashed duplicate keeps its original ID. The primary's `_rondo_person_merge_history` entry records the overridden field and both original values in `overrides`, alongside the actor, timestamp and resolutions. The UI requires a separate KNVB confirmation and resets it when the selected pair, direction or conflicting IDs change.
 
 References in relationships, sponsor-company contacts (including archived companies), shifts, todos, discipline cases, invoices, clothing assignments, comments, attachments, and linked user accounts are moved to the primary person. The preview includes a `references.sponsors` count. Per-person shift metadata is renamed as part of the same operation. A successful merge returns the surviving `person_id`.
 

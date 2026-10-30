@@ -75,9 +75,9 @@ Written to the `rondo_invoice` post on plan selection:
 
 **GET** `/rondo/v1/version`
 
-Returns the current theme version. Used by the frontend for cache invalidation and update detection.
+Returns the theme `version` and production manifest `buildTime`, or `null` for the latter when no manifest exists. Responses send `Cache-Control: no-store, private`. The frontend uses a unique `_t` query parameter and compares build timestamps before showing an update prompt.
 
-**Security rationale:** No sensitive data exposed. Returns only a version string.
+**Security rationale:** Only release metadata is public. The response contains no account or session data. See [version response](/api/rest-api/#version).
 
 ### Mollie webhook
 

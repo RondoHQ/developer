@@ -187,18 +187,19 @@ invalidate dashboard caches by deleting transient rows directly.
 
 **GET** `/rondo/v1/version`
 
-Returns the current theme version. Used for PWA/mobile app cache invalidation.
+Returns the current theme version and deployed build timestamp for PWA update detection. Responses send `Cache-Control: no-store, private`.
 
 **Permission:** Public (no authentication required)
 
 **Response:**
 ```json
 {
-  "version": "1.42.0"
+  "version": "35.156.1",
+  "buildTime": "2026-10-29T13:12:40+00:00"
 }
 ```
 
-This endpoint is called periodically by the frontend to detect when a new version has been deployed, allowing users to reload and get the latest code.
+`buildTime` comes from the production manifest modification time and is `null` when that manifest is absent. The frontend adds a unique `_t` query parameter to bypass older worker caches and compares this value with the loaded page. Only a confirmed different build shows the update prompt; a waiting worker alone does not. See [version checks](/architecture/frontend/#version-checks-and-explicit-updates).
 
 ---
 
@@ -446,6 +447,7 @@ Get information about the currently logged in user.
   "can_access_vog": false,
   "can_access_financieel": false,
   "can_edit_financieel": false,
+  "can_switch_accounts": false,
   "feedback_intro_seen": false,
   "profile_url": "https://.../wp-admin/profile.php",
   "admin_url": "https://.../wp-admin/",
@@ -457,6 +459,14 @@ Get information about the currently logged in user.
 `linked_person_name` is `null` when the user has no linked person record. `active_functies` is an empty array when there are no current job titles. `is_parent` is derived from a current `child` relationship to a published, non-former person and controls whether a sponsor keeps **Mijn inschrijftaken** as their default landing page.
 
 `feedback_intro_seen` is `false` until the user acknowledges the one-time explanation beside the feedback button.
+
+---
+
+### Shared-email Account Switcher
+
+`can_switch_accounts` signals that another eligible person shares a primary or secondary email address. It does not expose account names or prove mailbox ownership.
+
+The cookie-authenticated `/rondo/v1/user/account-switcher` routes provide status (`GET`), email confirmation (`POST /verify` with `email`), switching (`POST /switch` with `person_id`) and activation (`POST /activate` with `person_id`). See [Account switching](/features/account-switching/#rest-api) for response fields, durable exact-address proof, revocation and errors.
 
 ---
 

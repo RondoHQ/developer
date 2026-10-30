@@ -36,6 +36,14 @@ cat logs/cron/$(ls -t logs/cron/ | grep sync-people | head -1)
 tail -f logs/cron/sync-people-*.log
 ```
 
+### Logging after terminal disconnects
+
+`lib/logger.js` writes each message to its timestamped file before attempting terminal output. If stdout or stderr reports `EPIPE`, the shared logger stops writing to that stream and continues writing to disk. This covers both asynchronous stream errors and synchronous write failures. Other terminal errors still fail visibly.
+
+Each process keeps one error handler per terminal stream, shared across logger instances and retained after an individual logger closes. File-write failures still emit a warning through stderr when it is available. This protects logging when an output pipe closes; it does not make a process immune to SSH hangups or replace the normal server wrapper.
+
+`test/logger.test.js` covers healthy output, loss of either or both terminal streams, synchronous `EPIPE`, shared handlers and non-`EPIPE` failures.
+
 ### Check if a Sync is Running
 
 ```bash

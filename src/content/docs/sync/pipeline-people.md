@@ -203,7 +203,9 @@ blocks writes but does not automatically retire an identity.
 
 For a confirmed duplicate with two KNVB IDs, preserve the old ID and membership
 history in a Rondo note, retire its source with `retireMemberIdentity()`, and only
-then clear the old record's conflicting ID and merge it into the active person.
+then merge it into the active person using the administrator's explicit
+[KNVB-ID override](/features/person-merging/#knvb-id-uitdrukkelijk-overrulen).
+The old record keeps its ID in the trash; the merge audit records both IDs.
 Verify the primary ID, active membership, history, account and sponsor relations
 afterwards. Keep the retired tracking row; do not remap it to the survivor.
 8. Then processes **parent members** (from `rondo_club_parents` table):

@@ -394,17 +394,18 @@ await removeShare.mutateAsync({
 Version checking for PWA/mobile app cache invalidation:
 
 ```js
-const { hasUpdate, currentVersion, latestVersion, reload, checkVersion } = useVersionCheck({
+const { hasUpdate, currentVersion, latestVersion, currentBuildTime, latestBuildTime, checkVersion } = useVersionCheck({
   checkInterval: 15 * 60 * 1000, // Check every 15 minutes (default)
 });
 ```
 
 | Property | Type | Description |
 |----------|------|-------------|
-| `hasUpdate` | boolean | True when a new version is available |
-| `currentVersion` | string | Version loaded with the current page |
-| `latestVersion` | string | Latest version from server (when update available) |
-| `reload` | function | Triggers a page reload to get new version |
+| `hasUpdate` | boolean | True when a fresh server response identifies a different build |
+| `currentVersion` | string or null | Version loaded with the current page |
+| `latestVersion` | string or null | Latest version from server (when update available) |
+| `currentBuildTime` | string or null | Build timestamp embedded in this page |
+| `latestBuildTime` | string or null | Different server build, or null when no update is detected |
 | `checkVersion` | function | Manually trigger a version check |
 
 **Check triggers:**
@@ -413,7 +414,7 @@ const { hasUpdate, currentVersion, latestVersion, reload, checkVersion } = useVe
 - When the tab becomes visible and the configured interval has elapsed
 - Concurrent checks are deduplicated
 
-**Backend endpoint:** `/rondo/v1/version` returns `{ version: "1.42.0" }`
+**Backend endpoint:** `/rondo/v1/version` returns `version` and `buildTime` with `Cache-Control: no-store, private`. The client adds a unique `_t` query parameter to bypass responses stored by older workers. `rondo_get_build_time()` reads the production manifest modification time, or returns `null` when no manifest exists.
 
 ## Utility Functions
 
@@ -505,9 +506,11 @@ All styling uses Tailwind utility classes. Configuration in `tailwind.config.js`
 
 ### Version checks and explicit updates
 
-`ReloadPrompt` combines server-build detection and a waiting service worker into one Dutch **Update beschikbaar** prompt. It asks users to save their changes and offers **Later** and **Nu herladen**. Dismissing it hides the current version/worker combination until that combination changes or the document reloads.
+`ReloadPrompt` shows the Dutch **Update beschikbaar** prompt only when a fresh server check confirms a different build. A waiting service worker triggers a version check, but cannot show the prompt by itself: it may belong to the build already loaded. The prompt asks users to save their changes and offers **Later** and **Nu herladen**. Dismissing it hides that server build until a different build appears or the document reloads; worker-state changes do not reset dismissal.
 
-`useVersionCheck` compares `/rondo/v1/version`'s `buildTime` with the timestamp embedded in `window.rondoConfig.buildTime`, so a deployment can be detected even when the theme version stays the same. The first check waits one minute; later checks run every 15 minutes and when the tab becomes visible after a check is due. Missing build timestamps and overlapping requests are skipped. Separately, service-worker update checks run every 15 minutes and when the document becomes visible, provided the browser is online.
+`useVersionCheck` compares `/rondo/v1/version`'s `buildTime` with the timestamp embedded in `window.rondoConfig.buildTime`, so a deployment can be detected even when the theme version stays the same. The first check waits one minute; later checks run every 15 minutes and when the tab becomes visible after a check is due. Checks without a loaded build timestamp and overlapping requests are skipped. Separately, service-worker update checks run every 15 minutes and when the document becomes visible, provided the browser is online.
+
+A successful response matching the loaded build clears any earlier update notice. Missing server timestamps clear it too. A failed network check preserves the previous state without inventing an update. Without a loaded production manifest timestamp, checks do not run. `tests/js/appUpdate.test.mjs` covers these cases; `tests/Wpunit/PwaManifestTest.php` checks the uncached endpoint and matching shell timestamp.
 
 Only **Nu herladen** activates a waiting worker with `SKIP_WAITING`. `reloadForUpdate()` waits for activation/redundancy or a three-second fallback, then reloads the requesting document. A missing, failed or unresponsive worker still permits the reload. Activation from another tab does not automatically reload this tab. Registrations and shared caches are retained, preserving other tabs' unsaved work. The former separate `UpdateBanner` and cache-deletion reload path have been removed.
 
@@ -520,6 +523,10 @@ The service worker precaches only the app shell: the main stylesheet, entry scri
 This keeps first-install traffic predictable during a login wave. Do not broaden `globPatterns` to all JavaScript files: that would make every new user download the complete application, including rarely used finance, editor, and scanner screens.
 
 The generated worker remains in `dist/sw.js`, but WordPress serves it publicly at `/sw.js`. The root URL lets the worker control the complete application without relying on a hosting-provider-specific `Service-Worker-Allowed` header for a static theme file. Vite's PWA base and scope must therefore stay `/`; Workbox must remain inlined, and `modifyURLPrefix` must keep precached resources under `/wp-content/themes/rondo-club/dist/`.
+
+### Private API caching and account changes
+
+Every `/wp-json/` request uses Workbox `NetworkOnly`. Private REST responses are no longer kept in the old `api-cache`, so they cannot cross identities during [account switching](/features/account-switching/). The switcher clears query state and legacy API cache, reloads the app with the target permissions and nonce, and signals other tabs through `rondo-account-changed`.
 
 ### Dashboard preload
 

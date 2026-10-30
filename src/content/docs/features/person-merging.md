@@ -11,8 +11,15 @@ Beheerders kunnen op een persoonspagina **Samenvoegen** kiezen en vervolgens het
 - Lege velden worden aangevuld vanuit het dubbele profiel.
 - Unieke e-mailadressen, telefoonnummers, adressen, relaties, werkhistorie en andere lijstvelden worden gecombineerd.
 - `member` blijft het basispersoonstype zodra een van beide profielen lid of ouder is. De sponsorrol wordt onafhankelijk daarvan behouden.
-- Een verschil tussen twee niet-lege stabiele IDs van hetzelfde externe systeem blokkeert de merge. Dit voorkomt dat twee echte Sportlink-, Sponsit- of FreeScout-identiteiten per ongeluk worden samengevoegd.
+- Verschillende niet-lege KNVB-IDs blokkeren standaard de samenvoeging. Een beheerder kan dit verschil uitdrukkelijk overrulen nadat die heeft gecontroleerd dat beide profielen dezelfde persoon zijn. Het hoofdprofiel behoudt zijn KNVB-ID.
+- Verschillende niet-lege Sponsit- of FreeScout-IDs blijven blokkeren. De KNVB-override heft deze controles niet op.
 - Twee verschillende gekoppelde WordPress-accounts blokkeren de merge eveneens.
+
+## KNVB-ID uitdrukkelijk overrulen
+
+Bij verschillende KNVB-IDs toont de dialoog beide waarden en een afzonderlijk bevestigingsvak. De beheerder moet daarnaast de samenvoeging bevestigen. Een ander dubbel profiel of hoofdprofiel kiezen wist de override. Een gewijzigde preview met andere IDs vereist opnieuw toestemming.
+
+De mutatie stuurt `override_knvb_id: true`; zonder deze expliciete waarde blijft het verschil blokkeren. Het hoofdprofiel bewaart beide oorspronkelijke IDs in de `overrides` van zijn `_rondo_person_merge_history`. Het dubbele profiel gaat met zijn eigen KNVB-ID naar de prullenbak. Andere blokkades en verplichte veldkeuzes blijven gelden.
 
 ## Gekoppelde gegevens
 
@@ -30,9 +37,11 @@ Na de migratie wordt het dubbele profiel naar de WordPress-prullenbak verplaatst
 
 ## Synchronisatie
 
-De stabiele Sportlink-, Sponsit- en FreeScout-ID's verhuizen mee naar het hoofdprofiel. Sponsit zoekt bij iedere run opnieuw op zijn eigen stabiele IDs en blijft daardoor direct aan het hoofdprofiel gekoppeld.
+Ontbrekende stabiele Sportlink-, Sponsit- en FreeScout-IDs worden aangevuld op het hoofdprofiel. Bij de KNVB-override blijft uitsluitend de gekozen KNVB-ID actief. Sponsit zoekt bij iedere run opnieuw op zijn eigen stabiele IDs en blijft daardoor direct aan het hoofdprofiel gekoppeld.
 
-Sportlink-leden en ouders hebben daarnaast een lokaal `rondo_club_id` in `rondo-sync`. Wanneer dat ID naar een samengevoegd profiel wijst, vraagt de people-pipeline het actuele doel op via `GET /rondo/v1/people/{id}/merge-target`, past de lokale koppeling aan en werkt het hoofdprofiel bij. Daardoor wordt een samengevoegd profiel niet bij een volgende synchronisatie opnieuw aangemaakt.
+Sportlink-leden en ouders hebben daarnaast een lokaal `rondo_club_id` in `rondo-sync`. Bij een samengevoegd profiel vraagt de people-pipeline het doel op via `GET /rondo/v1/people/{id}/merge-target`. Alleen bij dezelfde KNVB-ID, of een hoofdprofiel zonder KNVB-ID, mag de pipeline de koppeling aanpassen en het hoofdprofiel bijwerken.
+
+Bij een andere KNVB-ID bewaart Sync de oude bron als een inactieve trackingregel met `retired_into_knvb_id`. Die bron mag het hoofdprofiel niet overschrijven of opnieuw worden aangemaakt. Zie [People Pipeline](/sync/pipeline-people/) voor de controles en het behoud van de oude identiteit.
 
 ## API
 

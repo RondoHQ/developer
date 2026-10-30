@@ -181,6 +181,10 @@ Password login and emailed Magic Login links preserve the requested `redirect_to
 
 `MagicLoginActivation` captures and validates the submitted destination before the response ends, queues it with the email address, and passes it through `ActivationService` when generating named login links. Existing-account links in combined household emails retain it too; activation-picker links keep their existing activation flow. `rondo_activation_magic_login_url` receives the validated destination as its third argument. Regression tests cover OAuth state retention, unsafe destinations and the entrance-account override.
 
+### Shared-mailbox account switching
+
+Successful activation records the exact confirmed mailbox for [account switching](/features/account-switching/). The confirmation remains valid across later logins while the address and person-account link remain valid. Named Magic Login links bind proof to the receiving address, including secondary addresses. Removing that address or changing the person-account link revokes the proof. A password login alone cannot create it.
+
 ### Timing
 
 Identical HTML is not enough. Sending the mail costs an API round-trip, so a known address would
