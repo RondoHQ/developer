@@ -12,7 +12,9 @@ On two-column screens the third column spans the row below the first two. Tasks 
 
 ## Profile header
 
-The standalone Back button is omitted. The header uses a 112-pixel photo with its existing sync indicator. When a person also has a company name, it follows their name after an en dash; company-only contacts show the company once. Matching neutral role badges sit beside age and other demographic details, wrapping on smaller screens. Financial blocks have a separate red notice; membership warnings remain amber. Existing roles, team/committee links, demographic details and external service links remain available.
+The standalone Back button is omitted. The header uses a 112-pixel photo with its existing sync indicator. When a person also has a company name, it follows their name after an en dash; company-only contacts show the company once. Neutral badges show current [employment and volunteer role types](/features/role-engagements/)
+when permitted, with a general **Kaderlid** fallback. They sit beside age and other
+demographic details and wrap on smaller screens. Financial blocks have a separate red notice; membership warnings remain amber. Existing roles, team/committee links, demographic details and external service links remain available.
 
 The icon-only pencil at the top right opens `PersonEditModal` under the existing `canEditPeople` gate, including its former-member and deceased restrictions. **Beheerinstellingen** is collapsed initially and exposes `person_type` only to full people editors. Sponsor-only editors retain their existing identity editing scope and cannot change the person type. Saving sends only changed identity fields under the canonical `fields` payload; contact details and dates are not submitted by this editor.
 
@@ -49,6 +51,10 @@ Open tasks remain visible and can be added from the header. An empty task list i
 ## Role history and timeline
 
 **Functiegeschiedenis** uses compact text rows without logos or placeholder images. At `sm` and wider, role, team/committee and period use aligned columns; on smaller screens they stack. Descriptions remain below their row. The existing order, linked team/committee destinations, external team names and current/historical date semantics are unchanged.
+
+Eligible staff rows also offer **Functietype wijzigen** under the existing
+`canEditPeople` gate. The local classification uses a stable role key and version
+checks; see [classification storage and API](/features/role-engagements/#rest-contract).
 
 The Timeline keeps its existing permission-filtered content, editing and activity actions while using the full available width. Tasks remain accessible on the Profile tab.
 

@@ -6,7 +6,7 @@ Base path: `/wp-json/rondo/v1/training`.
 
 ## Permissions and caching
 
-Schedule read endpoints (`GET /schedules`, `GET /schedules/{id}`, and `GET /active`) are always public,
+Schedule read endpoints (`GET /schedules`, `GET /schedules/{id}`, `GET /active` and `GET /week`) are always public,
 without a feature toggle. They need no login, nonce,
 or application password and can be opened directly in a browser or used by the club website.
 All saved versions are available, including inactive versions.
@@ -18,7 +18,8 @@ Authenticate management requests with a WordPress session and REST nonce, or an 
 application password over HTTPS. The current-user response exposes `can_manage_training`.
 
 Responses use `Cache-Control: no-store, private`; consumers that cache must arrange their own refresh
-after changes. No calendar dates, personal contact details, or authentication tokens appear in the feed.
+after changes. The week response contains dates and team attendance, without audit
+identities, personal contact details or authentication tokens.
 
 ## Read endpoints
 
@@ -27,6 +28,7 @@ after changes. No calendar dates, personal contact details, or authentication to
 | `GET /schedules` | `{active_id, timezone, pitches, schedules}` with **all complete saved versions**. |
 | `GET /schedules/{id}` | `{active_id, timezone, pitches, schedule}` for the immutable numeric identifier. |
 | `GET /active` | `{timezone, pitches, schedule}`; `schedule` is `null` until a version is activated. |
+| `GET /week?date=2026-11-02` | `{week_start, week_end, schedule, pitches, timezone}` for the active version; date defaults to today. |
 | `GET /settings` | Training managers only: `{settings, teams}` with team directory entries `{id, name}`. |
 
 `pitches` contains `{id, name}` entries. A schedule has this shape:
@@ -70,6 +72,42 @@ block IDs are unique within a version and may be retained by the copy. `team_nam
 `age_group_id` on the block. Use an empty or omitted `age_group_id` to inherit from teams. This lets
 standalone blocks, such as keeper training, select a configured group color too. Missing colors default
 to `#cffafe`. Updating a group color affects every version immediately; render with contrasting text.
+
+## Dated attendance
+
+`GET /week` resolves Monday through Sunday in the WordPress timezone, including
+DST and year boundaries. `schedule` is `null` until a version is active. Each
+block adds `date`, `attendance` and `cancelled`. Each attendance item contains
+`team_id`, `name`, `cancelled`, `revision` and viewer-specific `can_change`.
+A block is fully cancelled only when it has teams and all are cancelled.
+The ordinary schedule endpoints omit cancellation audit rows.
+
+`PUT /attendance` requires an authenticated non-Entree user who manages training
+or currently coaches/leads that team. Send all seven fields, with integer IDs and
+revisions and a real JSON boolean:
+
+```json
+{
+  "schedule_id": 12345,
+  "schedule_revision": 3,
+  "block_id": "a1743249-90f3-497f-bcdd-994367c57753",
+  "date": "2026-11-02",
+  "team_id": 1001,
+  "cancelled": true,
+  "revision": 0
+}
+```
+
+`revision` belongs to this dated team occurrence; `schedule_revision` belongs to
+the recurring version. A changed state appends a native audit row and increments
+the occurrence revision. Repeating the current state with its current revision
+adds no row. Success returns the complete week view.
+
+Unknown or missing fields and invalid types/dates return 400. A missing block,
+wrong weekday or invalid team returns 404; another team’s coach receives 403.
+Changed active versions, stale schedule/attendance revisions, and training that
+has already started return 409. Cancellation and restoration use the same
+schedule write lock as editing and activation.
 
 ## Management endpoints
 

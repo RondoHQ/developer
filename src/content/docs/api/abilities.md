@@ -132,6 +132,10 @@ Inputs:
 
 Search results contain only compact record summaries. They never include native field values. WordPress query filters apply Rondo's person visibility rules before results are returned.
 
+Team searches accept straight and common typographic apostrophe variants in
+titles and searchable fields. Results keep the original IDs and visibility rules;
+this normalization does not widen person access. Global search uses the same helper.
+
 ## Get a record
 
 ```http

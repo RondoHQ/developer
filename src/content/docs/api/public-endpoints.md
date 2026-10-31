@@ -71,6 +71,13 @@ Written to the `rondo_invoice` post on plan selection:
 
 ## Public REST API Endpoints
 
+### Training week
+
+`GET /rondo/v1/training/week?date=2026-11-02` publicly exposes the active schedule
+for a calendar week, including dated team cancellation states. It includes no
+audit identities or personal contact details. Responses are private and uncached.
+Changes use the authenticated [attendance API](/api/training-schedules/#dated-attendance).
+
 ### Version check
 
 **GET** `/rondo/v1/version`

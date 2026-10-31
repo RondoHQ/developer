@@ -872,3 +872,20 @@ curl -X DELETE "https://your-site.com/wp-json/wp/v2/people/456" \
 ## Coordinator scope
 
 From 35.83.0, an assigned team's current players are visible in addition to the coordinator's permitted age groups. This union applies to both the filtered list and core person collection/single-record endpoints, including pagination and CSV export. Explicit age-group filters still narrow the union. The current-user payload exposes `permitted_team_ids` alongside the existing `permitted_age_groups`; `null` age groups continues to mean unrestricted management access.
+
+## People-list CSV export
+
+The Relaties CSV download includes every matching page from `/rondo/v1/people/filtered`,
+using the current filters, sort order and access restrictions. It exports exactly
+those columns visible at the start of the download, in their displayed order and
+with their labels, including permitted custom fields. Hidden contact or progress
+columns are omitted. Team names are fetched only when that column is selected.
+
+Dates use canonical date strings; boolean fields retain their configured labels,
+zero remains zero, and multiple values become readable text. Relationship IDs use
+`#id` when no display title is available. Text cells that could start a spreadsheet
+formula receive a leading apostrophe; numeric negative values remain numbers.
+If any page or required team lookup fails, no partial file is downloaded.
+
+Person responses also expose permission-filtered [role classifications](/features/role-engagements/).
+Use their dedicated versioned endpoint to classify a function.

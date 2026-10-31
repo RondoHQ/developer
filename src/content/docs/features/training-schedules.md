@@ -2,10 +2,12 @@
 title: "Training schedules"
 ---
 
-The **Teams → Trainingsschema** page plans recurring weekly training blocks. Training managers can create
+The **Voetbal → Trainingsschema** page shows training blocks by calendar week
+and provides a separate **Vast weekschema** editor for recurring training. Training managers can create
 several independent, named versions per season, such as **Regulier** and **Slecht weer**, and copy
 an existing version as a starting point. Exactly one saved version can be active for team pages.
-There are no date-specific exceptions or automatic weather decisions.
+Coaches can cancel their team’s training for one date without changing the recurring
+schedule. Rondo makes no automatic weather decisions.
 
 ## Access
 
@@ -66,9 +68,20 @@ is renamed. Editing an active version updates the training times presented to te
 
 ## Team pages and API
 
-**Team** and **Mijn team** show every block linked to that team in the active version, including its
-name, season, weekday, times, pitch, and pitch parts. Both use the same reusable component and poll
-for changes every 30 seconds while open. The UI obeys the feature toggle, including during the admin pilot.
+**Team** and **Mijn team** show the selected week’s blocks for their team in the
+active version, including dates, times, pitch parts and cancellation state.
+Both use the shared `TrainingWeek` component and poll every 30 seconds while open.
+The week view defaults to the current week in the WordPress timezone and supports
+previous/next week, a date picker and **Deze week**. The general field board marks
+fully cancelled blocks gray and shared blocks as partly cancelled.
+
+Before a training starts, its current trainer/coach or leader can select
+**Training afmelden** or **Afmelding intrekken** for their own team.
+Training managers can do this for every team; Entree users cannot change attendance.
+Cancellation applies only to one active schedule, block, date and team. Other teams
+in a shared block and other weeks remain unchanged. The role dashboard and volunteer
+planner respect that team’s dated cancellation. A cancellation does not reassign
+pitch space or change recurring schedule conflicts.
 
 On **Mijn team**, the component uses the roster card style: rounded corners, a subtle border,
 matching padding, and a plain heading, without a gradient stripe or shadow. The **Team** detail
@@ -80,7 +93,8 @@ See [Training API](../../api/training-schedules/) for the endpoints and payloads
 
 - `rondo_training`: private, non-public CPT without the generic WordPress REST endpoint.
 - Post title: version name. The immutable numeric post ID is the version identifier.
-- Native registry fields: `season`, `revision`, and the `blocks` repeater.
+- Native registry fields: `season`, `revision`, and the `blocks` and `cancellations` repeaters.
+- Cancellation audit children: `date`, `block_id`, `team_id`, `cancelled`, `revision`, `changed_by`, `changed_at`.
 - Repeater children: `block_id`, `label`, `age_group_id`, `team_ids`, `pitch_id`, `day`, `start`, `duration`, `size`, `offset`.
 - `rondo_training_settings`: site-wide pitch, age-group, team-override configuration and its revision.
 - `rondo_training_active`: active version ID, initially zero.

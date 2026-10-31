@@ -25,8 +25,9 @@ The `CI and deploy` workflow separates release preparation from deployment:
 4. After the check plan, required validation and release build succeed,
    `_deploy-production.yml` downloads that run's release artifact and deploys it
    to SiteGround over SSH. Production deployments are serialized.
-5. Prune eligible retired assets and deleted release-controlled source files,
-   clear WordPress and SiteGround caches, and verify the live theme version and production URL.
+5. Prepare and validate an inactive release, activate it atomically, refresh rewrite
+   rules and caches, then verify the theme version through WP-CLI and HTTP.
+   Record the deployed commit only after those checks succeed.
 
 Pull requests run validation without production deployment. Pushes confined to
 `docs/prd/**` do not start the workflow. The artifact name stays stable across
@@ -68,13 +69,47 @@ The check-plan summary links to the reused run or records that fresh checks run.
 The Python tests cover grouping/report coverage and rejection of incomplete reuse
 evidence.
 
+## Atomic release activation
+
+`bin/deploy.sh` uploads a complete archive with SCP. `bin/atomic-release.py`
+prepares the candidate under `.rondo-releases/rondo-club`, beside the WordPress
+web root. It verifies SHA-256, rejects links and unsafe archive paths, checks
+required theme files and every manifest asset, and validates Composer class paths.
+The `--prune` option replaces controlled `includes`, `bin`, `src` and `vendor`
+directories in staging, so removed code does not survive in a new release.
+
+The live theme path becomes a symlink to one complete release. Normal activation
+replaces that link atomically. The first conversion from a directory uses Linux
+`renameat2(RENAME_EXCHANGE)` and retains the original directory. If atomic
+bootstrap is unavailable, deployment fails before changing the live theme.
+Runtime `.env` and `certs` stay linked to their retained location; archives exclude
+them and the `CLAUDE.md` documentation symlink.
+
+The early `rondo-00-release.php` MU plugin clears PHP's realpath cache and pins
+each request's template and stylesheet paths to one resolved release. Error
+monitoring uses the same path. Theme version reads use that release's `style.css`.
+A request therefore keeps its PHP classes and version together during activation.
+
+A filesystem lock and durable per-release JSON state protect prepare, activate,
+rollback and finish. Retries after a lost SSH reply inspect that state; stale
+transactions cannot overwrite a different live release. Failed verification
+restores the previous target, refreshes rewrite rules and clears caches. The
+HTTP checks cover the production URL, OIDC discovery and a uniquely queried
+`/wp-json/rondo/v1/version`, whose version must match the release.
+
+Successful cleanup keeps at least three completed releases, releases retired in
+the past hour, and the active and immediately previous releases. Legacy runtime
+paths are never pruned. `tests/python/test_atomic_release.py` exercises real
+archives, request pinning, bootstrap, stale activation and health-check rollback.
+CI runs it alongside the frontend update and retention tests.
+
 ## Frontend asset retention
 
-`bin/deploy.sh` inventories the new build with `bin/retain-assets.php`, uploads
-`dist/assets/` first, and publishes manifests and service-worker metadata only
-after the assets are present. Both rsync and the archive fallback overlay these
-files without deleting previous chunks. The server's `.asset-retention.json`
-is excluded from transfer so an incoming release cannot reset retirement history.
+`bin/deploy.sh` inventories the new build with `bin/retain-assets.php`.
+Staging carries forward the previous release's assets and retention state, then
+validates and prunes the candidate before activation. New manifests and workers
+become live together with the complete release. The incoming archive excludes
+`.asset-retention.json`, preserving the server's retirement history.
 
 After the complete release is present, the pruning step compares the actual
 assets with `.asset-inventory.json`. Files absent from the new inventory get a
@@ -86,9 +121,10 @@ while users finish their work and [choose when to reload](/architecture/frontend
 
 Missing current assets, corrupt retention state, symlinks and empty inventories
 fail validation before pruning. Inventory/state writes use a temporary file and
-rename. CI runs `appUpdate.test.mjs`, `assetRetention.test.mjs` and
-`deployAssetTransfer.test.mjs` to check the update helper, retirement timing,
-rollback protection, transfer order and both upload paths.
+rename. Rollback also copies missing assets from the failed candidate to the
+previous release so tabs opened during verification can still load their chunks.
+CI runs `appUpdate.test.mjs`, `assetRetention.test.mjs` and the Python atomic-release
+suite to check update behavior, retirement timing and rollback protection.
 
 ## Production environment
 

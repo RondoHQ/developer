@@ -131,3 +131,24 @@ for reconciliation and checkpoint rules.
 ## Dashboard schedule forms
 
 `GET /beheer/schedules` and `POST /beheer/schedules` use dashboard session authentication. The POST requires the form's session CSRF token and current configuration revision: missing/wrong CSRF returns 403, validation returns 400 with the draft preserved, and a stale revision returns 409. A valid save redirects to `/beheer/schedules?saved=1`. This form does not use `X-Sync-API-Key`. See [Editable Sync Schedules](/sync/schedules/) for fields, allowed cadences and dispatcher behavior.
+
+## Club address book
+
+These read-only routes use `X-Sync-API-Key` and send
+`Cache-Control: private, no-store`. Each has a rate limit of 30 requests per minute.
+
+| Method and path | Contract |
+|---|---|
+| `GET /api/club-directory?search=Example&field=name` | 2–80 trimmed characters; `field=name|city`, default `name`; `{clubs, total, truncated, fetched_at}` |
+| `GET /api/club-directory/{id}` | Seven uppercase letters/digits; `{club, contacts, fetched_at}` after exact identity validation |
+
+The adapter searches all districts, excludes liquidated clubs and returns the first
+100 results with the source total. Invalid input returns 400, a missing club 404,
+a concurrent directory lookup 429 and source/validation failures 502. API-key
+failures retain the authentication statuses above. Unexpected errors omit source
+URLs, tokens and response bodies.
+
+`lib/club-directory.js` obtains Sportlink request headers through the shared session
+helper and reads the address-book JSON API. It is an on-demand read service, not a
+scheduled sync pipeline. See [Club address book](/features/club-directory/) for
+response fields, authentication recovery, idle cleanup and WordPress caching.

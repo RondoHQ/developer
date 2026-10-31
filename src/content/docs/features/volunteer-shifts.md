@@ -308,6 +308,12 @@ registry defaults, which explain the member's responsibility, arranging cover or
 the accommodatiemanager, and the absence of self-cancellation. Content is rendered as escaped
 plain text inside the shared branded email template.
 
+Assignment mail resolves `{medevrijwilligers}` at delivery time, after publication
+or later changes. If other assignees remain and a custom body omits the variable,
+Rondo appends their names once. Removed companions and their contact details are
+not included. The [planner](/features/volunteer-planning/#candidate-selection) can
+prefer teammates when it chooses eligible candidates.
+
 Duty notices use the same ten-minute queue but send one email per duty, including its calendar
 attachment, so each task type can supply its own wording. Ordinary signups remain combined in
 one separate confirmation. Failed notices remain queued for retry; successful notices and removed
@@ -338,7 +344,8 @@ Since 35.87.0, Relaties offers an **Inschrijftaken** filter and optional status,
 Ingepland, Afgerond, and Vereist columns for the current sports season. Selecting
 a status temporarily shows these columns next to the person's name, without
 changing stored column preferences. The CSV export uses the same filter and includes
-the counts when these columns or the filter are active.
+exactly the visible columns in their current order. Hidden progress columns are
+omitted even when progress data was fetched for a filter.
 
 Access requires the explicit `rondo_bestuur` or `rondo_vrijwilligers` role. The
 `can_view_people_shift_progress` current-user flag controls the UI, and

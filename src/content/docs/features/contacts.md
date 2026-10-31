@@ -37,7 +37,7 @@ Het losse true/false-veld `is_sponsor` geeft de sponsorrol aan. Een Sportlink-li
 
 De Sponsit-sync bewaart de stabiele bronvelden `sponsit_contact_id` en `sponsit_person_id`. Daardoor worden vervolgruns op dezelfde Rondo-persoon toegepast en kan alleen een door Sponsit beheerde sponsorrol automatisch worden beëindigd; handmatig beheerde sponsors blijven ongemoeid.
 
-Het aanvullende tekstveld `company_name` bewaart de bedrijfsnaam. De bedrijfsnaam is ook opgenomen in de CSV-export van de personenlijst en kan op de persoonspagina worden bijgewerkt.
+Het aanvullende tekstveld `company_name` bewaart de bedrijfsnaam. De bedrijfsnaam komt mee in de CSV-export als die kolom zichtbaar is en kan op de persoonspagina worden bijgewerkt.
 
 Bestaande personen zonder opgeslagen `person_type` worden als lid/ouder behandeld. Daardoor is geen datamigratie nodig en blijven door Sportlink gesynchroniseerde personen compatibel.
 

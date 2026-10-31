@@ -19,6 +19,15 @@ Success returns empty HTTP 204 with `Cache-Control: no-store`. Invalid origin re
 
 Approved authenticated users use the separately permission-filtered [bank-account routes](/features/bank-accounts/#rest-api) for their own linked person or financial management of a visible person. [Match-compensation routes](/features/match-compensation/#rest-api-and-retry-contracts) cover configured-team registration, dated person agreements, financial month preview/closing, private XLSX/SEPA exports, route-specific external processing and corrections. Agreement reads and writes require financial management; generic person writes cannot replace them. Neither module expands generic person/team access.
 
+## Club directory and role classifications
+
+The protected [club address book](/features/club-directory/#wordpress-api-and-cache)
+provides `GET /rondo/v1/external-clubs` and `GET /rondo/v1/external-clubs/{id}`
+for users with team or match-affairs access.
+[Role classifications](/features/role-engagements/#rest-contract) use
+`PATCH /rondo/v1/people/{person_id}/role-engagements` and a current version;
+generic person field writes cannot replace them.
+
 ## Tournament registrations
 
 Tournament endpoints are authenticated and use domain permissions rather than generic post-type
@@ -31,6 +40,8 @@ access. Managers are administrators or users with the current work-history role
 | `POST` | `/rondo/v1/tournaments` | Manager | Create a draft edition |
 | `GET`, `PATCH`, `DELETE` | `/rondo/v1/tournaments/{id}` | Manager | Read an edition, edit allowed draft or published fields with `version`, or trash it and its entries |
 | `GET` | `/rondo/v1/tournaments/assignment-options` | Manager | List eligible teams and current staff accounts |
+| `POST` | `/rondo/v1/tournaments/{id}/registration-reminder/preview` | Manager | Review outstanding entries, recipients and message; no send |
+| `POST` | `/rondo/v1/tournaments/{id}/registration-reminder/send` | Manager | Send once using the reviewed, manager-bound token |
 | `POST` | `/rondo/v1/tournaments/{id}/publish` | Manager | Create shared entries and send invitations |
 | `PATCH` | `/rondo/v1/tournaments/{id}/deadline` | Manager | Extend the internal deadline |
 | `PATCH` | `/rondo/v1/tournaments/{id}/external-status` | Manager | Store external submission progress |
@@ -207,7 +218,8 @@ Returns the current theme version and deployed build timestamp for PWA update de
 
 **GET** `/rondo/v1/search`
 
-Search across people and teams.
+Search across people and teams. Team names and searchable fields accept straight,
+curly, acute and backtick apostrophe variants, retaining identity and access rules.
 
 People matches include:
 - first name, infix, last name

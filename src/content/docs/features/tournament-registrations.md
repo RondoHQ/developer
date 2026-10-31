@@ -97,6 +97,45 @@ recipients are skipped. Assigned staff without accounts also remain recipients o
 change and payment messages, using their current person email. Existing email deduplication for
 programme and change messages remains in place.
 
+## Reviewed registration reminders
+
+On an open tournament’s **Teams** tab, managers can choose
+**Niet-ingeschreven teams herinneren** before the internal deadline. Edit the
+subject and message, then check recipients before sending. The preview lists
+outstanding root entries, recipient-specific teams and warnings for missing staff
+or email addresses. Submitted entries and supplements are excluded.
+
+Recipients come from the current assigned staff, including people without accounts.
+Rondo groups addresses case-insensitively and sends one email per address with
+only that recipient’s entry links. The email adds the tournament name, deadline,
+login instructions and an activation link. Previewing sends nothing and creates
+no payments or registrations.
+
+Both routes require tournament-manager access:
+
+| Method and path relative to `/wp-json/rondo/v1` | Body |
+|---|---|
+| `POST /tournaments/{id}/registration-reminder/preview` | Optional `subject` (1–200 characters) and `message` (1–10,000 characters) |
+| `POST /tournaments/{id}/registration-reminder/send` | Reviewed `token` |
+
+The preview token binds the tournament, manager, audience and message for thirty
+minutes. Send rechecks the tournament and complete audience under the tournament
+write lock. Changes to names, deadline, entries or recipients require a new preview
+(HTTP 409 `rondo_reminder_preview_stale`). Closed or expired registration also
+returns 409; an empty audience cannot send.
+
+A durable receipt is reserved before sending. A repeated completed token returns
+its stored `{sent_count, failed_count, recipient_count}` without sending again,
+even after the preview expires. Interrupted dispatch returns
+`rondo_reminder_delivery_uncertain` (409) and must be checked before starting over.
+Partial failures are recorded and are not automatically retried. A new preview
+can mail previously reached recipients again. `sent_count` means `wp_mail`
+accepted the message, not confirmed delivery.
+
+The activity log records complete or partial send outcomes. Tests cover audience
+changes, accountless staff, scoped links, token expiry, shared locking and retries
+in `TournamentRegistrationReminderTest.php`.
+
 ## Registration model
 
 One club team can register one or more tournament teams. Every tournament team has its own player
