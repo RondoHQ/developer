@@ -218,6 +218,15 @@ afterwards. Keep the retired tracking row; do not remap it to the survivor.
 
 9. Publishes parent field observations from the same dated Sportlink snapshot, including unchanged parent records. Complete source slots are submitted in batches of at most 100 children; the Rondo endpoint verifies current identities and parent links, keeps pending/error states, and protects newer write confirmations. This records field numbers only and does not write to Sportlink.
 
+Parent relationships and slot observations build their KNVB-to-person map with
+`getParentSyncMembers()`. It requires non-null KNVB/person IDs and excludes every
+row with `retired_into_knvb_id`, even when Sportlink still returns that identity.
+The label-backfill tool uses the same filter. A retired source cannot submit links
+or observations to either a deleted person or its active survivor. Recovery
+tombstones remain available through the broader tracked-member lookup; do not
+delete or remap them to make parent sync proceed. The regression test is in
+`test/parent-slot-observations.test.js`.
+
 To backfill existing labels without running contact, relationship, photo or email synchronization, run on the sync server as `rondo`:
 
 ```bash

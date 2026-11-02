@@ -299,6 +299,14 @@ quick claims produce one mail), with an iCal attachment; reminders at 14, 7 and 
 cancellation notices; and a post-shift survey when the diensttype configures one.
 Templates live on the `dienst_type`.
 
+Post-shift mail can use an internal [Rondo survey](/features/surveys/) selected by
+canonical `survey_id`, or an external `survey_url`. An internal selection takes
+precedence and must be open; it creates a personal invitation per shift/person.
+The scheduler sends one day after the shift and skips no-shows. Successful delivery
+records the invitation's sent state for survey reminders. With neither selection
+nor URL, no survey mail is sent. The task-type picker lists open surveys for users
+with `vrijwilligers`, survey-management or administrator access.
+
 Reminder emails automatically append links to published `taakuitleg` entries whose canonical `dienst_types` relationship includes the task type. Links use the existing public `/uitleg/{slug}` pages and remain accessible without a Rondo login. Draft, password-protected and unrelated instructions are excluded. When no matching explanation exists, no empty section appears. Custom reminder text is preserved; survey and cancellation mail do not receive the instruction section. The task-type editor explains this automatic behavior.
 
 Explicit duty assignments use `assignment_email_subject` and `assignment_email_body` under

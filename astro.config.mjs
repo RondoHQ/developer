@@ -65,6 +65,7 @@ export default defineConfig({
 						{ label: 'Club Address Book', slug: 'features/club-directory' },
 						{ label: 'Reminders', slug: 'features/reminders' },
 						{ label: 'Nieuwsbrieven met Laposta', slug: 'features/newsletters' },
+						{ label: 'Surveys', slug: 'features/surveys' },
 						{ label: 'Sportpark Calendar', slug: 'features/sportpark-calendar' },
 							{ label: 'Taakuitleg', slug: 'features/taakuitleg' },
 					],

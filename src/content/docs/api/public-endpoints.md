@@ -71,6 +71,21 @@ Written to the `rondo_invoice` post on plan selection:
 
 ## Public REST API Endpoints
 
+### Surveys
+
+`GET` and `POST /rondo/v1/public-surveys/{id}` let participants answer without a
+WordPress account. `/enquete/{id}` renders the standalone page; personal links add
+`?uitnodiging={token}`, while the API uses `?invitation={token}`.
+Public access uses the latest published version; invitation access uses a random,
+single-use token pinned to its original version. Closed surveys reject submissions.
+
+POST requires the version and signed challenge from GET, answers and an empty
+honeypot. The challenge expires after 24 hours. Replay claims, server-side branching
+and a salted rate counter protect submissions. Responses are uncached and expose
+no invitation list or results. A general link cannot enforce one response per person;
+answers without names are not guaranteed anonymous to storage administrators.
+See [surveys](/features/surveys/#rest-contract) for the complete contract and privacy modes.
+
 ### Training week
 
 `GET /rondo/v1/training/week?date=2026-11-02` publicly exposes the active schedule

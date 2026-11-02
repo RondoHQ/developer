@@ -65,13 +65,32 @@ Automatic rules are empty by default. An administrator enters the full organizat
 name in VOG settings. New entries use function `Vrijwilliger` and code `84` (care
 for minors); these need no repeated coordinator confirmation. Matching ignores
 case and repeated whitespace, but does not use fuzzy or substring matching.
-Existing configured functions and additional codes are preserved. Code `84` is
-always required, including for legacy rules. Only GAAV code 0, complete first-page
+Existing configured functions and additional codes are preserved. Automatic approval
+always requires code `84`, including for legacy rules. Only GAAV code 0, complete first-page
 extraction, matching identity, an applicable rule, and an issue date within the
 club's three-year window allow automatic approval. The reverse-page legend is
 never treated as selected codes. Missing codes, an unrecognized document, a wrong
 organization or an invalid date cannot be overridden with an identity confirmation.
 A future or older registered date cannot replace the existing VOG date.
+
+### Explicit approval of content differences
+
+A coordinator can accept different screening codes, organization or function for
+one digital submission. This requires `gaav_manual` review, a reviewer ID, and
+separate boolean confirmations for each failed check: `codes_confirmed: true`
+and/or `organization_confirmed: true`. The UI offers these checkboxes only when
+all other content checks pass. If both checks fail, both confirmations are required.
+Automatic approval still requires the configured organization/function and codes.
+
+An empty code list, incomplete extraction or invalid issue date cannot be overridden.
+GAAV code 0, unchanged original bytes, identity checks, current assessment revision
+and submission version remain required. Strings such as `"true"` or numeric `1`
+do not count as confirmation. These choices apply only to this submission and do
+not change club rules or retained identity evidence.
+
+The receipt records `codes_check` (the actual codes) and/or `organization_check`
+(the extracted purpose), each with `reviewer` and UTC `checked_at`. These audit
+values remain after approval clears the general parsed document data and files.
 
 ## Identity differences and inquiries
 
@@ -182,7 +201,9 @@ are required for browser requests.
 Statuses: `checking`, `technical`, `review`, `awaiting_member`, `needs_original`,
 `waiting_paper`, `approved`, `rejected`, `replaced`, `expired`. The first six are active.
 Reviewer payloads include an `assessment` with identity comparison rows, content
-checks and revision. Member payloads expose only `identity_check_required` and
+checks, revision, `codes_override_allowed` and `organization_override_allowed`.
+Digital review accepts the explicit content confirmations described above.
+Member payloads expose only `identity_check_required` and
 `identity_remembered` booleans, not extracted identity values or reviewer details.
 
 ## Runtime and testing
@@ -208,3 +229,5 @@ The fixture contains fictional identity data. The integration test exercises the
 real encrypted reader and approval lifecycle while mocking the GAAV response.
 Permission, stale versions, changed bytes, rule matching, dates, deletion and
 bounded retry tests never submit personal documents to an external service.
+`VogSubmissionTest` also checks separate code/organization confirmations, audit
+receipts, and continued rejection of identity, date, extraction and original-file failures.

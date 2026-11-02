@@ -1660,3 +1660,12 @@ notification addresses to the same permission group. `PUT` requires
 the respective messages. See
 [Weekly volunteer recruitment email](/features/email-delivery/#weekly-volunteer-recruitment-email)
 for selection, validation and duplicate-send safeguards.
+
+## Surveys
+
+`/rondo/v1/surveys` provides survey management, invitation preparation and delivery,
+results and CSV export. Independent `enquetes` and `enquete_resultaten` rights
+separate editing from answer access. Public participants use
+`/rondo/v1/public-surveys/{id}` with a signed challenge and, for personal links,
+an invitation token. See [surveys](/features/surveys/#rest-contract) for all routes,
+version rules, validation limits and privacy modes.

@@ -53,7 +53,7 @@ Routes below are relative to `/wp-json/rondo/v1`; ordinary reads require approve
 | `POST /twelve/import` | Admin; validated `report_json`; `{ id, status, hash }` |
 | `GET /twelve/businessclub` | Required `month=YYYY-MM`; `days` and `total` |
 | `GET /twelve/billing` | All-month outstanding/available totals, source rows and invoice history |
-| `POST /twelve/billing` | Finance manager plus kassa access; `name`, `address`, valid `email`; draft invoice `id` |
+| `POST /twelve/billing` | Finance manager plus kassa access; `name`, `address`, valid `email`, optional `attention` and `cc_email`; draft invoice `id` |
 
 Date ranges use inclusive report-start dates `YYYY-MM-DD`; defaults are today and 29 days earlier in UTC. Reversed bounds are swapped. Summary buckets retain `periode`, `omzet_excl_nosale`, `omzet_incl_nosale`, `producten` and `betaalmethoden`, and add `kassaomzet`, `businessclub`, `omzet_totaal`, `overig_verbruik`, `uitgesloten_omzet` and `provisional`. `omzet_excl_nosale` follows the filtered kassa amount in summary buckets. Optional `product_trend` contains group amounts/shares and product IDs, names, groups, quantities and gross values per imported bucket.
 
@@ -61,8 +61,25 @@ Date ranges use inclusive report-start dates `YYYY-MM-DD`; defaults are today an
 
 Creating a draft freezes currently available closed, nonhistorical reports under the shared import/invoice lock. Each source day contributes a net line and a combined VAT line. Reports claimed by a draft remain outstanding but leave the available amount; sending marks them billed. Product classification does not change these billable source amounts.
 
+The composer uses the shared invoice address-book picker. Selecting a contact fills
+name, address, email, attention line and CC email; these remain editable for this
+invoice. Creation stores all five values as `_customer_*` metadata. An invalid
+nonempty `cc_email` returns HTTP 400 `twelve_bad_recipient` before reserving reports.
+Leaving CC or attention empty is valid. See [invoice contacts](/features/invoicing/).
+
+Creation also freezes the configured payment-account snapshot for `manual` invoices
+in `_payment_account_*` metadata and verifies its storage. With Mollie active, a
+missing account returns `mollie_account_not_configured` before creating an invoice
+or claiming revenue. After configuration is repaired, the same reports remain
+available for retry. Changing the default account later does not redirect the
+existing draft to that new default. With Rabobank active, creation stores the
+provider snapshot without requiring a Mollie account.
+
 Sending rechecks report claims and the invoice total/line sum against the frozen amount; changed allocations or amounts block sending. A separate per-invoice lock rejects overlapping send requests. A restored old draft cannot reclaim days allocated elsewhere. The REST creation endpoint uses all available months; `wp rondo twelve businessclub-invoice --month=YYYY-MM` limits creation to one month. Neither sends automatically. Missing recipient data returns HTTP 400; overlap or no available revenue returns HTTP 409.
 
 ## Source and verification
 
 Club implementation: `class-twelve-browser-import.php`, repository, aggregator, product classification, Businessclub invoicing, REST controller, `Kassaomzet.jsx`, `TwelveSchedule.jsx`, `ProductTrend.jsx` and comparison utilities. Sync implementation and operational limits are documented in [Twelve browser-import pipeline](/sync/pipeline-twelve/). Tests cover import validation/recovery, retained PDF IDs, billing conflicts, provisional/history boundaries, product classification, exclusion allocations, API permissions and chart gaps/comparisons. Retired parser tests are no longer the verification source.
+
+`TwelveBillingTest` also covers address-book recipient fields, invalid CC rejection
+without claims, frozen manual accounts, missing-account retries and Rabobank drafts.
