@@ -300,8 +300,10 @@ cancellation notices; and a post-shift survey when the diensttype configures one
 Templates live on the `dienst_type`.
 
 Post-shift mail can use an internal [Rondo survey](/features/surveys/) selected by
-canonical `survey_id`, or an external `survey_url`. An internal selection takes
-precedence and must be open; it creates a personal invitation per shift/person.
+canonical `fields.survey_id` (an integer survey ID), or an external `survey_url`.
+Send `0` or `null` for **Geen interne enquête** when creating a task type or clearing
+its selection. Fractions, negative IDs and booleans return HTTP 400.
+An internal selection takes precedence and must be open; it creates a personal invitation per shift/person.
 The scheduler sends one day after the shift and skips no-shows. Successful delivery
 records the invitation's sent state for survey reminders. With neither selection
 nor URL, no survey mail is sent. The task-type picker lists open surveys for users

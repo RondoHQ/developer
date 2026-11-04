@@ -45,9 +45,21 @@ every person in their obligation unit when a logged-in manager generates the pla
 
 Finite-capacity, published future shifts with status `open` or `vol` are considered.
 Unlimited shifts produce an unresolved row asking for a capacity first. IVA-required
-shifts come first, then earlier dates. Candidate scoring prefers the season-half
-target, lower fulfilled share, lower personal load and a stable weekly tie-break.
-Pending proposals reserve both quota and time across open plans.
+shifts come first, then earlier dates. Pending proposals reserve both quota and time
+across open plans, within the season of the proposed shift.
+
+### Seasonal workload
+
+For July–December shifts, a person must have no completed, scheduled or proposed
+duty in that sports season. A scheduled January–June duty also counts.
+Each person's count includes both their own and family duties. It includes cancelled
+shifts that earned credit and excludes no-shows. Completed work still counts when
+a shift has an invalid end time.
+
+From January, candidates with fewer duties come first. At equal personal load,
+an IVA-required shift prefers someone with valid IVA, unless that shift waives IVA.
+Next come the season-half target, a lower fulfilled share and a stable weekly
+tie-break. Editing and publishing use these same rules.
 
 Within the best fairness tier, the planner prefers pairs sharing a current player
 team. Parents can match through any eligible child’s team; two adults from the
@@ -56,8 +68,12 @@ assignee or retained candidate, then looks ahead for two teammates when space
 allows. Completed pairs do not pull in a third teammate. Eligibility, availability
 and quotas still take precedence; otherwise normal ranking fills the place.
 
-VOG, IVA and required-commissie checks reuse `ShiftSignupEligibility`. Existing
-assignments and proposals block overlapping intervals. For a current player team,
+### Eligibility and availability
+
+VOG and required-commissie checks reuse `ShiftSignupEligibility`. Missing IVA does
+not block a planner assignment; managers see the warning below.
+Members still need IVA to claim an IVA-required shift themselves. Existing assignments
+and proposals block overlapping intervals. For a current player team,
 `PlannerAvailability` also checks the active training schedule and team match feed:
 
 | Source | Blocked time |
@@ -74,10 +90,12 @@ Parents without a current player-team role do not
 inherit their children's team schedule. Unfilled rows show issues and aggregate
 blocking reasons; missing information never becomes assumed availability.
 
-If an empty IVA-required shift has no eligible candidate, the planner can propose
-conversion to the unique published non-IVA diensttype whose name contains `luik`.
-The proposal does not alter the shift. Publication requires explicit
-`accept_conversions: true` and rechecks that conversion is still possible.
+### IVA warnings
+
+Bar proposals keep the same duty type, even when the chosen person still needs IVA. Such rows return `iva_missing: true` and show **IVA nog nodig voor deze
+bardienst**. Managers can publish that assignment and keep it as a bardienst.
+Refreshing an older draft checks its proposed bar-to-luik changes again, using the
+shift's actual duty type.
 
 ## Review and publication
 
@@ -88,8 +106,9 @@ return HTTP 409. A 15-minute option lock serializes planner mutations.
 
 Select duties before publication: the selection includes every proposed candidate
 for each selected duty. All duties start selected; deselected duties keep their
-candidates and reservations for later. Only selected conversions need explicit
-approval. Omitting `shift_ids` preserves the API’s all-duty behavior.
+candidates and reservations for later. Older stored conversions still require
+`accept_conversions: true` when selected; refresh the proposal to recalculate them.
+Omitting `shift_ids` preserves the API’s all-duty behavior.
 
 Publication stores `publish_shift_ids` before making assignments and processes at
 most ten selected rows per request. The stored selection cannot change until the
@@ -97,7 +116,7 @@ batch finishes. Editing, closing and regenerating are blocked during that work.
 After interruption, resume with the saved selection and current revision.
 
 Each row rechecks the
-shift snapshot, current obligation, certificates, availability, capacity and status
+shift snapshot, current obligation, VOG, required pool, availability, capacity and status
 inside the existing shift write lock. Successful rows become explicit `assigned`
 duties and queue assignment mail. Invalid rows remain pending with an issue;
 successful rows stay published. `publish_more` tells the client to continue using
@@ -129,7 +148,7 @@ All paths below are relative to `/wp-json/rondo/v1`. They require
 |---|---|---|
 | GET | `/volunteer-plans` | Latest 30 visible summaries, `next_at` and `notification_email` |
 | POST | `/volunteer-plans` | Refresh one current proposal, retaining valid open choices |
-| GET | `/volunteer-plans/{id}` | Revision, phase, rows, coverage, notice outcomes, `publish_more`, `publish_shift_ids` and `superseded_by` |
+| GET | `/volunteer-plans/{id}` | Revision, phase, rows (including `iva_missing`), coverage, notice outcomes, `publish_more`, `publish_shift_ids` and `superseded_by` |
 | GET | `/volunteer-plans/{id}/rows/{index}/candidates` | Current candidates: `person_id`, `name`, opaque `unit`, `remaining` |
 | PUT | `/volunteer-plans/{id}/rows/{index}` | Required integer `revision` and nonnegative integer `person_id` |
 | POST | `/volunteer-plans/{id}/publish` | Required `revision`; optional nonempty integer array `shift_ids`; boolean `accept_conversions`, default false |
@@ -139,9 +158,10 @@ Proposal errors use `volunteer_plan_invalid`, normally HTTP 409; missing plans
 return 404 and unreadable stored data returns 500. Inaccessible people block a
 detail response with 403; listing omits plans that cannot be viewed in full.
 
-`VolunteerPlannerTest.php` covers private drafts, quotas, revisions, conversion,
-changed requirements, consolidation, team pairing, selected-duty publication,
-recovery, notifications and cancellation.
+`VolunteerPlannerTest.php` covers season limits, IVA ranking and warnings, duty
+types and old bar-to-luik proposals. It also covers private drafts, quotas, revisions,
+changed requirements, merged drafts and team pairing. Further checks cover
+selected-duty publication, recovery, notices and cancellation.
 `VolunteerPlannerAvailabilityTest.php` covers training/match margins, unknown
 times, stale feeds, missing data and overlaps. `ShiftAssignmentByCoordinatorTest.php`
 covers the assigned-duty cancellation deadline.

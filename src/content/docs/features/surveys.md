@@ -102,7 +102,20 @@ Failed sends remain visible as `failed` or `reminder_failed` and can be queued a
 If the send outcome is unknown, its state stays `sending`. Cron does not resend it.
 Successful `wp_mail` acceptance does not prove inbox delivery.
 
-Task types can select an open survey through canonical `survey_id` (0 clears it).
+### Duty-type survey selection
+
+Task types select an open survey through `fields.survey_id` on
+`POST /wp/v2/dienst-types` or `POST /wp/v2/dienst-types/{id}`.
+The REST schema gives its type as `integer|null`, with minimum 0. Send an existing
+survey ID to select it. Send `0` or `null` for **Geen interne enquête**, including
+to clear a saved choice. You can also create a task type without an internal survey.
+
+The PHP field layer turns whole numbers and whole-number strings into integers
+before checking the survey. It rejects fractions, negative IDs, booleans, overflow
+and invalid values without truncation. Invalid REST values return HTTP 400 before
+creating a task type or saving other fields. Responses return an integer or `null`.
+Storage keeps the `survey_id` key and its `_survey_id` field reference.
+
 The existing [shift email scheduler](/features/volunteer-shifts/#notifications) sends its
 personal invitation one day after the shift, skipping no-shows. The context is
 `dienst:{shift_id}:persoon:{person_id}`, so another shift receives its own invitation.
@@ -163,4 +176,8 @@ Implementation: `class-surveys.php`, `class-survey-schema.php`,
 `class-public-survey-page.php`, `public/survey.js` and `Surveys.jsx`.
 `SurveysTest` covers branching, hidden required questions, immutable versions,
 invitation reuse, privacy, replay, closing, permissions, CSV safety, reminders,
-editor conflicts and per-shift invitations with no-show exclusion.
+editor conflicts, task types without surveys, clearing selections and per-shift
+invitations with no-show exclusion. `IntegerFieldContractTest` checks integer values and bounds, clearing with `null`,
+REST and metadata schemas, and stored keys. It also checks invalid writes and access
+rights. Ordinary `number` fields still
+support fractions.
