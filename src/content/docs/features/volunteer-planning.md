@@ -70,8 +70,8 @@ and quotas still take precedence; otherwise normal ranking fills the place.
 
 ### Eligibility and availability
 
-VOG and required-commissie checks reuse `ShiftSignupEligibility`. Missing IVA does
-not block a planner assignment; managers see the warning below.
+VOG and required-commissie checks reuse `ShiftSignupEligibility`. Missing IVA allows
+a proposal, but publication requires the coordinator's explicit approval below.
 Members still need IVA to claim an IVA-required shift themselves. Existing assignments
 and proposals block overlapping intervals. For a current player team,
 `PlannerAvailability` also checks the active training schedule and team match feed:
@@ -92,8 +92,16 @@ blocking reasons; missing information never becomes assumed availability.
 
 ### IVA warnings
 
-Bar proposals keep the same duty type, even when the chosen person still needs IVA. Such rows return `iva_missing: true` and show **IVA nog nodig voor deze
-bardienst**. Managers can publish that assignment and keep it as a bardienst.
+Bar proposals keep the same duty type, even when the chosen person still needs IVA.
+Such rows return `iva_missing: true` and show **IVA nog nodig voor deze bardienst**.
+Before publishing selected assignments with this warning, the coordinator must
+check the confirmation for assignments without approved IVA proof. The publish
+button stays disabled until that confirmation is checked. The assignment remains
+a bardienst.
+
+Confirmation applies to the current proposal, revision, selected duties and flagged
+rows. Changing that scope requires fresh approval. Saving a candidate change or
+switching proposals also clears the confirmation.
 Refreshing an older draft checks its proposed bar-to-luik changes again, using the
 shift's actual duty type.
 
@@ -151,15 +159,28 @@ All paths below are relative to `/wp-json/rondo/v1`. They require
 | GET | `/volunteer-plans/{id}` | Revision, phase, rows (including `iva_missing`), coverage, notice outcomes, `publish_more`, `publish_shift_ids` and `superseded_by` |
 | GET | `/volunteer-plans/{id}/rows/{index}/candidates` | Current candidates: `person_id`, `name`, opaque `unit`, `remaining` |
 | PUT | `/volunteer-plans/{id}/rows/{index}` | Required integer `revision` and nonnegative integer `person_id` |
-| POST | `/volunteer-plans/{id}/publish` | Required `revision`; optional nonempty integer array `shift_ids`; boolean `accept_conversions`, default false |
+| POST | `/volunteer-plans/{id}/publish` | Required `revision`; optional nonempty integer array `shift_ids`; `accepted_iva_rows` defaults to `[]`; boolean `accept_conversions`, default false |
 | POST | `/volunteer-plans/{id}/close` | Required `revision`; retain existing assignments |
+
+Publication also accepts `accepted_iva_rows`, an array of nonnegative integer row
+indices, defaulting to `[]`. Use each row's zero-based `index` from the proposal
+response, rather than a person or shift ID. Include every selected pending row
+whose `iva_missing` is true. The server checks current IVA status before assigning
+any selected row; missing approval returns HTTP 409 `volunteer_plan_invalid`.
+If the warning is absent, refresh the proposal before confirming.
+
+Send the approved indices with each continuation request alongside its current
+`revision`. The assignment write lock checks IVA approval again. Deselected rows
+do not require approval. This approval is separate from `accept_conversions` for
+older bar-to-luik proposals.
 
 Proposal errors use `volunteer_plan_invalid`, normally HTTP 409; missing plans
 return 404 and unreadable stored data returns 500. Inaccessible people block a
 detail response with 403; listing omits plans that cannot be viewed in full.
 
-`VolunteerPlannerTest.php` covers season limits, IVA ranking and warnings, duty
-types and old bar-to-luik proposals. It also covers private drafts, quotas, revisions,
+`VolunteerPlannerTest.php` covers season limits, IVA ranking and warnings, missing
+or incorrect approval indices, duty types and old bar-to-luik proposals.
+It also covers private drafts, quotas, revisions,
 changed requirements, merged drafts and team pairing. Further checks cover
 selected-duty publication, recovery, notices and cancellation.
 `VolunteerPlannerAvailabilityTest.php` covers training/match margins, unknown
