@@ -89,6 +89,12 @@ Nieuwe en gewijzigde adresregels vereisen een niet-lege landnaam en ISO-landcode
 **Script:** `lib/detect-rondo-club-changes.js`
 **Function:** `detectChanges(options)`
 
+Agent record edits can use [`rondo/update-record`](/api/abilities/#update-a-record).
+It routes canonical field changes through the app's REST pipeline and advances the
+WordPress modification time queried below. Supply the last-read values in
+`expected_fields`; do not replace this path with generic post-meta writes.
+A saved Rondo value does not confirm Sportlink delivery or bypass sync eligibility.
+
 ### How It Works
 
 1. Read `last_detection_at` from `reverse_sync_state` table
