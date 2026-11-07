@@ -279,6 +279,27 @@ The `diensttype` URL parameter filters the calendar as well as the personal shif
 filter, a date is green only when every diensttype on that date is full. With a filter, only shifts
 of the selected type determine the date status.
 
+### Cancelling a complete planning day
+
+In the manager calendar, choose **Alle inschrijftaken**, open a date and select
+**Dag leegmaken**. The dialog fetches that date again and lists each shift's
+time, task and assignee count. Review the list before confirming. An optional
+reason is included in the cancellation emails.
+
+The browser sends one `POST /rondo/v1/shifts/{id}/cancellation` per reviewed shift,
+in sequence. Each request follows the [individual cancellation policy](#cancelling-an-entire-shift),
+including the 48-hour credit rule and retained assignment history. The preview
+skips completed shifts and the endpoint rejects shifts that have already started.
+
+The dialog reports partial results and continues after an individual request
+fails. Its retry action resubmits only shifts with failed requests or failed
+emails. Successful cancellations and email sends are recorded by the endpoint,
+so a retry can finish failed deliveries without repeating completed work. The
+dialog reports missing email addresses separately for the manager to follow up.
+
+`cancelShiftDay.test.mjs` covers sequential requests, partial failure and retry
+selection. An empty list sends no cancellation requests.
+
 ### Copying a complete planning day
 
 Volunteer managers can open a populated date in the unfiltered manager calendar and choose

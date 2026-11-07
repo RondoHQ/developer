@@ -99,9 +99,9 @@ check the confirmation for assignments without approved IVA proof. The publish
 button stays disabled until that confirmation is checked. The assignment remains
 a bardienst.
 
-Confirmation applies to the current proposal, revision, selected duties and flagged
-rows. Changing that scope requires fresh approval. Saving a candidate change or
-switching proposals also clears the confirmation.
+Confirmation applies to the current proposal, revision, selected candidates and
+flagged rows. Changing that scope requires fresh approval. Saving a candidate
+change or switching proposals also clears the confirmation.
 Refreshing an older draft checks its proposed bar-to-luik changes again, using the
 shift's actual duty type.
 
@@ -112,16 +112,17 @@ row open with `person_id: 0`. Candidate reads and publication rebuild eligibilit
 Editing, publishing and closing require the current `revision`; stale revisions
 return HTTP 409. A 15-minute option lock serializes planner mutations.
 
-Select duties before publication: the selection includes every proposed candidate
-for each selected duty. All duties start selected; deselected duties keep their
-candidates and reservations for later. Older stored conversions still require
-`accept_conversions: true` when selected; refresh the proposal to recalculate them.
-Omitting `shift_ids` preserves the API’s all-duty behavior.
+Select assignments with **Deze kandidaat indelen**. Candidates for different
+places on the same shift can be published separately. All proposed candidates
+start selected. Deselected candidates and their reservations stay in the proposal
+for later publication. Selected legacy conversions still require
+`accept_conversions: true`. Refresh the proposal to recalculate them.
 
-Publication stores `publish_shift_ids` before making assignments and processes at
-most ten selected rows per request. The stored selection cannot change until the
-batch finishes. Editing, closing and regenerating are blocked during that work.
-After interruption, resume with the saved selection and current revision.
+Publication saves the exact row selection in `publish_row_indices` before making
+assignments. It attempts up to ten selected assignments per request. The selection
+stays fixed while publication is in progress, and the planner blocks editing,
+closing and regenerating during that time. After an interruption, resume with
+the saved selection and current revision.
 
 Each row rechecks the
 shift snapshot, current obligation, VOG, required pool, availability, capacity and status
@@ -140,7 +141,8 @@ with no 30-minute signup grace inside that deadline.
 ## Storage and access
 
 Proposals are private `rondo_shift_plan` posts. `_planner_data` stores rows,
-revision, phase, time range, shift IDs, notice outcomes and publication progress.
+revision, phase, time range, notice outcomes and publication progress, including
+the saved row indices and shift IDs.
 Open plans are derived from snapshot phase and replacement links; `_planner_week` prevents a duplicate
 normal weekly generation. Per-shift `_shift_plan_id_{person_id}` records provenance.
 There are no custom tables or generic WordPress REST routes for this post type.
@@ -156,17 +158,27 @@ All paths below are relative to `/wp-json/rondo/v1`. They require
 |---|---|---|
 | GET | `/volunteer-plans` | Latest 30 visible summaries, `next_at` and `notification_email` |
 | POST | `/volunteer-plans` | Refresh one current proposal, retaining valid open choices |
-| GET | `/volunteer-plans/{id}` | Revision, phase, rows (including `iva_missing`), coverage, notice outcomes, `publish_more`, `publish_shift_ids` and `superseded_by` |
+| GET | `/volunteer-plans/{id}` | Revision, phase, rows (including `iva_missing`), coverage, notice outcomes, `publish_more`, `publish_row_indices`, `publish_shift_ids` and `superseded_by` |
 | GET | `/volunteer-plans/{id}/rows/{index}/candidates` | Current candidates: `person_id`, `name`, opaque `unit`, `remaining` |
 | PUT | `/volunteer-plans/{id}/rows/{index}` | Required integer `revision` and nonnegative integer `person_id` |
-| POST | `/volunteer-plans/{id}/publish` | Required `revision`; optional nonempty integer array `shift_ids`; `accepted_iva_rows` defaults to `[]`; boolean `accept_conversions`, default false |
+| POST | `/volunteer-plans/{id}/publish` | Required `revision`; optional `row_indices` or `shift_ids`; `accepted_iva_rows` defaults to `[]`; boolean `accept_conversions`, default false |
 | POST | `/volunteer-plans/{id}/close` | Required `revision`; retain existing assignments |
 
-Publication also accepts `accepted_iva_rows`, an array of nonnegative integer row
-indices, defaulting to `[]`. Use each row's zero-based `index` from the proposal
-response, rather than a person or shift ID. Include every selected pending row
-whose `iva_missing` is true. The server checks current IVA status before assigning
-any selected row; missing approval returns HTTP 409 `volunteer_plan_invalid`.
+Send `row_indices` as a nonempty array of zero-based `index` values from the
+proposal response. Existing clients can use `shift_ids`, a nonempty array of
+positive shift IDs that selects every row for those shifts. Sending both fields
+or an invalid selection returns HTTP 400. Sending neither starts with all rows
+or resumes the saved scope. A continuation that changes the saved scope returns
+HTTP 409.
+
+During publication, `publish_row_indices` gives the exact saved selection and
+`publish_shift_ids` gives its shift IDs. For a legacy batch with only saved
+shift IDs, the planner derives the selection from those shifts. Both fields
+return `null` after the batch finishes, even if unselected rows remain pending.
+
+Use the same zero-based indices in `accepted_iva_rows`. Include every selected
+pending row whose `iva_missing` is true. The server checks IVA status before
+assigning any selected row. Missing approval returns HTTP 409 `volunteer_plan_invalid`.
 If the warning is absent, refresh the proposal before confirming.
 
 Send the approved indices with each continuation request alongside its current
@@ -180,9 +192,10 @@ detail response with 403; listing omits plans that cannot be viewed in full.
 
 `VolunteerPlannerTest.php` covers season limits, IVA ranking and warnings, missing
 or incorrect approval indices, duty types and old bar-to-luik proposals.
-It also covers private drafts, quotas, revisions,
-changed requirements, merged drafts and team pairing. Further checks cover
-selected-duty publication, recovery, notices and cancellation.
+It also covers private drafts, quotas, revisions, changed requirements, merged
+drafts and team pairing. Publication tests cover selecting one candidate on a
+shared shift, rejecting invalid indices and resuming the exact selection across
+batches. Further checks cover recovery, notices and cancellation.
 `VolunteerPlannerAvailabilityTest.php` covers training/match margins, unknown
 times, stale feeds, missing data and overlaps. `ShiftAssignmentByCoordinatorTest.php`
 covers the assigned-duty cancellation deadline.

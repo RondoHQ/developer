@@ -1650,9 +1650,10 @@ Approved authenticated users can read `GET /rondo/v1/config`; only administrator
 The private `/rondo/v1/volunteer-plans` routes generate, review, edit, publish and
 close proposals. They require `manage_options` or `vrijwilligers`, enforce record
 visibility and return `Cache-Control: private, no-store`. Writes to an existing
-proposal require its current integer `revision`. See
+proposal require its current integer `revision`. Publish individual assignments
+with `row_indices` or use `shift_ids` for whole shifts. See
 [Volunteer planning proposals](/features/volunteer-planning/#rest-contract) for
-all routes, continuation and conversion approval.
+the full route list, continuation and approval rules.
 
 `GET /rondo/v1/volunteer-mailing` exposes aggregate delivery status and configured
 notification addresses to the same permission group. `PUT` requires
