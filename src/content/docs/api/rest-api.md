@@ -1645,6 +1645,13 @@ See [Nieuwsbrieven met Laposta](../../features/newsletters/) for configuration, 
 
 Approved authenticated users can read `GET /rondo/v1/config`; only administrators can write `POST /rondo/v1/config`. The `feedback_notice` object contains `enabled` (boolean), `title`, `text` and `email` (strings). Partial writes preserve omitted properties; additional properties are rejected by the route schema. Enabled notices require a title, text and valid contact email; invalid settings return HTTP 400 without replacing the saved notice. See [Feedback Agent](/features/feedback-agent/#configurable-feedback-notice) for rendering, defaults and storage.
 
+## Guest passes
+
+`GET /rondo/v1/guest-passes/me` returns the linked account's team guest slots and
+eligible Businessclub slots. The create and replace routes accept `sponsor_id`
+to select a company. See [Guest-pass storage and API](/features/membership-passes/#guest-pass-storage-and-api)
+for slot limits and validation.
+
 ## Volunteer planning and mailing
 
 The private `/rondo/v1/volunteer-plans` routes generate, review, edit, publish and
@@ -1654,6 +1661,20 @@ proposal require its current integer `revision`. Publish individual assignments
 with `row_indices` or use `shift_ids` for whole shifts. See
 [Volunteer planning proposals](/features/volunteer-planning/#rest-contract) for
 the full route list, continuation and approval rules.
+
+`GET /rondo/v1/volunteer-exclusions` lists visible, published people currently
+excluded from automatic planning. `PUT /rondo/v1/volunteer-exclusions/{person_id}`
+requires `enabled` and a nonblank `reason` of at most 1,000 characters when
+enabling. It preserves the original timestamp on repeated enables and clears
+the reason and timestamp when disabling. A missing or inaccessible person
+returns HTTP 404. Both routes require `manage_options` or `vrijwilligers` and
+return `Cache-Control: private, no-store` on success.
+
+Each row contains `id`, `name` and the canonical `fields` object with
+`planner_excluded`, `planner_exclusion_reason` and `planner_excluded_since`.
+The timestamp includes the site's timezone offset. The three fields are
+permission-filtered and read-only through general person endpoints. See
+[Per-person exclusions](/features/volunteer-planning/#per-person-exclusions).
 
 `GET /rondo/v1/volunteer-mailing` exposes aggregate delivery status and configured
 notification addresses to the same permission group. `PUT` requires

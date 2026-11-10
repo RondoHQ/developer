@@ -24,7 +24,7 @@ The `CI and deploy` workflow separates release preparation from deployment:
      retained for 30 days.
 4. After the check plan, required validation and release build succeed,
    `_deploy-production.yml` downloads that run's release artifact and deploys it
-   to SiteGround over SSH. Production deployments are serialized.
+   to the production account on srv1 over SSH. Production deployments are serialized.
 5. Prepare and validate an inactive release, activate it atomically, refresh rewrite
    rules and caches, then verify the theme version through WP-CLI and HTTP.
    Record the deployed commit only after those checks succeed.
@@ -69,6 +69,31 @@ The check-plan summary links to the reused run or records that fresh checks run.
 The Python tests cover grouping/report coverage and rejection of incomplete reuse
 evidence.
 
+## Hosting and deployment targets
+
+Production and demo share `srv1.rondo.club` (SSH port 22) and run under separate
+service accounts. Each uses `wp-content/themes/rondo-club` under its WordPress root.
+
+| Site | SSH account | WordPress root |
+|---|---|---|
+| `rondo.svawc.nl` | `rondo-prod` | `/srv/rondo-prod/public_html` |
+| `demo.rondo.club` | `rondo-demo` | `/srv/rondo-demo/public_html` |
+
+`bin/deploy-demo.sh` uses the demo target and accepts exported `DEPLOY_DEMO_*`
+overrides for rehearsals. It supplies its own host, port, account, paths, URL and
+SSH options to the common deploy script. CI tests that production environment
+variables cannot redirect the demo wrapper.
+
+WordPress cron runs from the `rondo-wp-cron@prod.timer` and
+`rondo-wp-cron@demo.timer` systemd timers. Request-triggered cron is disabled.
+Include `ops/nginx/wordpress-protection.conf` before generic PHP and static
+regex locations. It preserves private file and upload protections while
+allowing OAuth discovery and the Apple association file.
+
+The former production and demo origins are frozen rollback copies. Before
+reactivating an old origin, stop writes on srv1 and transfer the latest data back.
+The legacy `stadion.svawc.nl` site remains on SiteGround.
+
 ## Atomic release activation
 
 `bin/deploy.sh` uploads a complete archive with SCP. `bin/atomic-release.py`
@@ -93,8 +118,9 @@ A request therefore keeps its PHP classes and version together during activation
 A filesystem lock and durable per-release JSON state protect prepare, activate,
 rollback and finish. Retries after a lost SSH reply inspect that state; stale
 transactions cannot overwrite a different live release. Failed verification
-restores the previous target, refreshes rewrite rules and clears caches. The
-HTTP checks cover the production URL, OIDC discovery and a uniquely queried
+restores the previous target, refreshes rewrite rules and clears caches.
+Deployment and rollback flush the WordPress cache, then purge the SiteGround
+cache only when WP-CLI provides `sg purge`. HTTP checks cover the production URL, OIDC discovery and a uniquely queried
 `/wp-json/rondo/v1/version`, whose version must match the release.
 
 Successful cleanup keeps at least three completed releases, releases retired in
@@ -130,7 +156,7 @@ suite to check update behavior, retirement timing and rollback protection.
 
 GitHub's `production` environment holds one secret:
 
-- `DEPLOY_SSH_PRIVATE_KEY` — a dedicated, revocable SiteGround SSH key used
+- `DEPLOY_SSH_PRIVATE_KEY` — a dedicated, revocable production SSH key used
   only by GitHub Actions.
 
 The environment also holds the non-secret deployment variables:

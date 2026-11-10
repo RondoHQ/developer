@@ -8,8 +8,8 @@ This guide covers setting up Rondo Sync from scratch on a fresh server.
 
 ### Server Requirements
 
-- **OS:** Ubuntu/Debian Linux (tested on Ubuntu 22.04)
-- **Node.js:** 18+ (required for built-in `fetch`, `FormData`, and `Blob`)
+- **OS:** Production uses Ubuntu 26.04 on srv1
+- **Node.js:** Production runs Node 22.23.4 from `/usr/local/bin/node`
 - **RAM:** 1 GB minimum (Chromium browser automation needs headroom)
 - **Disk:** 2 GB free (for Node.js, Chromium, SQLite databases, photos, and logs)
 - **Network:** Outbound HTTPS access to:
@@ -37,47 +37,41 @@ You'll need credentials for:
 
 ### 1. Install Node.js
 
-```bash
-# Using NodeSource (recommended)
-curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
-sudo apt-get install -y nodejs
+Install the production Node version, then verify the binaries from the service account.
 
-# Verify
-node --version  # Should be 18.x or higher
+```bash
+# Verify the Node and npm available to the runtime
+command -v node
+node --version
 npm --version
 ```
 
 ### 2. Install System Dependencies
 
-Playwright's Chromium needs these system libraries:
-
-```bash
-sudo apt-get install -y \
-  libnss3 libnspr4 libatk1.0-0 libatk-bridge2.0-0 \
-  libcups2 libdrm2 libdbus-1-3 libxkbcommon0 \
-  libatspi2.0-0 libxcomposite1 libxdamage1 libxfixes3 \
-  libxrandr2 libgbm1 libpango-1.0-0 libcairo2 libasound2
-```
+Provision the host libraries required by the locked Chromium build.
+On srv1, Playwright 1.58.2 uses its compatible Ubuntu 24.04 x64 build via
+`PLAYWRIGHT_HOST_PLATFORM_OVERRIDE=ubuntu24.04-x64`.
 
 ### 3. Clone and Install
 
+Prepare `/srv/rondo-sync` for the `rondo-sync` service account, then clone
+the repository there as that account. Run dependency and browser installation
+from the checkout as `rondo-sync` so it owns the browser cache.
+
 ```bash
-cd /home
-git clone <repository-url> rondo
-cd rondo
-
-# Install Node.js dependencies
-npm install
-
-# Install Chromium for browser automation
-npx playwright install chromium
+cd /srv/rondo-sync
+npm ci
+PLAYWRIGHT_HOST_PLATFORM_OVERRIDE=ubuntu24.04-x64 npx playwright install chromium
 ```
 
 ### 4. Create Environment File
 
-Create `/home/rondo/.env` with your credentials:
+Create `/srv/rondo-sync/.env` with your credentials:
 
 ```bash
+# Playwright on srv1
+PLAYWRIGHT_HOST_PLATFORM_OVERRIDE=ubuntu24.04-x64
+
 # Sportlink credentials
 SPORTLINK_USERNAME=your-email@example.com
 SPORTLINK_PASSWORD=your-password
@@ -117,7 +111,7 @@ The host volume that stores `.env` must provide encryption at rest. Restrict the
 file itself to the sync service account as well:
 
 ```bash
-chmod 600 /home/rondo/.env
+chmod 600 /srv/rondo-sync/.env
 ```
 
 The cron installer applies `umask 077` and enforces this mode automatically.
@@ -168,14 +162,14 @@ Set up automated scheduling:
 npm run install-cron
 ```
 
-Run the installer only on the sync server as `rondo`. It prompts for missing Lettermint configuration, imports recognized existing pipeline timings, preserves unrelated cron jobs and existing UI edits, and writes a private crontab backup. The ten editable jobs become one minute dispatcher; Twelve retains its separate hourly check. Unknown or ambiguous legacy entries stop migration.
+Run the installer only on the sync server as `rondo-sync`. It prompts for missing Lettermint configuration, imports recognized existing pipeline timings, preserves unrelated cron jobs and existing UI edits, and writes a private crontab backup. The ten editable jobs become one minute dispatcher; Twelve retains its separate hourly check. Unknown or ambiguous legacy entries stop migration.
 
 Manage timings and enable switches through **Beheer → Sync schedules**. See [Editable Sync Schedules](/sync/schedules/) for defaults, validation, migration and DST behavior; `crontab -l` now shows the dispatcher rather than each pipeline's timing.
 
 ## Directory Structure After Install
 
 ```
-/home/rondo/
+/srv/rondo-sync/
 ├── .env                          # Credentials (not in git)
 ├── data/                         # SQLite databases (created on first run)
 │   ├── laposta-sync.sqlite       # Laposta sync state
@@ -195,12 +189,12 @@ Manage timings and enable switches through **Beheer → Sync schedules**. See [E
 
 ## Updating
 
-To deploy code updates:
+To deploy code updates, run these commands as `rondo-sync` on srv1:
 
 ```bash
-cd /home/rondo
-git pull
-npm install  # Only needed if dependencies changed
+cd /srv/rondo-sync
+git pull --ff-only
+npm ci  # Only needed if dependencies changed
 ```
 
 ## Rondo Club Requirements
@@ -224,7 +218,7 @@ The Rondo Club site needs:
 Error: browserType.launch: Executable doesn't exist
 ```
 
-Run `npx playwright install chromium` to install/reinstall the browser.
+Repeat the [Chromium install command](#3-clone-and-install) as `rondo-sync` to install the browser for that account.
 
 ### TOTP authentication fails
 
@@ -250,7 +244,5 @@ Check Lettermint credentials in `.env` and verify the sender email is verified i
 
 ### Lock file prevents sync
 
-If a sync was interrupted (e.g., server restart), the lock file may remain:
-```bash
-rm /home/rondo/.sync-people.lock  # Remove stale lock
-```
+A lock file can remain after a process exits. Check for a live holder before
+recovering the job. See [Troubleshooting](/sync/troubleshooting/#lock-file-prevents-sync).

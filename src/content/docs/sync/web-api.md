@@ -4,6 +4,10 @@ title: "Web Server API"
 
 The Rondo Sync web server (Fastify on port 3000) exposes a programmatic API for triggering syncs from external systems like Rondo Club.
 
+On srv1, the `rondo-sync-web.service` systemd unit runs as `rondo-sync`
+from `/srv/rondo-sync` with `/usr/local/bin/node`. The unit uses
+`UMask=0077` to restrict permissions on newly created files.
+
 ## Authentication
 
 API endpoints use a shared API key, separate from the dashboard session auth.
@@ -103,7 +107,7 @@ SYNC_API_KEY=your-generated-key-here
 After adding the key, restart the web server:
 
 ```bash
-systemctl restart rondo-sync-web
+sudo systemctl restart rondo-sync-web
 ```
 
 The same key must be configured in Rondo Club's `.env` so WordPress can call this endpoint.

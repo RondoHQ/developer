@@ -13,7 +13,7 @@ exact team record receives two fixed guest slots on **Mijn gegevens**. Host
 eligibility is resolved server-side from current `work_history`, the selected
 team ID and the configured player and staff role lists. Former members and people
 with a role for a different team record do not receive the controls. Leaving the
-setting empty disables guest passes.
+setting empty disables team guest passes.
 
 Each slot is created only when the player or staff member requests its share
 link. The public `/gastpas/{token}` page lets the guest enter their own name once, then provides
@@ -27,10 +27,32 @@ therefore fail online verification immediately. Keeping the stable slot is
 also the quota boundary: the scanner accepts slot 1 and slot 2 at most once
 each per event, even if a player replaces a guest during that event.
 
+## Reusable Businessclub guest passes
+
+An active Businessclub company with exactly one contact gets one reusable guest
+slot if that contact has `receives_pass` enabled. A second contact ends eligibility
+even if the second contact has no personal pass. The company's guest slot is
+separate from any personal pass and any team guest slots.
+
+The contact creates, shares and replaces the link from **BC-gastpas** on
+**Mijn gegevens**. The guest uses the same claim page and Wallet or digital QR
+options as team guests. The public page and Wallet cards show the company name.
+The pass admits one guest per selected club home match. The quota is scoped to
+the company and event, so changing the contact or replacing the guest after a
+scan does not reset it. Different companies keep separate quotas.
+
+Rondo checks current eligibility when opening or claiming the public link,
+issuing Wallet passes and QR tokens, and scanning. Adding a second contact,
+replacing the sole contact, or removing the entitlement blocks use of the old
+pass. Personal passes follow their own entitlement rules.
+
+## Guest-pass storage and API
+
 Guest-pass state is stored in the private `rondo_guest_pass` post type. Domain
 fields include the host person, slot number, guest name, status, claim time and
-pass version. The 64-character bearer token is stored as private infrastructure
-metadata and is never included in scanner responses or admission records.
+pass version. Company slots also store the `sponsor_id` relationship. Existing
+team slots without that field remain valid. Rondo stores the 64-character bearer
+token as private metadata and omits it from scanner responses and admission records.
 
 Authenticated host endpoints are:
 
@@ -39,9 +61,16 @@ Authenticated host endpoints are:
 - `POST /rondo/v1/guest-passes/slots/{1|2}/replace`
 
 Guest QR payloads use the signed `rondo-guest-pass` audience. At scan time the
-server rechecks the pass version, claimed status, current player or staff role
-for the configured team and the selected event's home-team name before recording
-admission.
+server rechecks the pass version, claimed status and current entitlement before
+recording admission. Team passes also require the event's home team to match
+the configured team.
+
+The list response keeps `eligible` and `slots` scoped to the configured team.
+It adds a `businessclub` array with `sponsor_id`, `name`, `limit: 1` and `slots`
+per eligible company. Both write routes accept an optional integer `sponsor_id`.
+Omit it or use `0` for team slots. Supply an eligible company ID and slot `1`
+for a Businessclub guest pass. An ineligible source returns HTTP 403 and an
+invalid slot returns HTTP 400.
 
 ## Eligibility
 

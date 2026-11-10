@@ -90,7 +90,7 @@ Each pipeline has its own detailed documentation page covering step-by-step flow
 
 ## Databases
 
-Four SQLite databases on the server at `/home/rondo/data/` track sync state. See [Database Schema](/sync/database-schema/) for full table definitions.
+Four SQLite databases on the server at `/srv/rondo-sync/data/` track sync state. See [Database Schema](/sync/database-schema/) for full table definitions.
 
 | Database | Purpose | Key Tables |
 |---|---|---|

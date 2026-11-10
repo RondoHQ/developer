@@ -28,7 +28,8 @@ pipelines/sync-people.js
 ├── Step 1b: steps/download-inactive-members.js      → deceased-member safety input
 ├── Step 2: steps/prepare-laposta-members.js         → data/laposta-sync.sqlite (members table)
 ├── Step 3: steps/submit-laposta-list.js             → Laposta API
-├── Step 3b: steps/sync-deceased-members.js          → Laposta unsubscribe reconciliation
+├── Step 3a: steps/sync-former-members-to-laposta.js  → former-member unsubscribes
+├── Step 3b: steps/sync-deceased-members.js          → deceased-member unsubscribes
 ├── Step 4: steps/submit-rondo-club-sync.js          → Rondo Club API (members + parents + birthdate)
 ├── Step 4b: steps/sync-deceased-members.js          → Rondo Club death dates
 ├── Step 5: steps/download-photos-from-api.js        → photos/ directory
@@ -178,6 +179,22 @@ relations whose address belongs to a deceased person. It changes those relations
 list still needs that same address for another, living relation. Parent email fields are not
 treated as the deceased person's own address.
 
+### Former-member Laposta cleanup
+
+After a successful Laposta submission, the People pipeline checks active list
+entries against former-member email addresses. It requires a complete active
+Sportlink snapshot no more than one hour old and a successful inactive download.
+If the active snapshot has expired, the pipeline uses the shared Sportlink
+session to refresh both snapshots once before planning. It rebuilds the
+protection list from the new active snapshot, including parent addresses.
+This protects addresses shared with someone who became active in the meantime.
+
+A failed or invalid refresh stops cleanup. The step also checks snapshot
+freshness after its remote reads and before each unsubscribe. If the snapshot
+expires during cleanup, further writes are blocked. It journals each change and
+reads the unsubscribed state back from Laposta. The standalone cleanup tool
+downloads its own snapshots and previews changes by default.
+
 ### Step 4: Sync to Rondo Club
 
 **Script:** `steps/submit-rondo-club-sync.js`
@@ -227,7 +244,7 @@ tombstones remain available through the broader tracked-member lookup; do not
 delete or remap them to make parent sync proceed. The regression test is in
 `test/parent-slot-observations.test.js`.
 
-To backfill existing labels without running contact, relationship, photo or email synchronization, run on the sync server as `rondo`:
+To backfill existing labels without running contact, relationship, photo or email synchronization, run on the sync server as `rondo-sync`:
 
 ```bash
 node tools/sync-parent-slot-labels.js                         # preview source coverage

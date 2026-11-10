@@ -25,7 +25,7 @@ The rondo-sync system uses four SQLite databases to track sync state between Spo
 
 ### Database Locations
 
-All databases are stored in the `data/` directory on the server at `/home/rondo/data/`.
+All databases are stored in the `data/` directory on the server at `/srv/rondo-sync/data/`.
 
 | Database | Purpose | Module |
 |---|---|---|

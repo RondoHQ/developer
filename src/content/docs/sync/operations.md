@@ -7,9 +7,14 @@ Day-to-day server operations, monitoring, and maintenance.
 ## Server Access
 
 ```bash
-ssh root@46.202.155.16
-cd /home/rondo
+ssh srv1.rondo
+sudo -u rondo-sync -H bash
+cd /srv/rondo-sync
 ```
+
+The production hostname checked by the sync scripts is `srv1-rondo-club`.
+The `rondo-sync` account owns the checkout, scheduler, database files and
+pipeline locks. The previous VPS still hosts GlitchTip and Viscerno.
 
 ## Checking Sync Status
 
@@ -145,11 +150,11 @@ sqlite3 data/freescout-sync.sqlite "SELECT COUNT(*) FROM freescout_customers WHE
 # On local machine: commit and push
 git add . && git commit -m "description" && git push
 
-# On server: pull and install
-ssh root@46.202.155.16 "cd /home/rondo && git pull && npm install"
+# On srv1: fast-forward the checkout as the sync account
+ssh srv1.rondo "sudo -u rondo-sync -H git -C /srv/rondo-sync pull --ff-only"
 ```
 
-Only run `npm install` if dependencies changed (check `package.json` diff).
+If dependencies changed, run `npm ci` from the checkout as `rondo-sync`.
 
 ## Data Validation
 
@@ -244,7 +249,7 @@ Weekly checks:
 - [ ] Team sync ran at its configured slot (check `logs/cron/sync-teams-*`)
 - [ ] Full functions sync ran at its configured slot (check `logs/cron/sync-functions-*`)
 - [ ] Discipline sync ran at its configured slot (check `logs/cron/sync-discipline-*`)
-- [ ] Disk usage reasonable (`du -sh /home/rondo/`)
+- [ ] Disk usage reasonable (`du -sh /srv/rondo-sync/`)
 
 Monthly checks:
 - [ ] Log files cleaned up (`find logs/cron/ -name "*.log" -mtime +30 | wc -l`)
@@ -253,6 +258,6 @@ Monthly checks:
 
 ## Editable schedule operations
 
-Use **Beheer → Sync schedules** to inspect saved timing, next runs and enable switches. See [Editable Sync Schedules](/sync/schedules/) before installing or migrating cron. `crontab -l` shows the minute dispatcher and separate Twelve check, while `data/sync-schedules.json` holds the ten pipeline cadences. Run server commands as `rondo`; root-owned locks can prevent scheduled work.
+Use **Beheer → Sync schedules** to inspect saved timing, next runs and enable switches. See [Editable Sync Schedules](/sync/schedules/) before installing or migrating cron. `crontab -l` shows the minute dispatcher and separate Twelve check, while `data/sync-schedules.json` holds the ten pipeline cadences. Run server commands as `rondo-sync`; root-owned locks can prevent scheduled work.
 
 Inspect `logs/cron/scheduler.log` when a due job is not dispatched. The dispatcher does not catch up missed slots after downtime. Dashboard overdue checks and watchdog stale budgets follow the saved schedule; disabled schedules also suppress automatic healing. Cadence changes reset previous-slot checks until the first eligible slot. Weekly/monthly checklists must follow the current saved timing rather than assume the initial default days.

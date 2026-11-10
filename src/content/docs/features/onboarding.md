@@ -112,7 +112,7 @@ of these checks. The final snapshot is read after all saves.
 source-only bootstrap/inspection command: it performs a fresh full Sportlink search
 and registers the baseline without checking or mailing people. Omitting the flag
 processes pending checks as well. `--knvb-id ID` limits execution to one explicitly
-requested identity while still obtaining a full fresh source inventory. Run as the `rondo` user and with the normal people
+requested identity while still obtaining a full fresh source inventory. Run as the `rondo-sync` user and with the normal people
 lock to avoid concurrent browser/import work. Ordinary individual/function/team
 pipelines do not assert full coverage: their partial success cannot clear these
 pending checks. Volunteer return rounds, full conditional templates, per-recipient

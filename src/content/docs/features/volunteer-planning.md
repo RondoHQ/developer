@@ -48,6 +48,16 @@ Unlimited shifts produce an unresolved row asking for a capacity first. IVA-requ
 shifts come first, then earlier dates. Pending proposals reserve both quota and time
 across open plans, within the season of the proposed shift.
 
+### Per-person exclusions
+
+Volunteer coordinators use **Vrijwilligers → Uitsluitlijst** to exclude a person
+from automatic planning until they lift the exclusion. Adding a person requires
+a reason. Other eligible family members can still be proposed. The volunteer
+obligation remains in force. Existing assignments stay in place, and the person
+can still sign up under the usual rules. The planner rechecks exclusions when
+it generates, edits or publishes a proposal, including for candidates already
+in a draft.
+
 ### Seasonal workload
 
 For July–December shifts, a person must have no completed, scheduled or proposed
@@ -69,6 +79,12 @@ allows. Completed pairs do not pull in a third teammate. Eligibility, availabili
 and quotas still take precedence; otherwise normal ranking fills the place.
 
 ### Eligibility and availability
+
+The planner excludes candidates under 18 on the shift's local start date if the
+shift ends after 22:00 in the WordPress timezone. A shift ending at 22:00 is
+allowed. A shift ending after midnight exceeds the cutoff on its start date.
+The age restriction lifts on the person's eighteenth birthday. The planner
+applies this rule only when it can determine age from a valid birth date.
 
 VOG and required-commissie checks reuse `ShiftSignupEligibility`. Missing IVA allows
 a proposal, but publication requires the coordinator's explicit approval below.

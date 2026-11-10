@@ -76,7 +76,7 @@ The person REST response exposes a human-readable `photo_sync_status`. On the pe
 
 ## Deployment and first uploads
 
-Deploy rondo-sync's source marker first, with automatic processing disabled. Then deploy the WordPress queue and confirm the explicitly selected initial uploads before setting `RONDO_PHOTO_SYNC_ENABLED=1`. No new cron schedule is needed. Run sync commands only as `rondo` in `/home/rondo` on the production sync server.
+Deploy rondo-sync's source marker first, with automatic processing disabled. Then deploy the WordPress queue and confirm the explicitly selected initial uploads before setting `RONDO_PHOTO_SYNC_ENABLED=1`. No new cron schedule is needed. Run sync commands only as `rondo-sync` in `/srv/rondo-sync` on the production sync server.
 
 For one reviewed person, preview first:
 

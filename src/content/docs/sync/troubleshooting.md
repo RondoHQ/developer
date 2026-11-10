@@ -27,7 +27,7 @@ node tools/delete-duplicates.js --verbose   # Dry run first
 node tools/delete-duplicates.js --apply      # Delete duplicates (keeps oldest per KNVB ID)
 ```
 
-**Prevention:** All sync scripts enforce a server check that blocks local execution. Always sync from `root@46.202.155.16:/home/rondo/`.
+**Prevention:** Run sync commands only in `/srv/rondo-sync` on `srv1-rondo-club` as `rondo-sync`. The production server check rejects the former sync hostname and local machines.
 
 ---
 
@@ -38,9 +38,9 @@ node tools/delete-duplicates.js --apply      # Delete duplicates (keeps oldest p
 Error: browserType.launch: Executable doesn't exist
 ```
 
-**Fix:** Install/reinstall Chromium:
+**Fix:** On srv1, install Chromium from the checkout as `rondo-sync`:
 ```bash
-npx playwright install chromium
+PLAYWRIGHT_HOST_PLATFORM_OVERRIDE=ubuntu24.04-x64 npx playwright install chromium
 ```
 
 If that doesn't work, install system dependencies:
@@ -101,7 +101,7 @@ session survived an earlier login failure.
 
 **Fix:**
 ```bash
-lsof /home/rondo/.sync-people.lock
+lsof /srv/rondo-sync/.sync-people.lock
 # Inspect the listed process and stop it only when it is confirmed stale.
 ```
 
@@ -207,7 +207,7 @@ node tools/check-photo-consistency.js --verbose
 
 **If data was wiped:** Run a full functions sync to restore:
 ```bash
-ssh root@46.202.155.16 "cd /home/rondo && node pipelines/sync-functions.js --all --verbose"
+ssh srv1.rondo 'cd /srv/rondo-sync && sudo -u rondo-sync -H node pipelines/sync-functions.js --all --verbose'
 ```
 
 ---

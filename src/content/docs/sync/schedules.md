@@ -49,11 +49,11 @@ Fixed times follow Europe/Amsterdam wall time. A nonexistent spring time is skip
 
 ## Install or migrate cron
 
-Run only on the production sync server at `/home/rondo`, as the `rondo` user, after reviewing and backing up the current crontab:
+Run only on the production sync server at `/srv/rondo-sync`, as the `rondo-sync` user, after reviewing and backing up the current crontab:
 
 ```bash
-sudo -u rondo sh -c 'cd /home/rondo && npm run install-cron'
-sudo -u rondo crontab -l
+sudo -u rondo-sync -H sh -c 'cd /srv/rondo-sync && npm run install-cron'
+sudo -u rondo-sync -H crontab -l
 ```
 
 The installer still prompts for missing Lettermint configuration. Its Node migration imports timings from this checkout's exact legacy `sync.sh` entries and replaces those ten jobs with the minute dispatcher. Pipelines absent from an existing install are marked disabled. Existing UI configuration is validated and preserved, unrelated jobs remain, and a private `data/crontab-before-schedules-*.txt` backup is written. Unknown, duplicate, month-specific or unsupported legacy expressions stop migration without replacing the crontab. Re-running migration does not duplicate the dispatcher.

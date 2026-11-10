@@ -82,9 +82,9 @@ Standalone downloads own and close their `SportlinkSession`. Callers sharing a `
 Run on the production sync host as the service account, under the teams lock:
 
 ```bash
-cd /home/rondo
-sudo -u rondo flock -n /home/rondo/.sync-teams.lock node tools/retire-missing-teams.js
-sudo -u rondo flock -n /home/rondo/.sync-teams.lock node tools/retire-missing-teams.js --apply
+cd /srv/rondo-sync
+sudo -u rondo-sync -H flock -n /srv/rondo-sync/.sync-teams.lock node tools/retire-missing-teams.js
+sudo -u rondo-sync -H flock -n /srv/rondo-sync/.sync-teams.lock node tools/retire-missing-teams.js --apply
 ```
 
 Both commands fetch only the fresh Sportlink team lists, without downloading rosters or changing the local source cache. Preview reports candidates and historical reference counts without writing to WordPress; `--apply` preserves history and archives the verified teams. Failed, malformed and empty snapshots cannot trigger cleanup. Individual roster failures do not make an existing team disappear from the source list.
