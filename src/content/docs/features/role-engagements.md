@@ -18,9 +18,9 @@ To change a type, you also need permission to edit that person.
 Volunteer or read-only finance access alone does not grant that permission.
 The existing former-member editing restrictions still apply.
 
-The header displays each current category. Unknown types show
-**Kaderlid · functietype onbekend**. Viewers without classification data see
-the general **Kaderlid** badge when the existing staff flag applies.
+The profile header shows **Kaderlid** for current classified roles or when the existing
+staff flag applies. It adds **Betaald** for an employee role and **Vrijwilligersvergoeding**
+for a compensated volunteer role. Both labels can appear together.
 
 ## Role keys and storage
 

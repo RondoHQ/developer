@@ -585,7 +585,22 @@ as a branded **Vul de enquête in** button.
 `Rondo\Volunteer\VolunteerObligationCalculator::decorate_units()` enriches each unit with
 `completed_count`, `pending_count` and `no_show_count`, computed by matching `dienst_shift` posts
 whose `assigned_persons` meta intersects the unit's `person_ids` within the season window
-(1 July – 30 June).
+(1 July – 30 June). Completed counts also include administrative duty credits.
+
+### Administrative duty credits
+
+Use a dated credit for an administrative correction, such as honoring a late club cancellation when
+there is no shift record to cancel. Each row of the native person repeater `volunteer_duty_credits`
+records `date` (the duty date), `reason`, a stable `reference`, `recorded_at` (a site-timezone
+timestamp) and `recorded_by` (the WordPress user ID). The duty date determines the season and the
+planner's season half. Rows without a date, reason or reference are ignored. Each distinct reference
+counts once per person and season.
+
+The credit follows the same speler-first attribution as a completed shift. It adds to completed
+progress and planner workload. Saving credits through the native field service invalidates the
+obligation cache and creates neither an attendance record nor an email. The field is read-only
+through the general person API. Its details are visible only to administrators and users with
+`vrijwilligers` who can access the person.
 
 ### Attribution: every shift counts once
 

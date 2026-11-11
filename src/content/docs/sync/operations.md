@@ -14,7 +14,8 @@ cd /srv/rondo-sync
 
 The production hostname checked by the sync scripts is `srv1-rondo-club`.
 The `rondo-sync` account owns the checkout, scheduler, database files and
-pipeline locks. The previous VPS still hosts GlitchTip and Viscerno.
+pipeline locks. Viscerno remains on the previous VPS. GlitchTip runs on
+`yolo1` under [its own operations setup](/architecture/error-monitoring/#hosting-alerts-and-backups).
 
 ## Checking Sync Status
 
@@ -233,13 +234,60 @@ find logs/cron/ -name "*.log" -mtime +30 -delete
 du -sh logs/
 ```
 
+## srv1 backups
+
+### Encrypted off-server snapshots
+
+The Mac mini's `club.rondo.srv1-backup` launch agent pulls an export at 00:30,
+06:30, 12:30 and 18:30 in the mini's Europe/Amsterdam timezone. It also runs
+at login. The backup SSH key can request an export and read completed exports
+via restricted rsync. The restic repository and password stay on the mini side
+of the connection.
+
+The export covers production and demo WordPress files, deployed themes and
+uploads, Sync files and data, and server configuration. Each WordPress MySQL
+database uses a separate transaction-consistent dump. Sync SQLite snapshots
+use the online backup API to include committed WAL data and pass
+`PRAGMA quick_check`. Each database is consistent at its own snapshot time.
+Caches, logs, dependencies, old theme releases and migration archives are
+excluded. srv1 keeps its three latest complete exports.
+
+The mini verifies the archive's SHA-256 before writing the encrypted snapshot
+and removes the incoming plaintext copy when the run ends. It retains all
+snapshots for two days, then 14 daily, eight weekly and twelve monthly restore
+points. It checks restic repository metadata each run and reads stored data
+weekly. Check launchd and `~/Library/Application Support/Rondo Backup/status.json`
+for the last successful run. A failed run records the failure locally.
+
+### Hourly local database snapshots
+
+On srv1, `rondo-prod-db-backup.timer` runs ten minutes past every hour in
+Europe/Amsterdam and catches up after downtime. It backs up only `rondo_prod`
+and keeps seven days of root-only, unencrypted snapshots under
+`/var/lib/rondo-backup/hourly-mysql/rondo_prod/`. Each timestamped directory
+contains `database.sql.gz` and a checksum and table-count manifest.
+The service verifies the entire gzip stream and publishes the new directory
+atomically before pruning expired snapshots. Check the timer and the
+`rondo-prod-db-backup.service` journal for results.
+
+### Restore verification
+
+Restore a real restic snapshot into an isolated directory and check the
+archive checksum. Verify SQLite integrity, import both off-server MySQL dumps
+into separate disposable databases, and check the WordPress URLs and table
+counts. Test an hourly snapshot by importing its decompressed SQL into a
+disposable database. Keep cron, mail and sync writes disabled during recovery
+checks. See the source runbook for ownership, ACLs and extended attributes,
+package inventory and replacement-host steps.
+[srv1 backup and recovery runbook](https://github.com/RondoHQ/rondo-sync/blob/main/ops/backups/README.md)
+
 ## Monitoring Checklist
 
 [GlitchTip](/architecture/error-monitoring/) collects filtered step errors, failed/partial runs, crashes and dashboard server errors. `/health/sync` checks aggregate schedule coverage: completed partial runs count as active, while their errors remain available for investigation. Keep external heartbeat monitoring for VPS outages. Private local logs retain the original messages that outgoing events omit.
 
 Sync errors are grouped by pipeline, step and a safe `error_code`; unknown causes retain default stack grouping. Use the local logs for the original message. RunTracker also emits one performance transaction per completed run/step with full duration, a shared trace ID and aggregate created/updated/skipped/failed counts. No per-member spans or detail payloads leave the tracker. `GLITCHTIP_PERFORMANCE=false` disables these measurements while retaining errors; see [performance measurements](/architecture/error-monitoring/#performance-measurements).
 
-GlitchTip's daily backup timer stores private local archives under `/opt/glitchtip/backups`, including credentials and the DuckDB performance cold-storage volume as `cold-storage.tar`. Restore cold storage alongside the database and uploads. Check `systemctl status rondo-glitchtip-backup.timer` and disk usage alongside the Sync checks below. These archives do not protect against loss of the VPS; see [hosting and backups](/architecture/error-monitoring/#hosting-alerts-and-backups).
+GlitchTip's daily backup timer stores private local archives under `/opt/glitchtip/backups`, including credentials and the DuckDB performance cold-storage volume as `cold-storage.tar`. Restore cold storage alongside the database and uploads. Check `systemctl status rondo-glitchtip-backup.timer` and disk usage on `yolo1`. These archives stay on that host. See [GlitchTip hosting and backups](/architecture/error-monitoring/#hosting-alerts-and-backups).
 
 Daily checks:
 - [ ] People sync email reports arrive at the configured cadence

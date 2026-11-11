@@ -94,12 +94,12 @@ The WordPress collection reader follows the `X-WP-TotalPages` response header an
 2. Also reads club functions from `sportlink_member_functions` (mapped to "Verenigingsbreed" commissie)
 3. Compares against `rondo_club_commissie_work_history`, including tracked roles that no longer exist in the current Sportlink snapshot
 4. For each member with changes:
-   - Fetches current `work_history` ACF repeater from Rondo Club
-   - Adds new commissie assignments
-   - Ends removed assignments (sets `is_current: false`), using Sportlink's `relation_end` when present and the detection date otherwise
-   - Only modifies sync-created entries (manual entries preserved)
-5. Sends `PUT /wp/v2/people/{rondo_club_id}` with updated `work_history`
-6. Updates or removes local tracking only after the Rondo write succeeds, so failed writes remain queued for retry
+   - Reads current `work_history` from Rondo Club
+   - For a newly tracked assignment, reuses a current row with the same committee ID, role and start date. A different start date can represent a separate stint.
+   - Ends removed assignments using Sportlink's `relation_end` when present and the detection date otherwise
+   - During a forced refresh, checks the stored row index against the current committee and role. If the row moved, it finds the matching current row and preserves unrelated fields. If the role is missing, it appends a row.
+5. Sends `PUT /wp/v2/people/{rondo_club_id}` when `work_history` changes
+6. Updates local tracking once the remote state is confirmed. If a prior PUT succeeded before tracking was saved, the next run can repair tracking from the matching live row without another PUT.
 7. Skips members without a `rondo_club_id`
 
 **Output:** `{ total, synced, created, ended, skipped, errors }`

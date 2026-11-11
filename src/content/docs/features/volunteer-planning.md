@@ -64,7 +64,8 @@ For July–December shifts, a person must have no completed, scheduled or propos
 duty in that sports season. A scheduled January–June duty also counts.
 Each person's count includes both their own and family duties. It includes cancelled
 shifts that earned credit and excludes no-shows. Completed work still counts when
-a shift has an invalid end time.
+a shift has an invalid end time. [Administrative duty credits](/features/vrijwilligersplicht/#administrative-duty-credits)
+count as completed workload in the season half of the credited date.
 
 From January, candidates with fewer duties come first. At equal personal load,
 an IVA-required shift prefers someone with valid IVA, unless that shift waives IVA.

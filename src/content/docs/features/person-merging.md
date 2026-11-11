@@ -8,7 +8,7 @@ Beheerders kunnen op een persoonspagina **Samenvoegen** kiezen en vervolgens het
 ## Samenvoegregels
 
 - Het gekozen hoofdprofiel blijft gepubliceerd en behoudt bij verschillen standaard zijn waarde.
-- Lege velden worden aangevuld vanuit het dubbele profiel.
+- Lege velden worden aangevuld vanuit het dubbele profiel. Een lege `lid_tot` betekent doorlopend lidmaatschap. Bij een verschil met een einddatum moet de beheerder kiezen welke waarde blijft.
 - Unieke e-mailadressen, telefoonnummers, adressen, relaties, werkhistorie en andere lijstvelden worden gecombineerd.
 - `member` blijft het basispersoonstype zodra een van beide profielen lid of ouder is. De sponsorrol wordt onafhankelijk daarvan behouden.
 - Verschillende niet-lege KNVB-IDs blokkeren standaard de samenvoeging. Een beheerder kan dit verschil uitdrukkelijk overrulen nadat die heeft gecontroleerd dat beide profielen dezelfde persoon zijn. Het hoofdprofiel behoudt zijn KNVB-ID.
@@ -17,7 +17,7 @@ Beheerders kunnen op een persoonspagina **Samenvoegen** kiezen en vervolgens het
 
 ## KNVB-ID uitdrukkelijk overrulen
 
-Bij verschillende KNVB-IDs toont de dialoog beide waarden en een afzonderlijk bevestigingsvak. De beheerder moet daarnaast de samenvoeging bevestigen. Een ander dubbel profiel of hoofdprofiel kiezen wist de override. Een gewijzigde preview met andere IDs vereist opnieuw toestemming.
+Bij verschillende KNVB-IDs toont de dialoog beide waarden. De beheerder bevestigt in één vak dat het om dezelfde persoon gaat en dat de gekozen gegevens kloppen. Een wijziging in de profielen, samenvoegrichting, getoonde conflicten of veldkeuzes maakt de bevestiging ongeldig.
 
 De mutatie stuurt `override_knvb_id: true`; zonder deze expliciete waarde blijft het verschil blokkeren. Het hoofdprofiel bewaart beide oorspronkelijke IDs in de `overrides` van zijn `_rondo_person_merge_history`. Het dubbele profiel gaat met zijn eigen KNVB-ID naar de prullenbak. Andere blokkades en verplichte veldkeuzes blijven gelden.
 
@@ -34,6 +34,14 @@ De mutatie stuurt `override_knvb_id: true`; zonder deze expliciete waarde blijft
 - bijlagen, profielfoto en het gekoppelde WordPress-account.
 
 Na de migratie wordt het dubbele profiel naar de WordPress-prullenbak verplaatst. Het wordt niet permanent verwijderd. Het hoofdprofiel krijgt een `_rondo_person_merge_history`-auditregel; het dubbele profiel bewaart het doelprofiel, tijdstip en de uitvoerende beheerder in postmeta.
+
+### Wedstrijdvergoedingen
+
+Bij verschillende vergoedingsafspraken toont de dialoog per profiel het team, de geldigheidsperiode
+en de betaalroute. De beheerder kiest één volledige set, eventueel de lege set. Open
+wedstrijdregistraties kunnen met een nieuwe versie naar het hoofdprofiel verhuizen. Een afrekening
+met het dubbele profiel, beide profielen in dezelfde registratie of een verwerking die nog loopt
+kan de samenvoeging blokkeren. Zie [Wedstrijdvergoedingen](/features/match-compensation/#person-merges).
 
 ## Synchronisatie
 

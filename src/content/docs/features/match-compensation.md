@@ -6,7 +6,7 @@ The season **2026–2027** pilot records match selections for configured teams a
 
 ## Configuration and access
 
-An administrator configures existing published teams with scheme `awc1` or `jo23`, registrator assignments and a retention-policy text in `rondo_match_compensation`. No teams are enabled by default. The admin picker offers all users, while existing assignment rows contain only users with positive assigned team IDs.
+An administrator configures existing published teams with scheme `awc1` or `jo23`, registrator assignments and a retention-policy text in `rondo_match_compensation`. No teams are enabled by default. The admin picker searches existing WordPress users by name. Select a result to change the assigned user. Existing assignment rows contain only users with positive assigned team IDs.
 
 Payroll settings include `debtor_number`, `company_number`, `basis_code`, `bank_code`, `win_code` and `draw_code`. The defaults are `U2150` for starters, `L3090` for wins and `L3091` for draws; the bench code has no default. All six settings must be present before closing a month with payroll rows. Administration numbers accept 1–14 digits without a leading zero. Component codes use `U` or `L` followed by four digits; the bench code must start with `U`.
 
@@ -30,7 +30,7 @@ A registration records source identity, date, opponent, home/away, category, num
 
 Completion requires a played date inside July 2026–June 2027, scores and a nonempty selection with every status known. An explanation is required when there are not exactly eleven starters, when correcting an already completed registration, and for `manual:` source identities. Duplicate people and duplicate team/source-match registrations are rejected.
 
-Only `competitie` and `nacompetitie` count. Cup and friendly registrations can be retained but produce no compensation. Both starters and bench players earn result premiums:
+New saves accept league and playoff matches (`competitie` and `nacompetitie`). A cup or friendly category (`beker` or `oefen`) in the form or the linked Sportlink fixture disables both save buttons and returns HTTP 400 on a save request. Historical cup and friendly registrations remain readable and yield no compensation. Both starters and bench players earn result premiums.
 
 | Scheme | Win | Draw | Loss | External output |
 | --- | --- | --- | --- | --- |
@@ -41,6 +41,19 @@ Only `competitie` and `nacompetitie` count. Cup and friendly registrations can b
 Calculations use integer cents. `days` counts match participations, including two matches on the same calendar day. AWC 1 payroll rows contain counts, with `amount_cents` set to zero; Nmbrs applies the configured payroll components. The monthly payroll roster includes everyone whose payroll agreement overlaps the month, even with no participation. Direct-payment rows arise from eligible participation. Unknown or ambiguous agreements appear as blocking preview errors.
 
 Nonmanual registrations verify the current team feed. Missing/cancelled sources and stale feeds block saving; source date, result or unknown-category deviations need an explanation. Monthly preview also checks missing eligible source matches, changed source fingerprints and registrations whose source disappeared. Retained history is not silently deleted.
+
+## Person merges
+
+When two profiles have different agreement lists, the administrator chooses one complete list.
+Rondo copies the selected terms with readback verification and records an agreement audit entry
+when it copies the duplicate's list. Both profiles must satisfy the agreement and bank-write
+policies. Open registrations can move under the compensation lock if the administrator has
+registration access to the team. The move updates the participant ID and name, increments the
+registration version, and appends the reason while retaining the selection's other details.
+
+A settlement referring to the duplicate, both profiles in a single registration, a locked or
+pending registration of the duplicate, or a pending agreement change blocks the merge.
+Existing settlement snapshots remain intact. See the [merge API](/api/people/#merge-people).
 
 ## Monthly closing, files and corrections
 

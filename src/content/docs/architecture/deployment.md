@@ -94,6 +94,33 @@ The former production and demo origins are frozen rollback copies. Before
 reactivating an old origin, stop writes on srv1 and transfer the latest data back.
 The legacy `stadion.svawc.nl` site remains on SiteGround.
 
+## PHP and Redis on srv1
+
+Production and demo each run a separate PHP-FPM service and a separate Redis
+Object Cache instance. Redis listens on a private Unix socket per site. It serves
+FPM, WP-CLI and scheduled WordPress jobs for that site. Both caches use
+`allkeys-lru` and disable disk persistence.
+
+| Site | FPM service | Maximum workers | Redis service | Redis dataset limit |
+|---|---|---:|---|---:|
+| Production | `rondo-php@prod.service` | 6 | `rondo-redis-prod.service` | 512 MiB |
+| Demo | `rondo-php@demo.service` | 3 | `rondo-redis-demo.service` | 128 MiB |
+
+Each FPM service allocates 256 MiB of OPcache and a 32 MiB interned-string buffer
+via startup flags. To verify the installation, check `wp redis status` as the
+site account, read a temporary WP-CLI cache key from the same site's FPM, and
+inspect `opcache_get_status(false)` in FPM. The theme deploy leaves these host
+settings and the Redis drop-in in place. A cache flush can expire transient
+state such as temporary login links and in-progress OAuth exchanges.
+[Production runbook](https://github.com/RondoHQ/rondo-club/blob/main/ops/production/README.md)
+· [Demo runbook](https://github.com/RondoHQ/rondo-club/blob/main/ops/demo/README.md)
+
+The postmeta index migration advances `rondo_postmeta_index_version` to `2`.
+It keeps `rondo_meta_key_value` and adds `rondo_post_id_meta_key` on
+`(post_id, meta_key(191))` for people-list joins and pagination counts.
+It requests online DDL with `ALGORITHM=INPLACE, LOCK=NONE`. If index creation
+fails, the version stays at its previous value so a later run can retry.
+
 ## Atomic release activation
 
 `bin/deploy.sh` uploads a complete archive with SCP. `bin/atomic-release.py`
@@ -119,6 +146,14 @@ A filesystem lock and durable per-release JSON state protect prepare, activate,
 rollback and finish. Retries after a lost SSH reply inspect that state; stale
 transactions cannot overwrite a different live release. Failed verification
 restores the previous target, refreshes rewrite rules and clears caches.
+
+On srv1, `bin/deploy.sh` gracefully reloads the site's FPM service after
+activating a release. Each deployment account has permission to reload only its
+own service. This clears shared OPcache entries for old release paths. A reload
+failure aborts deployment and triggers rollback, which attempts the reload again
+after restoring the previous target. The reload applies to the srv1 accounts
+`rondo-prod` and `rondo-demo`.
+
 Deployment and rollback flush the WordPress cache, then purge the SiteGround
 cache only when WP-CLI provides `sg purge`. HTTP checks cover the production URL, OIDC discovery and a uniquely queried
 `/wp-json/rondo/v1/version`, whose version must match the release.

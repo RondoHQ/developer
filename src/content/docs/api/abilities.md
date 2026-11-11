@@ -151,7 +151,7 @@ Requesting an unknown field or a field hidden from the current user returns `ron
 
 ## Update a record
 
-Rondo Club 35.166.0 adds `rondo/update-record` to change selected fields on an existing person, team, or committee. AI Connector exposes the same write as `wpag-update-rondo-record` through its governed registry. The connector's pause and policy controls still apply. Refresh the client's tool list if the new tool is missing.
+Rondo Club 35.166.0 adds `rondo/update-record` to change selected fields on an existing person, team, or committee. AI Connector exposes the same write as `wpag-update-rondo-record` through its governed registry. The connector's pause and policy controls still apply. Refresh the client's tool list if the new tool is missing. AI Connector calls the permission callback without a record when building `tools/list`. Listing uses the signed-in user's WordPress `read` capability. Execution requires visibility of the selected record, its edit capability and the applicable REST field permissions.
 
 Search for the record first and verify its identity with `get-record`. Load the update schema before using it, and use `get-field-schema` for canonical field names and types. Send only changed fields and copy their exact current `get-record` values into `expected_fields`.
 

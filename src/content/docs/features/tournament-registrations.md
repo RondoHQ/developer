@@ -84,7 +84,8 @@ has the normal `rondo_linked_person_id`, their assigned entry is available in **
 
 `assignment_snapshot` retains `person_id` and may contain `user_id: 0`. New and updated entries
 have `_tournament_assigned_person_{person_id}` lookup metadata alongside positive user indexes.
-Authorization checks the actual snapshot and trusted person link, so removing a pending assignee
+The assignment-presence check looks up each index separately, then validates the
+current snapshot and trusted person link. Removing a pending assignee
 also revokes access after later account creation. Entry responses include `assigned_person_ids`
 and resolve current accounts without modifying stored history. Existing user-indexed entries remain
 compatible; no production migration or bulk invitation is needed.

@@ -100,6 +100,14 @@ Sort surname columns by `last_name`, not by the combined display value. This kee
 
 The `leeftijdsgroep` filter accepts one age group or a comma-separated list, for example `leeftijdsgroep=Onder%206,Onder%207,Onder%2013`. A person matches any selected group; other filters and the caller's access restrictions still apply. Omit the parameter for all permitted groups. Existing single-group URLs remain valid. The People filter offers checkboxes for these choices, preserves them during navigation, and uses the same selection for pagination and CSV exports.
 
+### Company-only contacts
+
+Pass `exclude_companies=true` to `GET /rondo/v1/people/filtered` to omit legacy
+records with a nonblank `company_name` and both `first_name` and `last_name` blank
+after trimming spaces. The filter runs before counting and pagination. Its
+default is `false`. Relaties applies it to the list and CSV export. Direct reads
+by ID and the invoice address book still include company-only records.
+
 ### Rondo account filter
 
 Pass `has_rondo_account=1` for people with an existing linked WordPress account or
@@ -194,15 +202,19 @@ X-WP-Nonce: {nonce}
 }
 ```
 
-Every scalar conflict in `conflicts` returned by the preview must have a `primary` or `duplicate` resolution. The service automatically combines unique emails, phones, addresses, relationships, work history, gallery/list values, person and sponsor roles, and empty scalar fields.
+Every item in `conflicts` must have a `primary` or `duplicate` resolution. Missing choices return HTTP 400 `rondo_person_merge_choices_required` with the field names. The service combines unique emails, phones, addresses, relationships, work history, gallery/list values and overlapping roles. It fills missing scalar fields. A blank `lid_tot` means ongoing membership, so a blank versus a date still requires a choice.
+
+Different `match_compensation_agreements` lists return `requires_choice: true`, with a summary of team, date range and payment route on each side. Choose one complete list, including an empty list if applicable. The UI requires an explicit selection before confirmation.
 
 To merge a verified duplicate with different KNVB IDs, an administrator must also send `"override_knvb_id": true` alongside `"confirmed": true`. The default is `false`; a missing or false override leaves the HTTP 409 `rondo_person_merge_blocked` response intact. This flag removes only the `knvb_id` blocker. Other stable-ID, account and sponsor conflicts still block execution before writes.
 
-The primary retains its KNVB ID, even if `resolutions.knvb_id` says `duplicate`. The trashed duplicate keeps its original ID. The primary's `_rondo_person_merge_history` entry records the overridden field and both original values in `overrides`, alongside the actor, timestamp and resolutions. The UI requires a separate KNVB confirmation and resets it when the selected pair, direction or conflicting IDs change.
+The primary retains its KNVB ID, even if `resolutions.knvb_id` says `duplicate`. The trashed duplicate keeps its original ID. The primary's `_rondo_person_merge_history` entry records the overridden field and both original values in `overrides`, alongside the actor, timestamp and resolutions. The UI uses one final confirmation that explicitly covers differing KNVB IDs when present. Changing the selected profiles, merge direction, conflicts or field choices invalidates that confirmation.
 
 References in relationships, sponsor-company contacts (including archived companies), shifts, todos, discipline cases, invoices, clothing assignments, comments, attachments, and linked user accounts are moved to the primary person. The preview includes a `references.sponsors` count. Per-person shift metadata is renamed as part of the same operation. A successful merge returns the surviving `person_id`.
 
 Sponsor contacts retain their roles, Sponsit IDs and pass settings. Matching contacts at the same company collapse to one row, combining their contact/pass flags. Different non-empty Sponsit IDs or roles at the same company block the merge, as do multiple primary sponsor-pass relationships after combining the profiles. Resolve these differences on the sponsor records first. These checks run in both preview and execution, before writes. Sponsor-contact writes are verified before the duplicate is moved to trash.
+
+The preview includes `references.match_registrations` for movable match registrations. The merge updates the person ID and name in each unlocked registration, increments its version and records the move. A settlement reference to the duplicate, a registration containing both profiles, or pending agreement or locked/pending registration changes can block the merge as `match_compensation_references`. The finance lock rechecks these conditions before applying changes. See [Match compensation](/features/match-compensation/#person-merges).
 
 ### Resolve a previous person ID
 

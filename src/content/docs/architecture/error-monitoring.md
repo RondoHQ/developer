@@ -87,7 +87,13 @@ Disabled/manual schedules and changed schedules before their first eligible slot
 
 ## Hosting, alerts and backups
 
-Operations files live in `rondo-sync/ops/glitchtip/`. The configured service runs under `/opt/glitchtip` on the Sync VPS. Nginx serves HTTPS with a Certbot certificate and proxies to loopback port 8000. Docker Compose runs the pinned GlitchTip 6 image and PostgreSQL 18, with persistent database/uploads volumes and restart policies. GlitchTip has a 1.5 GiB memory limit and one CPU; PostgreSQL has a 512 MiB memory limit.
+Operations files live in `rondo-sync/ops/glitchtip/`. GlitchTip runs under
+`/opt/glitchtip` on `yolo1` (`dev1.yolo.online`). Nginx serves
+`errors.rondo.club` over HTTPS and proxies to loopback port 8000.
+`certbot-renew.timer` renews the certificate. Docker Compose runs the pinned
+GlitchTip 6.2.6 and PostgreSQL 18 images with persistent volumes and restart
+policies. GlitchTip has a 1.5 GiB memory limit and one CPU. PostgreSQL has a
+512 MiB memory limit. The Lettermint bind mount uses `:ro,Z` for SELinux.
 
 Private `postgres.env` and `glitchtip.env` files supply credentials and settings outside Git. The documented server configuration uses `all_in_one`, 30-day error retention and disabled public registration/organization creation.
 
@@ -95,9 +101,24 @@ Performance storage uses `GLITCHTIP_TRANSACTION_RETENTION_DAYS=14`, `GLITCHTIP_S
 
 `lettermint_backend.EmailBackend` sends alerts through Lettermint using the private `LETTERMINT_API_TOKEN`. Provider acceptance is logged; it does not prove inbox delivery.
 
-`rondo-glitchtip-backup.timer` runs around 04:20 server time, with up to five minutes of randomized delay. The backup script uses a lock and private file permissions. Archives contain a PostgreSQL custom-format dump, uploads, `cold-storage.tar`, Compose configuration, the email backend and secret environment files. It prunes complete archives older than 14 days. These backups are local to the VPS; external Sync heartbeat monitoring remains necessary to detect a lost server.
+`rondo-glitchtip-backup.timer` runs at 04:20 Europe/Amsterdam, with up to five
+minutes of randomized delay. The backup script uses a lock and private file
+permissions. Archives contain a PostgreSQL custom-format dump, uploads,
+`cold-storage.tar`, Compose configuration, the email backend and secret
+environment files. It prunes complete archives older than 14 days. These copies
+are local to `yolo1`. The external Sync heartbeat checks Sync's own availability.
 
 Inspect the timer with `systemctl status rondo-glitchtip-backup.timer` and service output with `journalctl -u rondo-glitchtip-backup.service`. Before upgrading, run `/opt/glitchtip/backup.sh`. Restore a dump into a separate database and verify it before switching production. Restore uploads and cold storage into their corresponding volumes and preserve the original GlitchTip secret key. Verify transaction-group counts, recent span names and storage usage separately from HTTP ingestion responses. Keep archives and environment files out of tickets and logs.
+
+### Migration and rollback
+
+The November 10 migration kept the public hostname and project credentials.
+The old Nginx virtual host forwards cached-DNS traffic to `yolo1` over verified
+HTTPS. The old GlitchTip containers and backup timer are stopped. Viscerno
+continues to run on the old host. For rollback, pause ingestion on `yolo1` and
+transfer its current database, uploads and cold storage before restoring the
+previous proxy, certificate renewal, backup timer and DNS.
+[GlitchTip operations runbook](https://github.com/RondoHQ/rondo-sync/blob/main/ops/glitchtip/README.md)
 
 ## Source verification
 

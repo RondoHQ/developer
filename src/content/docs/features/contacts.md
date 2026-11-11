@@ -14,7 +14,7 @@ De knop en het achterliggende WordPress REST-endpoint vereisen personenbeheer. D
 
 Deze dialoog is uitsluitend voor externe contacten. Leden en ouders/verzorgers worden via Sportlink toegevoegd en bijgewerkt; daarom kan het persoonstype tijdens het aanmaken niet worden gewijzigd naar lid/ouder.
 
-Een contact kan een persoonsnaam, een bedrijfsnaam of beide hebben. Bij een contact zonder persoonsnaam wordt `company_name` de WordPress-posttitel en daarmee de weergavenaam in lijsten en zoekvelden. De REST API weigert alleen records waarbij zowel `first_name` als `company_name` leeg zijn.
+Een contact kan een persoonsnaam, een bedrijfsnaam of beide hebben. Bij een contact zonder persoonsnaam wordt `company_name` de WordPress-posttitel. Zulke bedrijfsrecords blijven bereikbaar op hun profiel en in het factuuradresboek. De REST API weigert alleen records waarbij zowel `first_name` als `company_name` leeg zijn.
 
 Omdat contacten handmatig worden beheerd, zijn voornaam, tussenvoegsel en achternaam in de aanmaakdialoog bewerkbaar. De Sportlink-beperking op het tussenvoegsel geldt alleen voor gesynchroniseerde leden.
 
@@ -55,6 +55,8 @@ De kolom **Type** op de personenlijst vat het basisrecord samen als **Bondslid**
 - `is_parent=1` wordt afgeleid uit een actuele relatie van het type `child`; de oude geïmporteerde oudervlag bepaalt dit filter niet.
 - `knvb_bekend` kijkt uitsluitend of een KNVB-ID aanwezig is.
 - `is_businessclub_member=1` retourneert uitsluitend actieve sponsors met pasvariant `businessclub`; `0` retourneert alle overige relaties.
+
+De lijst **Relaties** en de bijbehorende CSV-export sturen `exclude_companies=true`. Daardoor vallen records met een bedrijfsnaam en zonder voor- of achternaam weg vóór het tellen en pagineren. Contactpersonen met een bedrijfsnaam en minstens één van beide naamvelden blijven zichtbaar. Voor andere API-afnemers staat het filter standaard uit.
 
 De frontend toont lid- en KNVB-status en de rollen ouder/verzorger, vrijwilliger, sponsor en contact samen in de filtergroep **Kenmerken**. Rollen zijn niet exclusief: meerdere geselecteerde kenmerken worden met AND gecombineerd. **BC-lid** blijft een afzonderlijk, specifieker filter.
 

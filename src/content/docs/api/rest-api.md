@@ -161,6 +161,13 @@ feedback item, or discipline case advances that generation, so the next request
 recomputes immediately even when WordPress uses a persistent object cache. Do not
 invalidate dashboard caches by deleting transient rows directly.
 
+`DashboardPeople` supplies small, cacheable WordPress ID queries that honor current
+person visibility. The counts include published people whose `former_member`
+value is missing, empty or zero. Recent contacts contain the latest approved
+`rondo_activity` per visible active person, ordered by `activity_date`. Dashboard
+and reminder queries reuse the active-person set. `DashboardQueriesTest` checks
+the counts, visibility, metadata changes and contact ordering.
+
 **Response:**
 ```json
 {
@@ -353,6 +360,7 @@ Returns paginated people with server-side filtering and sorting for the `/people
 - `birth_year_from`, `birth_year_to`
 - `birth_month` (1-12, filters people by birthday month)
 - `person_type` (`member` for members, parents, and legacy records; `contact` for explicitly marked external contacts)
+- `exclude_companies` (default `false`; Relaties passes `true` to omit company-only records before counting and pagination)
 - `is_sponsor` (`1` for active sponsors, `0` for people without the sponsor role; overlaps either person type)
 - `knvb_bekend` (`1` when `knvb_id` has a value, `0` when it does not)
 - `is_parent` (`1` for people with a current `child` relationship to a published, non-former person)
