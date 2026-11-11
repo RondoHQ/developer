@@ -1,3 +1,4 @@
+import { getDiagramErrorContext } from './mermaid-error-context.js';
 import packageInfo from '../../package.json' with { type: 'json' };
 
 // Public ingestion key, not a GlitchTip management credential.
@@ -9,7 +10,7 @@ const errorTypes = new Set(['Error', 'TypeError', 'ReferenceError', 'SyntaxError
 
 // Explicit allowlist: no form values, raw messages, request data, user details,
 // breadcrumbs, URLs with query parameters, or source-code context leave the app.
-export function sanitizeErrorEvent(event) {
+export function sanitizeErrorEvent(event, hint = {}) {
   return {
     event_id: event.event_id,
     timestamp: event.timestamp,
@@ -18,6 +19,7 @@ export function sanitizeErrorEvent(event) {
     release: event.release,
     environment: event.environment,
     sdk: event.sdk,
+    tags: getDiagramErrorContext(hint.originalException),
     exception: event.exception && {
       values: event.exception.values?.map((value) => ({
         type: errorTypes.has(value.type) ? value.type : 'Error',

@@ -42,3 +42,36 @@ test('unknown exception types and external URLs are redacted', () => {
   assert.equal(result.exception.values[0].type, 'Error');
   assert.equal(result.exception.values[0].stacktrace.frames[0].filename, '[redacted]');
 });
+
+test('diagram failures retain exact static identifiers without page or diagram content', async () => {
+  const { rememberDiagramError } = await import('../src/lib/mermaid-error-context.js');
+  const diagrams = [{}, {}];
+  const doc = {
+    location: { pathname: '/architecture/relationship-system/', search: '?email=private@example.test' },
+    querySelectorAll: () => diagrams,
+  };
+  const first = new Error('Private relationship source');
+  const second = new Error('Another private source');
+  assert.equal(rememberDiagramError(first, diagrams[0], doc), true);
+  assert.equal(rememberDiagramError(second, diagrams[1], doc), true);
+  assert.equal(rememberDiagramError(first, diagrams[1], doc), false);
+  for (const [error, id] of [[first, 'creating-a-relationship'], [second, 'updating-a-relationship']]) {
+    const result = sanitizeErrorEvent({ tags: { email: 'private@example.test' } }, { originalException: error });
+    assert.deepEqual(result.tags, { page: '/architecture/relationship-system/', diagram_id: id, error_source: 'mermaid' });
+    assert.equal(JSON.stringify(result).includes('private'), false);
+  }
+});
+
+test('unknown pages, detached diagrams and forged tags cannot leak identifiers', async () => {
+  const { rememberDiagramError } = await import('../src/lib/mermaid-error-context.js');
+  const diagram = {};
+  for (const [path, nodes] of [
+    ['/private@example.test/', [diagram]],
+    ['/architecture/relationship-system/', []],
+    ['/overview/', [{}, diagram]],
+  ]) {
+    const error = new Error('private');
+    assert.equal(rememberDiagramError(error, diagram, { location: { pathname: path }, querySelectorAll: () => nodes }), false);
+    assert.equal(sanitizeErrorEvent({ tags: { page: path, diagram_id: 'private' } }, { originalException: error }).tags, undefined);
+  }
+});

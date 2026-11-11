@@ -1,5 +1,5 @@
 import { defineConfig } from 'astro/config';
-import mermaid from 'astro-mermaid';
+import mermaid from './src/integrations/monitored-mermaid.js';
 import starlight from '@astrojs/starlight';
 import sitemap from '@astrojs/sitemap';
 import tailwindcss from '@tailwindcss/vite';
