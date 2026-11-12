@@ -367,6 +367,10 @@ Create a role such as Coordinator O13 and map the exact active Sportlink functio
 
 The native REST collection, filtered list, global search, CSV export and record abilities use this boundary. Additional list filters still narrow it, so selecting only Onder 13 manually can hide an Onder 14 dispensation player. The UI does not apply such a filter automatically. Individual field and write permissions remain independent; the coordinator role adds no editing or finance/support privileges. Existing club-wide management access still takes precedence. Isolated Kaderlijst roles cannot grant general member-directory access. Coordinators may read the full club-wide Kaderlijst, including staff of other teams, through its limited contact-field payload; general person and team detail access remains restricted.
 
+For a role scoped by age group alone, `AccessControl` combines its age-group
+clause and the caller's existing `meta_query` with an outer `AND`. This keeps
+the scope mandatory when global search matches any of several fields.
+
 The player selection cache is request-local, keyed by team IDs, player-role settings, the club date and the WordPress posts cache generation. Person/team/meta changes therefore invalidate it. Deleting a custom role removes its saved age-group and team selections.
 
 ### Function dates and reconciliation

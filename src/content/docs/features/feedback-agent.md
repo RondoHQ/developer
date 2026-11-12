@@ -115,6 +115,15 @@ the current status is a successful no-op.
 
 ## REST API
 
+### Item permissions
+
+The submitter and users with feedback-section access can read an item. The
+submitter or an administrator can edit it. The item route
+`/rondo/v1/feedback/{id}` accepts `POST`, `PUT`, and `PATCH` for edits.
+Only administrators can change the status, priority,
+resolution summary or decline reason. `DELETE /rondo/v1/feedback/{id}` requires
+`manage_options` and permanently deletes the item.
+
 ### Private screenshots
 
 `POST /rondo/v1/feedback` and `POST /rondo/v1/feedback/{id}` accept one optional `screenshot` file during creation or editing. Send the feedback fields and file as `multipart/form-data`; PHP parses uploads on POST. Requests without a screenshot keep the JSON format. Only the submitter and administrators may add or replace a screenshot; feedback-section read access alone is insufficient. Both forms share `FeedbackScreenshotInput`, with a preview, a button to clear the newly selected file, and visible save errors.

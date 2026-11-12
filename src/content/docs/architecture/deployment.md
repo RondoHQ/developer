@@ -87,8 +87,12 @@ variables cannot redirect the demo wrapper.
 WordPress cron runs from the `rondo-wp-cron@prod.timer` and
 `rondo-wp-cron@demo.timer` systemd timers. Request-triggered cron is disabled.
 Include `ops/nginx/wordpress-protection.conf` before generic PHP and static
-regex locations. It preserves private file and upload protections while
-allowing OAuth discovery and the Apple association file.
+regex locations. It protects private files and uploads while allowing OAuth
+discovery and the Apple association file. The include blocks direct HTTP access
+to legacy files under `wp-content/uploads/invoices/`. On Apache, Rondo writes
+a deny rule when it initializes invoice storage and the legacy folder exists.
+The authenticated invoice routes can still read these files from disk.
+See [private invoice storage](/features/invoicing/#private-invoice-storage).
 
 The former production and demo origins are frozen rollback copies. Before
 reactivating an old origin, stop writes on srv1 and transfer the latest data back.

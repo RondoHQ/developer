@@ -16,8 +16,12 @@ Run on the production server:
 wp rondo demo export
 ```
 
-Creates `fixtures/demo-fixture.json` in the theme directory with:
-- All people (anonymized names, addresses, phones, emails)
+The export writes to `rondo-private/demo-fixture.json` beside the WordPress root.
+Use `--output=<path>` to choose another private location outside the web root.
+
+The fixture contains records and settings.
+
+- All people (anonymized names, addresses, phones, emails, and synthetic birthdates)
 - All teams and commissies (names preserved)
 - Discipline cases, tasks, activities, notes
 - Settings:
@@ -26,16 +30,25 @@ Creates `fixtures/demo-fixture.json` in the theme directory with:
   - Finance config used by invoices/finance dashboard (`rondo_finance_*`, anonymized/placeholders)
   - Membership pass wallet config (`rondo_membership_pass_*`, portable non-secret values only)
 
+The exporter generates each synthetic birthdate from the fixture person reference,
+age group and export year. The input date supplies only its format
+(`YYYY-MM-DD` or `YYYYMMDD`). Missing or invalid dates become `null`.
+
+Discipline exports replace charge and sanction descriptions with demo text. For
+cases linked to a fixture person, the title uses the fictional name and match
+date. The separate match description field is retained.
+
 ## Import
 
 Run on the target site:
 
 ```bash
-wp rondo demo import           # Import alongside existing data
-wp rondo demo import --clean   # Wipe existing data first, then import
+wp rondo demo import --input=/path/to/rondo-private/demo-fixture.json
 ```
 
-Default fixture path: `fixtures/demo-fixture.json` in the theme directory.
+Set `--input` to the transferred fixture's private path. The import command
+still defaults to `fixtures/demo-fixture.json` in the theme directory when you
+omit `--input`. Add `--clean` to replace existing demo data.
 
 A clean import preserves the completed membership-pass migration flag
 `rondo_membership_pass_private_actions_v1_done`. This upgrade state belongs to
@@ -45,7 +58,7 @@ metadata cleanup. Other replaceable membership-pass configuration is still clear
 ### Date Shifting
 
 All dates in the fixture are shifted relative to today on import:
-- Birthdates maintain the person's age (full-year shift)
+- Birthdates shift by whole years to preserve the fixture age
 - Activity/note dates are shifted to appear recent
 - Season references are shifted to current/recent seasons
 - Leap year dates (Feb 29) become Feb 28 in non-leap years

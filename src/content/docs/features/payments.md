@@ -200,10 +200,11 @@ Generates branded QR codes using the `chillerlan/php-qrcode` library with GD ima
 - Club logo overlay in the center (sized to 20% of QR area, with white background padding)
 - ECC Level H (30% error correction) to support logo overlay
 - 10px per module scale (~330×330px output)
-- Saved to `wp-content/uploads/invoices/qr-{invoice_number}.png`
-- Path stored in `qr_code_path` ACF field
+- Saved in [private invoice storage](/features/invoicing/#private-invoice-storage)
+- Relative path `invoices/qr-{invoice_number}.png` stored in the read-only `qr_code_path` field
 
-The generator is provider-agnostic — it encodes any URL. For Mollie invoices, it encodes the checkout URL. For Rabobank, QR codes are downloaded directly from the Rabobank API instead.
+The generator accepts any URL, including Mollie checkout links. For Rabobank,
+Rondo downloads the QR image from the Rabobank API into the same private storage.
 
 ## Related Documentation
 

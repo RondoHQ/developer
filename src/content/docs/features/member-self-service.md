@@ -40,7 +40,14 @@ Beheerders stellen onder **Instellingen → VOG** afzonderlijke ledenberichten i
 
 ## E-mail
 
-`email_1` is het primaire e-mailadres en `email_2` het tweede e-mailadres. Een adres toevoegen, vervangen of primair maken wordt pas uitgevoerd nadat de ontvanger de eenmalige link heeft geopend. De link is twee uur geldig en een nieuwe aanvraag maakt een oudere aanvraag ongeldig.
+`email_1` is het primaire e-mailadres en `email_2` het tweede e-mailadres. Bij
+toevoegen, vervangen of primair maken stuurt Rondo een eenmalige link naar het
+nieuwe adres. De link opent een bevestigingspagina. De ontvanger past de
+wijziging toe met de knop **E-mailadres wijzigen**. De link is twee uur geldig.
+Een nieuwe aanvraag maakt een oudere aanvraag ongeldig.
+
+Als het gekozen veld al een ander geldig adres bevat, stuurt Rondo dat adres
+een melding bij de aanvraag en nog een na bevestiging.
 
 Na verificatie werkt Rondo het persoonsprofiel, het afleveradres van het WordPress-account en bij een primair adres ook het loginadres bij. Gekoppelde minderjarige kinderen worden alleen aangepast wanneer hun betreffende e-mailveld nog exact het oude gezinsadres bevat. Een afwijkend adres van een kind wordt nooit overschreven.
 

@@ -45,8 +45,8 @@ Each invoice stores the following fields:
   - `description` — Text description (used for membership line items)
   - `amount` — Decimal amount (negative for discounts)
 - **`payment_link`** — Mollie checkout URL or public payment page URL
-- **`pdf_path`** — Relative path to generated PDF in uploads
-- **`qr_code_path`** — Relative path to QR code PNG in uploads
+- **`pdf_path`** — Relative invoice PDF path, read-only in the field API
+- **`qr_code_path`** — Relative invoice QR image path, read-only in the field API
 - **`sent_date`** — Date invoice was sent (Ymd format)
 - **`due_date`** — Payment due date (Ymd format)
 
@@ -191,8 +191,6 @@ Generates PDF documents using the **mPDF** library. The PDF includes:
 - Only discipline invoices use the four-column discipline table with card and suspension columns; every other type uses description and amount
 - Payment instructions and a QR image, when available, only for unpaid normal invoices; credit notes and paid invoices omit them
 
-PDFs are saved to `wp-content/uploads/invoices/{invoice_number}.pdf`. The relative path is stored in the `pdf_path` ACF field.
-
 The `due_date` is calculated automatically if not set: invoice sent date + configurable payment term days from `FinanceConfig`.
 
 A draft PDF without `sent_date` uses `_scheduled_send_date` when a send date is
@@ -202,6 +200,20 @@ schedule changes the preview without marking the invoice as sent. Sent invoices
 retain their recorded `sent_date` and explicit `due_date`, even if old schedule
 metadata remains. `InvoicePdfDateTest.php` verifies these dates in generated PDFs.
 
+## Private Invoice Storage
+
+`Rondo\Finance\InvoiceStorage` writes new PDFs and payment QR images to
+`rondo-private/invoices/` beside the WordPress root. The stored field values
+keep their relative paths, such as `invoices/factuur-{invoice_number}.pdf` and
+`invoices/qr-{invoice_number}.png`.
+
+The resolver looks in private storage first and falls back to the legacy uploads
+directory for existing files. It accepts only a single file name under
+`invoices/` and checks that the resolved path stays inside its storage directory.
+Use the [authenticated download routes](/api/rest-api/#invoice-file-downloads).
+The deployment guide describes how the web server blocks direct access to
+legacy files. [Hosting and deployment targets](/architecture/deployment/#hosting-and-deployment-targets)
+
 ## Email Sending
 
 **Class:** `Rondo\Finance\InvoiceEmailSender`
@@ -209,8 +221,12 @@ metadata remains. `InvoicePdfDateTest.php` verifies these dates in generated PDF
 Sends HTML emails via `wp_mail()` with:
 
 - **PDF attachment** — The generated invoice PDF
-- **Inline QR code** — Embedded as an `<img>` tag pointing to the uploads URL (not CID — most email clients block CID images)
+- **Inline QR code** — An embedded image with Content-ID `rondo-invoice-qr`
 - **Configurable template** — HTML template from `FinanceConfig` with placeholder variables
+
+Invoice emails and reminders pass the QR file to `wp_mail()` as an embed when
+the file exists. The payment link and button also work in clients that hide
+inline images. [Outbound mail transport](/features/email-delivery/#outbound-transport)
 
 ### Template Variables
 

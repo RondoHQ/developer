@@ -233,7 +233,10 @@ People matches include:
 - general post search/title
 - searchable custom fields
 - KNVB ID (`knvb-id` and `custom_knvb-id`)
-- e-mail addresses inside `contact_info` (ACF repeater)
+- fragments containing `@` in `email_1` or `email_2`
+
+People results must match the search and fall within the caller's permitted
+scope. [Person access rules](/features/access-control/#coordinator-access-by-age-group-or-team)
 
 **Permission:** Logged in users only
 
@@ -280,7 +283,9 @@ Returns the proxied response from the sync service, optionally including immedia
 
 **GET** `/rondo/v1/reminders`
 
-Get upcoming birthdays for reminders.
+Get upcoming birthdays for people the caller can view. The endpoint checks each
+result with `AccessControl::can_view_person()`. If no matching birthdays are
+visible, it returns an empty array.
 
 **Permission:** Logged in users only
 
@@ -295,11 +300,14 @@ Get upcoming birthdays for reminders.
 [
   {
     "id": 123,
-    "title": "John's Birthday",
+    "title": "John Doe",
+    "date_value": "1990-01-20",
     "next_occurrence": "2025-01-20",
     "days_until": 10,
+    "is_recurring": true,
+    "year_unknown": false,
     "related_people": [
-      { "id": 456, "name": "John Doe", "thumbnail": "..." }
+      { "id": 123, "name": "John Doe", "thumbnail": "..." }
     ]
   }
 ]
@@ -1135,9 +1143,14 @@ Generate or regenerate PDF for an invoice.
 
 ---
 
-**GET** `/rondo/v1/invoices/{id}/pdf`
+#### Invoice file downloads
 
-Download the generated PDF file.
+- `GET /rondo/v1/invoices/{id}/pdf` streams the invoice PDF.
+- `GET /rondo/v1/invoices/{id}/qr` streams the payment QR image as PNG.
+
+Both routes require finance read access. Missing records or files return HTTP 404.
+The read-only `pdf_path` and `qr_code_path` fields hold storage references.
+See [private invoice storage](/features/invoicing/#private-invoice-storage).
 
 ---
 

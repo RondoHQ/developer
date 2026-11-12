@@ -52,9 +52,15 @@ Behavior:
   - HTML/text content
   - `From`, `Cc`, `Bcc`, `Reply-To`
   - Custom headers
-  - Attachments
+  - Regular attachments and inline images with a Content-ID
   - Optional route ID
   - Tags and metadata
+
+`LettermintMailer` passes WordPress `embeds` to the Lettermint API as inline
+attachments with matching Content-IDs. The default WordPress mailer handles the
+same embeds when Lettermint is unconfigured. Invoice and reminder emails use
+`cid:rondo-invoice-qr` for private payment QR images. The finance settings test
+email uses a dummy QR image under `rondo-test/` in public uploads.
 
 ## Webhook Inbound Events
 

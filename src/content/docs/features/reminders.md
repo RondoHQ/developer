@@ -194,7 +194,10 @@ Gets all users who should receive reminders.
 
 ### `get_upcoming_reminders($days_ahead)`
 
-Legacy method for backward compatibility. Returns all reminders within specified window (used by REST API for dashboard/UI).
+This method finds birthdays across the requested window. Callers that expose the
+results to users must apply person access checks. For example, the authenticated
+[`GET /rondo/v1/reminders` route](/api/rest-api/#upcoming-reminders) keeps only
+people who pass `AccessControl::can_view_person()`.
 
 **Parameters:**
 - `$days_ahead` - Number of days to look ahead (default: 30)

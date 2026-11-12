@@ -69,6 +69,14 @@ Written to the `rondo_invoice` post on plan selection:
 | `_installment_N_payment_link` | string | Mollie checkout URL |
 | `_mollie_pid_{payment_id}` | int | Reverse-lookup: payment ID → installment number |
 
+## Email Change Confirmation Page
+
+`Rondo\Users\EmailChangePage` handles the link sent to a member's new email
+address. `GET /email-wijzigen/{token}` opens the confirmation form. Only a
+`POST` with a valid WordPress nonce and a current token applies the change.
+Rondo clears the pending request and token after a successful change. The token
+expires after two hours. See [member self-service](/features/member-self-service/#e-mail).
+
 ## Public REST API Endpoints
 
 ### Surveys
