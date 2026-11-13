@@ -56,6 +56,11 @@ Behavior:
   - Optional route ID
   - Tags and metadata
 
+The Lettermint PHP SDK 3.1 creates a fresh immutable builder for each message
+with `emails->compose()`. Keep the builder returned by each call when adding
+headers, body content, metadata or attachments. The transport passes file bytes
+through `Attachment::fromBytes()`, with a Content-ID for inline images.
+
 `LettermintMailer` passes WordPress `embeds` to the Lettermint API as inline
 attachments with matching Content-IDs. The default WordPress mailer handles the
 same embeds when Lettermint is unconfigured. Invoice and reminder emails use
@@ -75,7 +80,11 @@ Supported actionable events:
 Soft bounces (`message.soft_bounced`) are ignored and do not create tasks or update suppression state.
 
 Behavior:
-- Verifies webhook signatures using Lettermint SDK
+- Verifies the raw request body with the Lettermint PHP SDK 3.1 using
+  `X-Lettermint-Signature` and `X-Lettermint-Delivery`. Header normalization
+  preserves duplicate values so the SDK can reject ambiguous signatures. A
+  verification failure returns HTTP 401 `invalid_signature` before suppression
+  or follow-up tasks are written.
 - Stores/updates per-recipient state in option `rondo_lettermint_suppressed_emails`
 - Creates idempotent follow-up `rondo_todo` tasks for Secretaris users
 - Task deduplication is applied first on Lettermint `event_id`, then on mail-level `message_id + recipient` to avoid duplicate todos for one email when retries/follow-up events arrive

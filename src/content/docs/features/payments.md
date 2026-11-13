@@ -35,7 +35,7 @@ These decide which Mollie account is snapshotted onto new invoices of each type.
 
 **Class:** `Rondo\Finance\MollieClient`
 
-Thin wrapper around the official Mollie PHP SDK (`MollieApiClient`). It now receives the API key explicitly so each invoice can use the correct Mollie account.
+Thin wrapper around the official Mollie PHP SDK 4 (`MollieApiClient`). It receives the API key explicitly so each invoice can use the correct Mollie account.
 
 ```php
 $client = new MollieClient( $apiKey );
@@ -90,6 +90,13 @@ For installment payments (Path 0a):
 2. Mark specific installment as `betaald`
 3. Check if all installments are now paid → transition to `rondo_paid` if so
 4. If more installments remain → automatically create next installment's Mollie payment link
+
+When the webhook reads a paid transaction from a payment link, the Mollie SDK
+can return a payment method as a backed enum. The webhook stores the enum value
+as a string in `_mollie_payment_method` for a full payment or
+`_installment_{N}_mollie_method` for an installment. Method names already
+returned as strings pass through unchanged. Invoice details expose an absent
+method as `null`.
 
 ## Rabobank Integration
 

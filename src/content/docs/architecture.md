@@ -90,7 +90,7 @@ ACF field groups are stored as JSON in `acf-json/` for version control.
 
 A React SPA with:
 
-- **Routing:** React Router 6 with `ProtectedRoute` wrapper
+- **Routing:** React Router 7 with `ProtectedRoute` wrapper
 - **State:** TanStack Query for server state, Zustand for client state
 - **API client:** Axios with WordPress nonce injection
 - **Two API namespaces:**

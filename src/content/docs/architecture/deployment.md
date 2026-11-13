@@ -7,6 +7,10 @@ Rondo Club deploys automatically when a commit reaches the `main` branch and
 the required continuous-integration checks pass. Production releases do not
 depend on a developer workstation.
 
+Rondo Club 35.170.25 and later require PHP 8.2 or newer. The theme header
+and Composer both declare this minimum. GitHub Actions uses PHP 8.2 for
+release builds and PHP checks.
+
 ## Pipeline
 
 The `CI and deploy` workflow separates release preparation from deployment:

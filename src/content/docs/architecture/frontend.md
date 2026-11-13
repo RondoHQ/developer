@@ -14,7 +14,7 @@ The React root reports caught and uncaught errors through the Sentry-compatible 
 | Technology | Version | Purpose |
 |------------|---------|---------|
 | React | 18 | UI library |
-| React Router | 6 | Client-side routing |
+| React Router | 7 | Client-side routing via `react-router-dom` |
 | TanStack Query | Latest | Server state management and caching |
 | Axios | Latest | HTTP client |
 | Tailwind CSS | 3.4 | Styling |

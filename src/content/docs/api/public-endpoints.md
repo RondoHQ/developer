@@ -124,7 +124,10 @@ Handled by `Rondo\Finance\MollieWebhook`. Receives payment status callbacks from
 Handled by `Rondo\Notifications\LettermintWebhook`. No WordPress authentication required.
 
 **Security model:**
-- Signature verification via Lettermint SDK (`X-Lettermint-Signature` and `X-Lettermint-Delivery` headers)
+- The Lettermint PHP SDK verifies the raw body with `X-Lettermint-Signature`
+  and `X-Lettermint-Delivery`. Missing delivery headers, mismatched timestamps,
+  duplicate signatures and other verification failures return HTTP 401
+  `invalid_signature` before event processing.
 - Configurable signing secret and tolerance via `LettermintConfig`
 - Only actionable events are processed:
   - `message.hard_bounced`
