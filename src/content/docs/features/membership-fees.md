@@ -825,6 +825,10 @@ public function clear_all_snapshots_for_season( string $season ): int
 
 **Snapshot meta key format:** `fee_snapshot_YYYY-YYYY`
 
+Production exports of fee snapshots contain member financial data. Keep these
+exports in access-controlled storage outside the source repository. Use
+synthetic records for versioned fixtures and planning examples.
+
 ## UI (Admin Settings)
 
 Located at: **Settings → Admin → Contributie**

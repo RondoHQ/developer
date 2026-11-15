@@ -416,7 +416,11 @@ Dashboard transients that contain scoped person data must include the current us
 
 IVA certificates are stored in `rondo-private/iva` above the WordPress document root. Existing IVA media attachments are migrated once, their public files and generated image sizes are removed, and downloads go through `GET /rondo/v1/iva/{person_id}/certificate`.
 
-That endpoint permits the linked member, a volunteer manager, an IVA approver, or an administrator. Responses use `Cache-Control: private, no-store` and `X-Content-Type-Options: nosniff`. Never return `wp_get_attachment_url()` for an IVA certificate.
+That endpoint permits the linked member, a volunteer manager, an IVA approver, or an administrator.
+The file stream runs only after a successful GET on the certificate route. It takes the person ID
+from the route, rechecks access and looks up the stored file before sending it. Responses use
+`Cache-Control: private, no-store` and `X-Content-Type-Options: nosniff`. The REST payload
+contains no filesystem path.
 
 The React client must fetch this endpoint through the configured Axios instance with `responseType: 'blob'`, then open an object URL. Do not link directly to the REST URL: a browser navigation does not send the `X-WP-Nonce` header, so WordPress cookie authentication treats the request as anonymous.
 

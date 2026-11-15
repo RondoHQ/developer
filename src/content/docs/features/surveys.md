@@ -85,22 +85,65 @@ analytics or external assets and fetches without WordPress credentials.
 
 ## Invitations and reminders
 
-Prepare recipients from accessible people or email/name rows. Person selections
-resolve the primary email server-side; raw recipient rows cannot attach a person ID.
-Preparation checks all rows and accepts at most 2,000 people per batch.
-It keeps one invite per lowercase email address within the same context. Preparing the same email again
-reuses the invite and its original version. This step sends no mail.
+### Choose recipients
 
-The explicit `send` action queues incomplete invitations in `prepared` or `failed`
-state. Hourly `rondo_survey_deliveries` cron processes at most 30 messages per run,
-using the shared branded `wp_mail` transport. Closed surveys and completed invitations
-are skipped. Invitations linked to a person recheck the communication policy.
+**Alle leden selecteren** loads current members the signed-in user may access.
+It skips former members, external contacts, company-only records, deceased
+members and people without a valid email. The editor shows the selected member
+count and unique email count. You can remove people before preparing invitations.
+You can also search for individuals or enter email/name rows manually.
+
+The server rechecks person access and resolves the primary email from the person
+record. In all-members mode it also rechecks current membership. Raw recipient
+rows carry only an email and optional name. The UI submits groups of 500, and the
+API accepts up to 2,000 resolved recipients per request. A shared email gets one
+invite and one reply per context. Preparing the same address again reuses the
+invite and its original questionnaire version. Preparation adds to the existing
+list and sends no mail.
+
+### Edit and preview the invitation email
+
+**Begeleidende e-mail** saves the subject and message separately from the
+questionnaire draft and published versions. Both fields are plain text and
+required. The subject allows up to 200 characters on one line, and the message
+allows up to 10,000 characters. The branded email adds the personal survey link
+automatically. Existing surveys have a default subject and message.
+
+Both fields support `{voornaam}`, `{naam}`, `{enquete}` for the survey title
+and `{club}` for the site name. `{voornaam}` uses the linked person's
+registered first name, including compound names. It falls back to **AWCer** when no first name is available, including for
+manual email rows. `{naam}` uses the invite name and falls back to `clublid`.
+Preview and test use the signed-in user's display name and first name. For the
+first name, they prefer the linked person and then the WordPress profile.
+
+The UI requires a preview of the saved message and a confirmation before
+sending. Preview and test also accept unsaved copy. **Testmail naar mezelf**
+uses the signed-in manager's WordPress email address and adds `[Test]` to the
+subject. Its button opens the authenticated survey preview. Testing creates
+no invitations or responses.
+
+### Delivery and reminders
+
+The explicit `send` action queues incomplete invitations in `prepared` or
+`failed` state. Each queued invitation stores the subject and body templates
+used for that send, so later edits leave the queued copy intact. Supply the
+last read `expected_email` when saving or queueing the reviewed message.
+A stale value returns HTTP 409.
+
+WordPress processes up to 30 attempts per batch through the branded `wp_mail`
+transport. The `rondo_survey_delivery_batch` event is scheduled for the next
+minute boundary when messages are queued and again when a batch uses its full
+budget. The hourly `rondo_survey_deliveries` sweep also handles automatic
+reminders and pending work. Closed surveys and completed invitations are
+skipped. Before sending an invitation linked to a person, Rondo checks the
+communication policy again.
 
 One reminder can be sent to each incomplete invitation, manually or after
-`reminder_days` (default 7; 0 disables automatic reminders, maximum 90).
-Failed sends remain visible as `failed` or `reminder_failed` and can be queued again.
-If the send outcome is unknown, its state stays `sending`. Cron does not resend it.
-Successful `wp_mail` acceptance does not prove inbox delivery.
+`reminder_days` (default 7, maximum 90, with 0 disabling automatic reminders).
+Reminders use the built-in subject and message. Failed sends remain visible as
+`failed` or `reminder_failed` and can be queued again. If the send outcome is
+unknown, its state stays `sending` and cron skips it. Mail acceptance records
+handoff to the transport. Inbox delivery requires separate confirmation.
 
 ### Duty-type survey selection
 
@@ -143,11 +186,16 @@ authentication and browser nonces. Rights below refer to the capabilities above.
 | `POST /surveys` | Manage; `title`, `document`, optional settings, or `template: "volunteers"` |
 | `GET /surveys/{id}` | Either right; draft, versions, URL and effective rights |
 | `PUT /surveys/{id}` | Manage; partial settings/document update with last read `revision` |
-| `POST /surveys/{id}/action` | Manage; `action`: `publish`, `close`, `duplicate`, `send` or `remind` |
+| `POST /surveys/{id}/action` | Manage. `action` is `publish`, `close`, `duplicate`, `send` or `remind`. `send` and `remind` accept optional `expected_email` and return `{ queued }` |
 | `GET /surveys/recipients?search=...` | Manage; at least two characters, up to 30 accessible people with a primary email |
+| `GET /surveys/recipients?all_members=true` | Manage. Returns `{ id, name, email }` rows for accessible, contactable current members |
 | `GET /surveys/available` | Manage, `vrijwilligers` or administrator; open survey IDs/titles for the task-type picker |
 | `GET /surveys/{id}/invitations` | Manage; recipients and delivery/completion state, without tokens |
-| `POST /surveys/{id}/invitations` | Manage; `recipients: [{ email, name }]` and/or `person_ids`; returns `{ prepared }` |
+| `POST /surveys/{id}/invitations` | Manage. Accepts `recipients: [{ email, name }]` and/or `person_ids`. Set `all_members: true` to recheck the current-member filter for those IDs. Returns `{ prepared }` |
+| `GET /surveys/{id}/email` | Manage. Returns the effective `{ subject, body }` |
+| `PUT /surveys/{id}/email` | Manage. Accepts `email: { subject, body }` and the last read `expected_email`. Returns the saved settings or HTTP 409 if they changed |
+| `POST /surveys/{id}/email-preview` | Manage. Accepts `email: { subject, body }` and returns `{ subject, html }` |
+| `POST /surveys/{id}/email-test` | Manage. Accepts the same input as preview and returns `{ sent_to }` after mail handoff |
 | `GET /surveys/{id}/results` | Results; optional `version`, `question`, `value`, `page`; returns version, total, summary, rows, page and pages |
 | `GET /surveys/{id}/export` | Results; same selection, all rows; returns JSON `{ csv, filename }` |
 | `GET /public-surveys/{id}` | Public; optional `invitation` token; published document/version, privacy mode and signed challenge |
@@ -176,7 +224,8 @@ Implementation: `class-surveys.php`, `class-survey-schema.php`,
 `class-public-survey-page.php`, `public/survey.js` and `Surveys.jsx`.
 `SurveysTest` covers branching, hidden required questions, immutable versions,
 invitation reuse, privacy, replay, closing, permissions, CSV safety, reminders,
-editor conflicts, task types without surveys, clearing selections and per-shift
+recipient scoping, preview and test isolation, saved email conflicts, personalization,
+batch continuation, task types without surveys, clearing selections and per-shift
 invitations with no-show exclusion. `IntegerFieldContractTest` checks integer values and bounds, clearing with `null`,
 REST and metadata schemas, and stored keys. It also checks invalid writes and access
 rights. Ordinary `number` fields still

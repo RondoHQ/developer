@@ -55,6 +55,27 @@ De post types zijn `rondo_comm_item` en `rondo_comm_series`. Domeinvelden staan 
 
 De aangepaste endpoints staan onder `/rondo/v1/communications` en `/rondo/v1/communication-series`. Updates ondersteunen een versiewaarde op basis van `modified_gmt`; een verouderde versie krijgt HTTP 409. Checklistbewerkingen worden per item geserialiseerd; een gelijktijdige bewerking krijgt HTTP 409 en moet opnieuw worden gelezen voordat de gebruiker het opnieuw probeert.
 
+### Afbeeldingen
+
+Maak het item aan en upload elke afbeelding als multipartveld `file` via
+`POST /rondo/v1/communications/{id}/attachments`. De upload accepteert JPEG,
+PNG en WebP tot 10 MB per bestand. Een nieuw item begint met een lege
+bijlagenlijst.
+
+Bij een update selecteert `attachments` bestaande afbeeldingen van hetzelfde
+item met `{ key, alt }`. Laat `alt` weg om de huidige tekst te behouden.
+Laat `attachments` weg om de lijst te behouden, of stuur `[]` om alle
+afbeeldingen van het item los te koppelen. Een ongeldige selectie geeft
+HTTP 400 (`invalid_attachments`). De server bepaalt bestandspad en MIME-type
+en controleert of het bestand een geldige afbeelding in de uploadmap is.
+
+Dupliceren en wijzigingen doorvoeren naar de reeks gebruiken de
+gevalideerde bestanden van het bronitem. De respons bevat `key`, `name`,
+`type`, `alt` en een afgeschermde download-URL. De download controleert
+itemtoegang en stuurt `Cache-Control: private, no-store, max-age=0` en
+`X-Content-Type-Options: nosniff`. Bij een ontbrekend of ongeldig bestand
+geeft deze route HTTP 404.
+
 ### Kanalen en afhandeling
 
 `POST /rondo/v1/config` accepteert `communication_channels`: een lijst van `{id, label, active}`. Dit vereist beheerdersrechten. Nieuwe kanalen krijgen een ID op de server; laat `id` daarvoor weg. Ontbrekende bestaande kanalen worden inactief gemaakt, niet verwijderd. Alle namen blijven bewaard voor historische items.

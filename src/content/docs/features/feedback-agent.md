@@ -2,51 +2,41 @@
 title: Feedback Agent
 ---
 
-The Feedback Agent is an autonomous Claude Code instance that processes user feedback (bug reports and feature requests) submitted through the Rondo Club UI. It runs on a Mac Mini every 30 minutes, creating pull requests for resolved items and posting follow-up questions when it needs more information.
+Rondo Club stores bug reports and feature requests for review. Process feedback
+in a reviewed interactive session. The legacy unattended runner is disabled.
 
 ## Submitter profile
 
 The feedback response includes `author.person_id` for the submitter’s linked, published person when the viewer can access that record. “Submitted by” links to `/people/{person_id}`. Missing, unpublished, invalid, or inaccessible profiles return `null` and keep the name as plain text. The WordPress account ID remains `author.id`.
 
-The creation and editing forms have no project selector, including for administrators. New UI submissions send `project: rondo-club`; UI edits omit `project` and preserve the stored value. The REST API still accepts the supported project values for integrations.
+The creation and editing forms have no project selector, including for administrators. New UI submissions send `project: rondo-club`; UI edits omit `project` and preserve the stored value. Administrator integrations can set the project through the REST API.
 
-## Architecture
-
-```
-User submits feedback → WordPress REST API → Feedback queue (status: approved)
-                                                    ↓
-Mac Mini launchd (every 30 min) → bin/get-feedback.sh --loop --optimize
-                                                    ↓
-                                        Fetch oldest approved item
-                                        Set status to in_progress
-                                        Pipe to Claude Code --print
-                                                    ↓
-                            ┌────────────┬──────────┴──────────┐
-                         IN_REVIEW    NEEDS_INFO            DECLINED
-                            ↓            ↓                     ↓
-                     Create PR     Post comment          Set declined
-                     Store Dutch  Set needs_info
-                     resolution
-                     Store PR URL
-                            ↓
-                     PR is merged
-                     Set resolved
-                     Send email
-                                                    ↓
-                                        When no feedback left:
-                                        Run optimization review
-```
-
-## Feedback Statuses
+## Review workflow
 
 | Status | Meaning |
 |--------|---------|
-| `new` | Just submitted by a non-admin user, awaiting approval |
-| `approved` | Ready for agent pickup |
-| `in_progress` | Currently being processed by the agent |
-| `needs_info` | Agent posted a question, waiting for user reply |
-| `resolved` | Agent created a PR or the issue was fixed |
-| `declined` | Not actionable |
+| `new` | Awaiting review or reapproval |
+| `approved` | Ready to review the recorded approval and start work |
+| `in_progress` | Work has started |
+| `in_review` | A proposed change is ready for review |
+| `needs_info` | Waiting for more information |
+| `resolved` | The issue has been resolved |
+| `declined` | The club has declined the request |
+
+Approval applies to one revision. Feedback responses expose the current
+`content_revision` and the recorded `approved_revision`. The latter is an
+empty string when no approval is recorded. Check both the workflow status
+and the matching revision before relying on an approval. Review content
+includes the title, description, report details, project, screenshot,
+plan and comments. Priority and other workflow bookkeeping sit outside
+the fingerprint.
+
+A content change or new comment clears recorded approval and returns items
+in `approved`, `in_progress`, `in_review` or `needs_info` to `new`.
+Rondo also clears the old plan. An administrator may save a replacement
+plan in the same edit for review. Sending `status: "approved"` with an
+administrator edit records approval for the final saved content. An edit
+that leaves the revision unchanged preserves approval.
 
 ### New feedback email
 
@@ -111,7 +101,7 @@ Allowed statuses are `new`, `approved`, `in_progress`, `in_review`, `resolved`, 
 transition to `resolved` sets `_feedback_resolved_at` and attempts the one-time styled email. A
 new transition to `resolved` requires `--message` unless a resolution summary was stored earlier,
 and a new transition to `declined` requires `--reason` on the same terms. A repeated command with
-the current status is a successful no-op.
+the current status leaves it in place. Setting `approved` again records the current revision.
 
 ## REST API
 
@@ -120,9 +110,17 @@ the current status is a successful no-op.
 The submitter and users with feedback-section access can read an item. The
 submitter or an administrator can edit it. The item route
 `/rondo/v1/feedback/{id}` accepts `POST`, `PUT`, and `PATCH` for edits.
-Only administrators can change the status, priority,
-resolution summary or decline reason. `DELETE /rondo/v1/feedback/{id}` requires
-`manage_options` and permanently deletes the item.
+On creation, member submissions use `new`, `medium` and `rondo-club` for
+status, priority and project. Administrators can choose an initial status of
+`new` or `approved`, with `approved` as the default.
+
+Only administrators can edit `status`, `priority`, `project`, `resolution_summary`,
+`decline_reason`, `agent_plan`, `agent_branch` and `pr_url`. A non-admin edit
+that supplies any of these fields returns HTTP 403 before applying changes.
+Members write feedback and its comments through the Rondo routes. The generic
+`/wp/v2/feedback` and `/wp/v2/comments` writes for feedback return HTTP 403
+for non-admins. `DELETE /rondo/v1/feedback/{id}` requires `manage_options` and
+permanently deletes the item.
 
 ### Private screenshots
 
@@ -167,97 +165,28 @@ Returns an array of comments ordered by date ascending:
 }
 ```
 
-When a user replies to a `needs_info` feedback item, the status automatically transitions back to `approved` so the agent picks it up again.
+`author_type` defaults to `user`. Only administrators can post as `agent`.
+Each new comment invalidates approval. A reply to a `needs_info` item
+returns it to `new` for review.
 
 ### Agent Meta Fields
 
-The feedback API includes two agent-specific fields in the `meta` response:
+The feedback API exposes agent and outcome fields in `meta`.
 
 - `pr_url` — URL of the GitHub PR created by the agent
 - `agent_branch` — Git branch name used by the agent
+- `agent_plan` — plan saved by an administrator for review
 - `resolution_summary` — Dutch user-facing explanation of how the feedback was fixed
 - `decline_reason` — Dutch user-facing explanation of why the feedback was declined
 
-These are stored as post meta (`_feedback_pr_url`, `_feedback_agent_branch`,
-`_feedback_resolution_summary`, and `_feedback_decline_reason`) and can be set via the update
-endpoint. Send `resolution_summary` together with `status: resolved`; the API rejects a new
-resolved transition when neither that request nor the post already contains an explanation. Send
-`decline_reason` together with `status: declined` on the same terms. Both fields are
-administrator-only — a non-admin supplying either gets a 403.
+The update endpoint stores these fields as post meta. A transition to
+`resolved` requires a `resolution_summary` in the request or already on the
+item. A transition to `declined` requires a `decline_reason` on the same terms.
 
 ## Script: `bin/get-feedback.sh`
 
-### Flags
-
-| Flag | Description |
-|------|-------------|
-| `--run` | Process one feedback item with Claude Code |
-| `--loop` | Process all approved items until none remain |
-| `--optimize` | When no feedback, review one file for optimization |
-| `--status=X` | Filter by status (default: `approved`) |
-| `--type=X` | Filter by type: `bug` or `feature_request` |
-| `--id=X` | Process a specific feedback item |
-| `--json` | Output raw JSON (no Claude processing) |
-
-### Safety
-
-- **Lock file** at `/tmp/rondo-feedback-claude.lock` prevents concurrent runs
-- **Crash cleanup** resets feedback status to `approved` if the script exits unexpectedly
-- **`ensure_clean_main()`** aborts if the working directory is dirty
-- **Branch cleanup** deletes merged `feedback/*` and `optimize/*` branches after each run
-- Status set to `in_progress` before Claude runs, preventing other instances from picking up the same item
-
-### Agent Prompt
-
-The agent's instructions live at `.claude/agent-prompt.md`. Key rules:
-- Create branch `feedback/{id}-{slugified-title}`
-- Make changes, build, commit, push, create PR via `gh pr create`
-- Do NOT deploy — only create PRs
-- Output `STATUS: IN_REVIEW` + `PR_URL:` + a one-line Dutch `RESOLUTION:`, or `STATUS: NEEDS_INFO` + `QUESTION:`
-
-### Optimization Mode
-
-When `--optimize` is set and no feedback items are found, the script reviews one file per run:
-1. Build a queue of PHP includes and React source files
-2. Track reviewed files in `logs/optimization-tracker.json`
-3. Claude reviews one file using `.claude/optimize-prompt.md`
-4. If improvements found, creates a PR on `optimize/{module-name}` branch
-5. Max 1 optimization PR per run
-
-## Mac Mini Setup
-
-### launchd Configuration
-
-The plist template is at `bin/com.rondo.feedback-agent.plist`. To install on the Mac Mini:
-
-```bash
-# Copy to LaunchAgents
-cp bin/com.rondo.feedback-agent.plist ~/Library/LaunchAgents/
-
-# Load the job
-launchctl load ~/Library/LaunchAgents/com.rondo.feedback-agent.plist
-
-# Check status
-launchctl list | grep rondo
-
-# Unload if needed
-launchctl unload ~/Library/LaunchAgents/com.rondo.feedback-agent.plist
-```
-
-### Prerequisites on Mac Mini
-
-- Claude Code CLI installed and authenticated (Max OAuth)
-- `gh` CLI authenticated with GitHub
-- SSH keys configured for git push
-- `.env` configured with API credentials
-- `jq` installed (`brew install jq`)
-
-### Logs
-
-- `logs/feedback-processor.log` — Main script log
-- `logs/launchd-stdout.log` — launchd stdout capture
-- `logs/launchd-stderr.log` — launchd stderr capture
-- `logs/optimization-tracker.json` — Tracks which files have been reviewed
+The script exits with status 1 before reading credentials, acquiring locks
+or launching agents. The same exit applies with every script flag, including when launchd invokes it.
 
 ## Frontend
 
