@@ -118,7 +118,9 @@ Content is stored in private `rondo_signage_item` posts and playlists in private
 `rondo_signage_list` posts. Both use the native field registry and numbered
 post-meta rows for playlist entries. Media remains a normal WordPress
 attachment. Images accept JPEG, PNG and WebP; video accepts muted H.264 MP4 up
-to 100 MB.
+to 100 MB. Club TV rejects [private member photos](/features/member-media/) and
+attachments referenced by a person. Existing items with those attachments omit
+the media from their manifest.
 
 The server resolves schedules, item weights, fallbacks and active overrides
 before returning a manifest. Players therefore do not receive private person

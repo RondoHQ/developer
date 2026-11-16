@@ -12,6 +12,11 @@ Rondo remains authoritative for a manually uploaded photo. Forward imports use `
 
 ## Sportlink photo imports
 
+The Rondo photo endpoint saves Sportlink imports and manual uploads in
+[private member storage](/features/member-media/). The upload still returns an
+attachment ID. Its image URLs are intended for the signed-in app. Reverse sync
+reads photo bytes through the administrator-only photo job endpoint.
+
 Scheduled People sync and individual member sync select the most recently modified
 supported photo file in the sync server's cache. Sportlink may change a photo from
 JPEG to PNG (or another supported format); older files can remain, but must not

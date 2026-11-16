@@ -330,6 +330,27 @@ failing `can_edit_people()`, and members never pass it.
 `/activities` and `/timeline`. Until 33.30.0 it returned `true` for any logged-in user on any
 person, so those routes were effectively unguarded. They now obey `can_view_person()`.
 
+Use these Rondo routes for notes and activities. Core WordPress comment REST routes
+require administrator access, and Rondo comment metadata is omitted from core REST.
+Rondo sanitizes historical email HTML when preparing timeline responses. The theme
+disables WordPress XML-RPC methods and the production Nginx rules deny the XML-RPC path.
+
+### Person field writes
+
+Person REST writes check field permissions before saving. Finance mutations require
+finance write access. VOG dates require `vog`, IVA approval fields require
+`rondo_iva_approve`, and paid-volunteer and exemption fields require `vrijwilligers`.
+Administrators can write fields allowed by the schema. Section guards apply
+regardless of route capitalization. Scope errors return HTTP 403
+with `rondo_person_field_scope` and `blocked_fields`.
+
+Use canonical `fields` for person updates. Core `meta` accepts only the legacy
+`team` key for administrators and `_exclude_from_contributie` for administrators
+or finance editors. The response exposes the legacy team label and limits the fee
+exemption flag to the same write-capable users. Former-member read-only checks also
+cover native post fields, featured images and raw metadata on core person updates.
+See [private member photos](/features/member-media/) for attachment permissions.
+
 ## Age-group narrowing
 
 `AccessControl::get_permitted_age_groups()` returns one of three things, and the distinction
@@ -337,7 +358,7 @@ matters:
 
 | Return | Meaning | Who |
 |---|---|---|
-| `null` | No restriction — sees everyone | Users with a management capability (`manage_options`, `fairplay`, `vog`, `financieel`, `financieel_read`, `toegangscontrole`, `manage_clothing`, `ledenadministratie`, `sponsorbeheer`, `vrijwilligers`) |
+| `null` | No age-group restriction | Users with a management capability (`manage_options`, `fairplay`, `vog`, `financieel`, `financieel_read`, `toegangscontrole`, `manage_clothing`, `ledenadministratie`, `sponsorbeheer`, `vrijwilligers`) |
 | `[]` | Scoped to their own household | Any other user, including plain members |
 | `['Onder 11', …]` | Sees only these age groups | A role listed in the `rondo_age_group_access` option, e.g. a coordinator |
 
@@ -345,10 +366,11 @@ Non-management users **default to deny**: an unconfigured role reaches no people
 household.
 
 :::caution[Granting a management capability voids a role's age-group scoping]
-Every capability in `AGE_GROUP_BYPASS_CAPS` — including `vog`, `fairplay`, `sponsorbeheer` and
-`vrijwilligers` — makes `get_permitted_age_groups()` return `null`, so the role sees every person in
-the club and its `rondo_age_group_access` entry becomes dead configuration. The capability matrix
-clears that entry for you when you grant one. Check it before assuming a coordinator is scoped.
+Every capability in `AGE_GROUP_BYPASS_CAPS` makes `get_permitted_age_groups()` return
+`null`. The capability matrix clears the role's `rondo_age_group_access` entry when
+one is granted. A non-admin user with `vog` and without `fairplay` is still scoped
+to current volunteers for person reads and edits. VOG bulk send, Justis marking
+and reminder actions check every requested person before making any changes.
 :::
 
 Read access to individual *fields* is a separate matter: see

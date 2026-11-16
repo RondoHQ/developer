@@ -580,7 +580,8 @@ Household placeholder addresses are routed to the account's `rondo_contact_email
 
 **POST** `/rondo/v1/people/{person_id}/photo`
 
-Upload and set a person's profile photo. The filename is automatically generated from the person's name.
+Upload and set a person's profile photo. WordPress generates a random filename
+and returns permission-checked image URLs. See [private member photos](/features/member-media/).
 
 **Permission:** Must be able to edit the person
 
@@ -594,9 +595,9 @@ Upload and set a person's profile photo. The filename is automatically generated
 {
   "success": true,
   "attachment_id": 789,
-  "filename": "john-doe.jpg",
-  "thumbnail_url": "https://...",
-  "full_url": "https://..."
+  "filename": "member-0123456789abcdef0123456789abcdef.jpg",
+  "thumbnail_url": "https://your-site.com/?rondo_member_media=789&size=thumbnail",
+  "full_url": "https://your-site.com/?rondo_member_media=789&size=full"
 }
 ```
 
@@ -1712,3 +1713,13 @@ separate editing from answer access. Public participants use
 `/rondo/v1/public-surveys/{id}` with a signed challenge and, for personal links,
 an invitation token. See [surveys](/features/surveys/#rest-contract) for all routes,
 version rules, validation limits and privacy modes.
+
+See the [survey analysis REST contract](/features/survey-analysis/#rest-contract)
+for shared result filters, analysis profiles, open-answer labels, immutable
+conclusions, internal follow-up and round comparisons.
+
+## Volunteer policy statistics
+
+`GET /rondo/v1/volunteer-statistics` accepts an optional `season`. Its
+`policy` and `policy_history` fields expose current progress and stored daily
+observations. See [volunteer policy calculations](/features/volunteer-policy/).

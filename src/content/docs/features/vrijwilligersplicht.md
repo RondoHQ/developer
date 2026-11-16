@@ -97,6 +97,10 @@ The dashboard requests `summary_only=1`; the endpoint then preserves all counts 
 returns an empty `units` array. Detail consumers keep receiving the complete unit collection by
 default, and `with_persons=1` remains available for the exemptions page.
 
+The [volunteer policy dashboard](/features/volunteer-policy/) uses the same decorated
+obligation units to report on-track and outstanding duties, shift coverage and daily
+observations for the selected season.
+
 ## Laposta synchronization
 
 `GET /rondo/v1/volunteer-obligations` exposes `is_exempt` and `exemption` on every decorated unit.

@@ -667,6 +667,9 @@ X-WP-Nonce: {nonce}
 ## Upload Profile Photo
 
 The person detail page opens the [photo crop editor](/features/photo-cropping/) before uploading. It sends the selected square as a JPEG up to 800 × 800 pixels through this existing endpoint.
+The server accepts files up to 5 MB, assigns a random filename and writes to
+[private member storage](/features/member-media/). Display the returned URLs
+with the WordPress login cookie.
 
 **Request:**
 ```http
@@ -683,9 +686,9 @@ X-WP-Nonce: {nonce}
 {
   "success": true,
   "attachment_id": 789,
-  "filename": "jan-de-vries.jpg",
-  "thumbnail_url": "https://your-site.com/wp-content/uploads/2026/01/jan-de-vries-150x150.jpg",
-  "full_url": "https://your-site.com/wp-content/uploads/2026/01/jan-de-vries.jpg"
+  "filename": "member-0123456789abcdef0123456789abcdef.jpg",
+  "thumbnail_url": "https://your-site.com/?rondo_member_media=789&size=thumbnail",
+  "full_url": "https://your-site.com/?rondo_member_media=789&size=full"
 }
 ```
 

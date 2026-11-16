@@ -13,7 +13,7 @@ Two separate section rights control access:
 | Capability | Access |
 | --- | --- |
 | `enquetes` | Create, edit, preview, publish, close, duplicate and manage invitations |
-| `enquete_resultaten` | Read results and download CSV exports |
+| `enquete_resultaten` | Read results, analysis, conclusions and round comparisons, and download CSV exports |
 
 Either right allows users to read the survey list and detail. Editors need the results right to read answers.
 Users with only the results right cannot read the list of invited people. Administrators
@@ -168,10 +168,12 @@ mail marks the invitation sent, allowing the survey reminder workflow to continu
 
 ## Results and export
 
-Select a published version and optionally filter by choice `question` and `value`.
-Summaries count only answers present for each question. Percentages use that
-question's answered count; multiple-choice totals can exceed 100%.
-The response list shows 50 rows per page. CSV exports include all matching rows, with option labels, semicolons and a UTF-8 BOM.
+Select a published version in **Resultaten**. The
+[survey analysis workspace](/features/survey-analysis/) supports multiple choice
+filters, open-answer search, confirmed themes, conclusions and round comparisons.
+Survey managers with results access can configure profiles and track follow-up
+actions. The legacy results API still returns 50 rows per page.
+CSV exports include all matching rows, with option labels, semicolons and a UTF-8 BOM.
 Cells that look like formulas start with an added apostrophe. Linked surveys add recipient
 columns; unlinked surveys omit them.
 
@@ -196,7 +198,7 @@ authentication and browser nonces. Rights below refer to the capabilities above.
 | `PUT /surveys/{id}/email` | Manage. Accepts `email: { subject, body }` and the last read `expected_email`. Returns the saved settings or HTTP 409 if they changed |
 | `POST /surveys/{id}/email-preview` | Manage. Accepts `email: { subject, body }` and returns `{ subject, html }` |
 | `POST /surveys/{id}/email-test` | Manage. Accepts the same input as preview and returns `{ sent_to }` after mail handoff |
-| `GET /surveys/{id}/results` | Results; optional `version`, `question`, `value`, `page`; returns version, total, summary, rows, page and pages |
+| `GET /surveys/{id}/results` | Results. Accepts the [shared analysis selection](/features/survey-analysis/#rest-contract) and `page`. Returns version, total, summary, rows, page and pages |
 | `GET /surveys/{id}/export` | Results; same selection, all rows; returns JSON `{ csv, filename }` |
 | `GET /public-surveys/{id}` | Public; optional `invitation` token; published document/version, privacy mode and signed challenge |
 | `POST /public-surveys/{id}` | Public; same token plus JSON `version`, `challenge`, `answers`, empty `website`; returns `{ submitted, thanks }` |
