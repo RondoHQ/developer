@@ -96,6 +96,14 @@ curl -X POST https://sync.example.com/api/sync/individual \
   -d '{"knvb_id":"12345678"}'
 ```
 
+### Twelve on-demand sync
+
+The API-key-protected `GET` and `POST /api/sync/twelve` routes support the [administrator control in Kassaomzet](/integrations/twelve/#on-demand-synchronization). They use the same launcher as the dashboard. `POST` always starts `scripts/sync.sh twelve` without `--scheduled`; request bodies cannot select another pipeline or add arguments. This bypasses opening windows and uses the pipeline's normal recent-data range and checkpoint. Starts are limited to five requests per minute.
+
+A successful launch returns HTTP 200 `{ ok: true, pipeline: "twelve" }`. HTTP 409 means the pipeline is already running. The shared launcher checks both tracked runs and an in-process launch guard, covering the interval before RunTracker creates a record. Launch failures return HTTP 500. Confirm completion through status rather than the launch response.
+
+`GET` returns `{ running, last_run }`, where `last_run` is `null` or `{ id, outcome, started_at }` for the latest Twelve run. `running` includes the launch guard and tracked execution. API-key authentication uses the same 401/403/503 responses described above.
+
 ## Configuration
 
 Add to the sync server's `.env`:

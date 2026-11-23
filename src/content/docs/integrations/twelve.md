@@ -32,6 +32,14 @@ Administrators edit weekday opening windows under **Synchronisatie**. The schedu
 
 **Drukte & bezetting** shows purchases and revenue per hour, registered kantine staffing and archived home fixtures, with a median comparison only when enough complete comparable days exist. **Marges** provides [private purchase invoices and theoretical product costing](/features/kantine-margins/), using dated purchase/sale prices and current ingredient mappings. Kassa readers can inspect both; changing margin data additionally requires finance-management permission.
 
+## On-demand synchronization
+
+Administrators can use **Nu synchroniseren** on Kassaomzet to fetch recent reports outside the configured windows. The button is disabled while a launch or run is in progress, while status is loading, or when status cannot be read. Status is polled every five seconds; after a running job stops, the page invalidates its Twelve report queries. The success message requires a new run ID with outcome `success`; a stopped or partially successful run is not reported as complete. Failed status checks offer **Opnieuw controleren**.
+
+Both `GET` and `POST /rondo/v1/twelve/sync` require approved `kassaomzet` access plus `manage_options`. WordPress forwards the same method to the fixed [Sync API route](/sync/web-api/#twelve-on-demand-sync), using `RONDO_SYNC_URL` and `RONDO_SYNC_API_KEY` as server-side configuration. The API key is sent as `X-Sync-API-Key` and is not passed to the browser. The upstream request has a ten-second timeout and follows no redirects. A successful response has `Cache-Control: private, no-store`.
+
+`POST` accepts a successful launch only when the upstream HTTP 200 body contains a truthy `ok`; this confirms launch, not import completion. `GET` requires a `running` status and includes `last_run`. Missing configuration returns HTTP 503 `twelve_sync_not_configured`; an existing run returns HTTP 409 `twelve_sync_running`. Transport failures return HTTP 502 `twelve_sync_unavailable`; other upstream errors or invalid responses return HTTP 502 `twelve_sync_failed`. Error messages do not expose upstream connection or server details.
+
 ## REST API
 
 Routes below are relative to `/wp-json/rondo/v1`; ordinary reads require approved authentication and `kassaomzet`.
@@ -50,6 +58,8 @@ Routes below are relative to `/wp-json/rondo/v1`; ordinary reads require approve
 | `POST /twelve/product-groups` | Admin plus kassa access; existing product `id` and allowed `group`; `unassigned` removes the override |
 | `GET /twelve/schedule` | Current fixed timezone/interval and weekday windows |
 | `POST /twelve/schedule` | Admin; complete `days` replacement |
+| `GET /twelve/sync` | Admin plus kassa access; `{ running, last_run }` |
+| `POST /twelve/sync` | Admin plus kassa access; launch recent import; `{ ok: true, pipeline: "twelve" }` |
 | `POST /twelve/import` | Admin; validated `report_json`; `{ id, status, hash }` |
 | `GET /twelve/businessclub` | Required `month=YYYY-MM`; `days` and `total` |
 | `GET /twelve/billing` | All-month outstanding/available totals, source rows and invoice history |
@@ -79,7 +89,7 @@ Sending rechecks report claims and the invoice total/line sum against the frozen
 
 ## Source and verification
 
-Club implementation: `class-twelve-browser-import.php`, repository, aggregator, product classification, Businessclub invoicing, REST controller, `Kassaomzet.jsx`, `TwelveSchedule.jsx`, `ProductTrend.jsx` and comparison utilities. Sync implementation and operational limits are documented in [Twelve browser-import pipeline](/sync/pipeline-twelve/). Tests cover import validation/recovery, retained PDF IDs, billing conflicts, provisional/history boundaries, product classification, exclusion allocations, API permissions and chart gaps/comparisons. Retired parser tests are no longer the verification source.
+Club implementation: `class-twelve-browser-import.php`, repository, aggregator, product classification, Businessclub invoicing, REST controller, `Kassaomzet.jsx`, `TwelveSyncButton.jsx`, `TwelveSchedule.jsx`, `ProductTrend.jsx` and comparison utilities. Sync implementation and operational limits are documented in [Twelve browser-import pipeline](/sync/pipeline-twelve/). Tests cover import validation/recovery, retained PDF IDs, billing conflicts, provisional/history boundaries, product classification, exclusion allocations, API permissions and chart gaps/comparisons. Retired parser tests are no longer the verification source.
 
 `TwelveBillingTest` also covers address-book recipient fields, invalid CC rejection
 without claims, frozen manual accounts, missing-account retries and Rabobank drafts.

@@ -49,6 +49,8 @@ running pipeline returns 409. The overview and these routes share the same
 pipeline registry; verify completion in the tracked run after launch. See
 [dashboard pipeline routes](/sync/web-api/#dashboard-pipeline-routes).
 
+Club administrators can also launch the same recent-data import from **Nu synchroniseren** on Kassaomzet. WordPress proxies the fixed API-key-protected `GET`/`POST /api/sync/twelve` routes; see [on-demand synchronization](/integrations/twelve/#on-demand-synchronization) for permissions, status polling and failure handling.
+
 `steps/download-twelve.js` can also create read-only snapshots; `tools/compare-twelve.js` checks selected totals against supplied PDF-derived reference data. Its `fullPdfParity: false` explicitly means that matching those totals alone does not prove VAT/cashflow parity or billing eligibility. It does not import or schedule anything.
 
 Tests in `twelve-export.test.js`, `twelve-report.test.js`, `twelve-schedule.test.js` and `twelve-read-queue.test.js` cover synthetic reconciliation, DST/06:00/year boundaries, filters, private snapshots, sanitized login failures, VAT contracts, allocation rounding, schedule validation and ordered writes.
