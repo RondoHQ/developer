@@ -28,6 +28,7 @@ pipelines/sync-people.js
 ├── Step 1b: steps/download-inactive-members.js      → deceased-member safety input
 ├── Step 2: steps/prepare-laposta-members.js         → data/laposta-sync.sqlite (members table)
 ├── Step 3: steps/submit-laposta-list.js             → Laposta API
+│   └── steps/sync-stale-laposta-identities.js       → obsolete child-identity unsubscribes
 ├── Step 3a: steps/sync-former-members-to-laposta.js  → former-member unsubscribes
 ├── Step 3b: steps/sync-deceased-members.js          → deceased-member unsubscribes
 ├── Step 4: steps/submit-rondo-club-sync.js          → Rondo Club API (members + parents + birthdate)
@@ -147,6 +148,9 @@ required by this identity model.
 3. Updates `last_synced_hash` on success
 4. All calls through `lib/laposta-client.js` share one per-process queue, with at
    least 2.5 seconds between request starts across lists, reads, writes and steps.
+5. After every configured list succeeds, reconciles obsolete child identities
+   left at parent addresses. A single-list run or any submission error skips
+   this reconciliation.
 
 **Output:** `{ lists: [{ index, listId, total, synced, added, updated, errors }] }`
 
@@ -178,6 +182,44 @@ relations whose address belongs to a deceased person. It changes those relations
 `unsubscribed`; it never deletes them. An address remains active when the freshly prepared local
 list still needs that same address for another, living relation. Parent email fields are not
 treated as the deceased person's own address.
+
+### Obsolete child identities at parent addresses
+
+`steps/sync-stale-laposta-identities.js` handles a child who now uses a different
+address while their old Laposta identity remains at a parent's mailbox. It changes
+only the obsolete relation to `unsubscribed`, preserving its delivery history.
+
+An active candidate must match a current Sportlink relation code and normalized
+full name. Its address must no longer be the child's primary or alternative
+email. Across the configured lists, both of these must already be active:
+
+- The child's matching identity at a current primary or alternative address.
+- A matching mailbox-owner identity at the old address. This can be a current
+  member with that address, or a standalone parent without a relation code whose
+  name matches the one unambiguous parent name in the source snapshot.
+
+Unknown identities, current shared primary/alternative addresses, unresolved
+mailbox-owner identities and existing `unsubscribed` or `cleaned` relations stay
+untouched.
+
+The stored Sportlink snapshot must be complete and nonempty, with unique person
+IDs, both email properties on every member and an observation at most one hour
+old. Missing or invalid snapshots block cleanup. Automatic reconciliation defers
+an expired snapshot without failing submission; it does not refresh the source
+itself. The later former-member step retains its own refresh behavior.
+
+Before each write, cleanup re-reads the source and all configured active lists,
+checks freshness and rejects changed snapshots or candidates. It journals the
+intentional removal as `stale-identity-cleanup` before writing, so it does not
+create an unsubscribe follow-up task. Even after an uncertain write error, it
+reads back the exact member ID and email in Laposta's unsubscribed results rather
+than replaying the write. An unconfirmed write or other cleanup error stops
+further removals and makes the submission unsuccessful.
+
+`test/stale-laposta-identities.test.js` covers identity matching, shared addresses,
+opt-outs, source validity, concurrent changes, journaling, readback and all-list
+submission gating. See the [maintenance command](/sync/operations/#retire-obsolete-laposta-child-identities)
+for a scoped preview and repair.
 
 ### Former-member Laposta cleanup
 

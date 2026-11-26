@@ -222,6 +222,30 @@ node tools/dedupe-laposta-list.js --apply      # Delete duplicates
 node tools/dedupe-laposta-list.js 2 --apply    # List 2 only
 ```
 
+### Retire obsolete Laposta child identities
+
+Use this when a child has changed email but their old identity remains at a
+parent's address. On the sync server, as `rondo-sync` in `/srv/rondo-sync`, preview
+one mailbox before applying:
+
+```bash
+node tools/cleanup-laposta-stale-identities.js --email parent@example.com
+node tools/cleanup-laposta-stale-identities.js --email parent@example.com --apply
+```
+
+Without `--apply`, the tool only reads and returns proposed candidates. Omitting
+`--email` checks all configured lists. The command requires an existing complete
+Sportlink snapshot at most one hour old; it reports an error for an expired
+snapshot and does not download a replacement. Wait for a fresh People download
+before retrying.
+
+The [identity and freshness checks](/sync/pipeline-people/#obsolete-child-identities-at-parent-addresses)
+require active replacements for both child and mailbox owner. Apply journals each
+intentional unsubscribe and verifies the remote state, preserving delivery
+history. JSON output includes candidate and verified-unsubscribe counts, results
+and errors; any error produces exit code 1. Do not replay an uncertain write
+without checking its actual state.
+
 ## Log Management
 
 Logs accumulate in `logs/cron/`. Clean up old logs periodically:
