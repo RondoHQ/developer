@@ -31,6 +31,12 @@ Supply both historical dates or neither; do not combine dates with `--snapshot`.
 
 Days absent from source exports are skipped, not fabricated as zero. The current day is provisional until a complete 06:00 boundary is covered. Existing PDF archives and invoice claims are protected by the [Club import contract](/integrations/twelve/). Snapshots are retained for audit; monitor disk usage under `data/twelve`.
 
+## Payment details without VAT
+
+Since Rondo Sync 0.21.2, `lib/twelve-report.js` also skips `MANUAL` payment-detail rows when their net amount and all VAT cells are blank. The same rule covers `Maestro`, `MasterCard`, `Visa`, `V-PAY`, `REPRINT` and `??`, only in the Revenue payment-method table. These details repeat revenue already included in the validated totals. Both table layouts are supported, with or without the optional `Geen BTW` column.
+
+A `MANUAL` row with complete financial fields remains part of the report. Partially filled financial fields, unknown blank-field rows and blank financial fields in the VAT or No Sale tables still fail validation. Daily revenue and no-sale reconciliation still apply. Imports previously blocked by these `MANUAL` details can catch up from the unchanged successful-run checkpoint on their next normal run.
+
 ## Hourly basket export
 
 Reports also include optional `activity` version 1 for [Drukte & bezetting](/features/kantine-activity/). The export carries original basket IDs, local minute timestamps, `sale`/`correction` kind and allocated product cash/Businessclub cents. Shared payment children merge into one basket. Zero-value sales are retained; top-ups, other no-sales and tab settlements do not become purchases. Food/drink classification remains in Club.
@@ -53,4 +59,4 @@ Club administrators can also launch the same recent-data import from **Nu synchr
 
 `steps/download-twelve.js` can also create read-only snapshots; `tools/compare-twelve.js` checks selected totals against supplied PDF-derived reference data. Its `fullPdfParity: false` explicitly means that matching those totals alone does not prove VAT/cashflow parity or billing eligibility. It does not import or schedule anything.
 
-Tests in `twelve-export.test.js`, `twelve-report.test.js`, `twelve-schedule.test.js` and `twelve-read-queue.test.js` cover synthetic reconciliation, DST/06:00/year boundaries, filters, private snapshots, sanitized login failures, VAT contracts, allocation rounding, schedule validation and ordered writes.
+Tests in `twelve-export.test.js`, `twelve-report.test.js`, `twelve-schedule.test.js` and `twelve-read-queue.test.js` cover synthetic reconciliation, DST/06:00/year boundaries, filters, private snapshots, sanitized login failures, VAT contracts, blank-VAT payment details in both table layouts, allocation rounding, schedule validation and ordered writes.
